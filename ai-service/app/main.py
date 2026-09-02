@@ -1,0 +1,168 @@
+import os
+from fastapi import FastAPI, HTTPException, Header, Depends, status, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from typing import List, Dict, Any, Optional
+from app.config import settings
+from app.agents.rag_orchestrator import RAGOrchestrator
+from app.agents.formulation_classifier import FormulationClassifier
+from app.multilingual.bhashini_service import BhashiniService
+from app.core.pdf_extractor import PDFExtractor
+from app.core.chunker import LegalAwareChunker
+from app.rag.embeddings import generate_embedding
+from app.rag.hybrid_retriever import register_in_memory_chunk
+from app.seed_knowledge import seed_database
+import uuid
+
+app = FastAPI(
+    title="AyuSakshi AI Service",
+    version="1.0.0",
+    description="SIH26045: Source-Cited Multilingual RAG & Formulation Intelligence Engine for Ayurveda IP"
+)
+
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Internal Security Dependency
+def verify_internal_token(x_ai_service_token: Optional[str] = Header(None)):
+    # In development, accept requests or match token
+    if settings.ENVIRONMENT == "production":
+        if not x_ai_service_token or x_ai_service_token != settings.AI_SERVICE_SECRET:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Unauthorized: Invalid internal AI service token."
+            )
+    return True
+
+# --- Request / Response Models ---
+class RAGQueryRequest(BaseModel):
+    query: str
+    conversation_id: str
+    jurisdiction: Optional[str] = "india"
+    language: Optional[str] = "en"
+    history: Optional[List[Dict[str, Any]]] = []
+    formulation_state: Optional[Dict[str, Any]] = {}
+
+class FormulationClassifyRequest(BaseModel):
+    text: str
+    conversation_id: Optional[str] = None
+    current_state: Optional[Dict[str, Any]] = {}
+
+class TranslateRequest(BaseModel):
+    text: str
+    source_language: Optional[str] = "auto"
+    target_language: Optional[str] = "en"
+
+class DocumentIngestRequest(BaseModel):
+    document_id: str
+    version_tag: str
+    file_path: Optional[str] = None
+    title: str
+    authority: str
+    document_type: str
+    jurisdiction: str
+    category: str
+    source_url: Optional[str] = ""
+
+# --- Startup Event ---
+@app.on_event("startup")
+async def startup_event():
+    print("==========================================================")
+    print("  🌿 AyuSakshi AI Service (FastAPI + LangGraph) Initialized")
+    print(f"  🚀 Embedding Model: {settings.EMBEDDING_MODEL_NAME}")
+    print(f"  🔍 Hybrid Search: Dense Vector (pgvector) + BM25 Lexical")
+    print("==========================================================")
+    # Automatically seed authoritative corpus into memory/database
+    seed_database()
+
+# --- Endpoints ---
+
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "app": settings.APP_NAME,
+        "environment": settings.ENVIRONMENT,
+        "embedding_model": settings.EMBEDDING_MODEL_NAME,
+        "bhashini_enabled": settings.BHASHINI_ENABLED,
+    }
+
+@app.post("/api/rag/query", dependencies=[Depends(verify_internal_token)])
+async def execute_rag_query(request: RAGQueryRequest):
+    try:
+        response = await RAGOrchestrator.process_query(
+            query=request.query,
+            conversation_id=request.conversation_id,
+            jurisdiction=request.jurisdiction or "india",
+            language=request.language or "en",
+            history=request.history or [],
+            formulation_state=request.formulation_state or {}
+        )
+        return response
+    except Exception as e:
+        print(f"[RAG Query Exception]: {e}")
+        raise HTTPException(status_code=500, detail=f"RAG processing failed: {str(e)}")
+
+@app.post("/api/formulation/classify", dependencies=[Depends(verify_internal_token)])
+async def classify_formulation(request: FormulationClassifyRequest):
+    try:
+        result = FormulationClassifier.classify(request.text, request.current_state)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Classification failed: {str(e)}")
+
+@app.post("/api/translate", dependencies=[Depends(verify_internal_token)])
+async def translate_text(request: TranslateRequest):
+    try:
+        src = request.source_language
+        if src == "auto":
+            src = BhashiniService.detect_language(request.text)
+        result = await BhashiniService.translate(request.text, source_lang=src, target_lang=request.target_language)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Translation failed: {str(e)}")
+
+@app.post("/api/document/ingest", dependencies=[Depends(verify_internal_token)])
+async def ingest_document(request: DocumentIngestRequest):
+    try:
+        if not request.file_path or not os.path.exists(request.file_path):
+            return {"status": "error", "message": f"File not found: {request.file_path}"}
+            
+        pages = PDFExtractor.extract_document(request.file_path)
+        chunks = LegalAwareChunker.chunk_document(pages)
+        
+        # Save chunks to DB/memory
+        for chunk in chunks:
+            chunk_dict = {
+                "id": str(uuid.uuid4()),
+                "chunk_index": chunk["chunk_index"],
+                "section_identifier": chunk["section_identifier"],
+                "title": chunk["title"],
+                "doc_title": request.title,
+                "authority": request.authority,
+                "jurisdiction": request.jurisdiction,
+                "category": request.category,
+                "document_type": request.document_type,
+                "source_url": request.source_url,
+                "version_tag": request.version_tag,
+                "content": chunk["content"],
+                "embedding": generate_embedding(chunk["content"])
+            }
+            register_in_memory_chunk(chunk_dict)
+            
+        return {
+            "status": "success",
+            "document_id": request.document_id,
+            "version_tag": request.version_tag,
+            "pages_extracted": len(pages),
+            "chunks_count": len(chunks)
+        }
+    except Exception as e:
+        print(f"[Document Ingest Error]: {e}")
+        raise HTTPException(status_code=500, detail=f"Ingestion failed: {str(e)}")

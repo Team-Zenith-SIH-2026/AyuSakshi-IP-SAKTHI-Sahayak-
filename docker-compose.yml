@@ -1,0 +1,114 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ayusakshi_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ayusakshi_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ayusakshi_secure_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-ayusakshi_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ayusakshi_user} -d ${POSTGRES_DB:-ayusakshi_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ayusakshi_redis
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: ayusakshi_ai_service
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-ayusakshi_user}:${POSTGRES_PASSWORD:-ayusakshi_secure_pass_2026}@postgres:5432/${POSTGRES_DB:-ayusakshi_db}
+      - REDIS_URL=redis://redis:6379
+      - AI_SERVICE_SECRET=${AI_SERVICE_SECRET:-ayusakshi_internal_ai_token_2026}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - BHASHINI_USER_ID=${BHASHINI_USER_ID}
+      - BHASHINI_API_KEY=${BHASHINI_API_KEY}
+      - BHASHINI_PIPELINE_ID=${BHASHINI_PIPELINE_ID}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./knowledge-base:/app/knowledge-base
+      - ./ai-service/app:/app/app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: ayusakshi_backend
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-ayusakshi_user}:${POSTGRES_PASSWORD:-ayusakshi_secure_pass_2026}@postgres:5432/${POSTGRES_DB:-ayusakshi_db}
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-ayusakshi_jwt_super_secret_key_sih26045_prod_ready}
+      - AI_SERVICE_URL=http://ai-service:8000
+      - AI_SERVICE_SECRET=${AI_SERVICE_SECRET:-ayusakshi_internal_ai_token_2026}
+      - CLIENT_URL=http://localhost:5173
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - FACEBOOK_APP_ID=${FACEBOOK_APP_ID}
+      - FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET}
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: ayusakshi_frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:

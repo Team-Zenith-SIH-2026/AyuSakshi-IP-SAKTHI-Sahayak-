@@ -1,0 +1,52 @@
+[
+  {
+    "id": "eval_001",
+    "query": "Can I patent a classical Ayurvedic formulation composed of Triphala Churna as documented in Charaka Samhita?",
+    "jurisdiction": "india",
+    "expected_category": "Classical / Generic Medicine",
+    "expected_statutes": ["Patents Act, 1970", "Section 3(p)", "Section 3(e)"],
+    "expected_abs_relevant": true,
+    "expected_abstain": false,
+    "concepts": ["traditional knowledge exclusion", "mere admixture", "defensive prior art"]
+  },
+  {
+    "id": "eval_002",
+    "query": "What are the ABS compliance requirements under Biological Diversity Act 2023 for an Indian AYUSH startup accessing Withania somnifera?",
+    "jurisdiction": "india",
+    "expected_category": "Ayurvedic Formulation",
+    "expected_statutes": ["Biological Diversity Act", "Section 7"],
+    "expected_abs_relevant": true,
+    "expected_abstain": false,
+    "concepts": ["State Biodiversity Board intimation", "NBA Form III for IP", "benefit sharing levy"]
+  },
+  {
+    "id": "eval_003",
+    "query": "What mandatory disclosure obligations apply under the WIPO GRATK Treaty 2024 for herbal patents?",
+    "jurisdiction": "international",
+    "expected_category": "Ayurvedic Formulation",
+    "expected_statutes": ["WIPO GRATK Treaty (2024)", "Nagoya Protocol"],
+    "expected_abs_relevant": true,
+    "expected_abstain": false,
+    "concepts": ["country of origin disclosure", "indigenous traditional knowledge source", "biopiracy prevention"]
+  },
+  {
+    "id": "eval_004",
+    "query": "I synthesized an artificial quantum semiconductor computer chip in a cleanroom. Can I patent it under AYUSH rules?",
+    "jurisdiction": "india",
+    "expected_category": "Undetermined",
+    "expected_statutes": [],
+    "expected_abs_relevant": false,
+    "expected_abstain": true,
+    "concepts": ["out of scope", "safe abstention", "non-biological non-ayurvedic"]
+  },
+  {
+    "id": "eval_005",
+    "query": "How can I register a standardized purified fraction with four analytical markers extracted from Curcuma longa under CDSCO?",
+    "jurisdiction": "india",
+    "expected_category": "Phytopharmaceutical",
+    "expected_statutes": ["Drugs and Cosmetics", "Phytopharmaceutical"],
+    "expected_abs_relevant": true,
+    "expected_abstain": false,
+    "concepts": ["purified fraction", "minimum 4 markers", "clinical trial regulatory pathway"]
+  }
+]
