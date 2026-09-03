@@ -18,6 +18,11 @@ export const ChatProvider = ({ children }) => {
   // Modals & Navigation Views
   const [activeModal, setActiveModal] = useState(null); // 'classify' | 'abs' | 'tkdl' | 'escalate' | 'facilitator' | 'admin' | null
   const [escalationPreFill, setEscalationPreFill] = useState(null);
+  
+  // Mobile responsive sidebar drawer state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  const closeSidebar = () => setIsSidebarOpen(false);
 
   // Load conversations on mount or jurisdiction change
   useEffect(() => {
@@ -177,6 +182,10 @@ export const ChatProvider = ({ children }) => {
         sendMessage,
         deleteConversation,
         refreshConversations: fetchConversations,
+        isSidebarOpen,
+        setIsSidebarOpen,
+        toggleSidebar,
+        closeSidebar,
       }}
     >
       {children}

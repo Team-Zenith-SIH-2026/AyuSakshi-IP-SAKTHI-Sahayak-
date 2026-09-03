@@ -63,27 +63,27 @@ export const EscalationModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
       <div
-        className="w-full max-w-lg rounded-2xl bg-white dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border shadow-2xl overflow-hidden p-6 animate-in zoom-in-95"
+        className="w-full max-w-lg rounded-2xl bg-white dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border shadow-2xl overflow-hidden p-4 sm:p-6 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-darkbg-border">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100 dark:border-darkbg-border">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0">
               <UserCheck className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
                 Request Human IP Facilitator Review
               </h3>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[10.5px] sm:text-[11px] text-slate-500 truncate">
                 Preserve conversation context & escalate to an accredited AYUSH IP Facilitator
               </p>
             </div>
           </div>
-          <button onClick={handleClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white">
+          <button onClick={handleClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white flex-shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>

@@ -8,36 +8,36 @@ export const SourceDrawer = () => {
   if (!inspectingSource) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
       <div
-        className="w-full max-w-xl rounded-2xl bg-white dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95"
+        className="w-full max-w-xl rounded-2xl bg-white dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border shadow-2xl overflow-hidden flex flex-col max-h-[88vh] sm:max-h-[85vh] animate-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="px-5 py-4 border-b border-slate-100 dark:border-darkbg-border flex items-center justify-between bg-slate-50/50 dark:bg-darkbg-950/50">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+        <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 dark:border-darkbg-border flex items-center justify-between bg-slate-50/50 dark:bg-darkbg-950/50">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0">
               <Scale className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
                 Authoritative Source Evidence
               </h3>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[10.5px] sm:text-[11px] text-slate-500 truncate">
                 Verified against statutory registry records
               </p>
             </div>
           </div>
           <button
             onClick={() => setInspectingSource(null)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-darkbg-border transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-darkbg-border transition-colors flex-shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 overflow-y-auto space-y-4 text-xs">
+        <div className="p-3.5 sm:p-5 overflow-y-auto space-y-4 text-xs">
           {/* Document Title & Section Badge */}
           <div className="p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-500/30 space-y-1">
             <div className="flex items-center justify-between">

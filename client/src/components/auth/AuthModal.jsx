@@ -36,13 +36,13 @@ export const AuthModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
       <div
-        className="w-full max-w-md rounded-2xl bg-white dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border shadow-2xl overflow-hidden p-6 animate-in zoom-in-95"
+        className="w-full max-w-md rounded-2xl bg-white dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border shadow-2xl overflow-hidden p-4 sm:p-6 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-darkbg-border">
+        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100 dark:border-darkbg-border">
           <div className="flex items-center space-x-2.5">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 p-0.5 flex items-center justify-center">
               <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">

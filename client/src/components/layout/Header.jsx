@@ -8,21 +8,19 @@ import {
   Sun,
   Moon,
   Sparkles,
-  ShieldCheck,
   User,
   LogOut,
   Languages,
   BookOpen,
   Scale,
-  Activity,
-  Layers,
+  Menu,
 } from 'lucide-react';
 
 export const Header = () => {
   const { jurisdiction, setIndia, setInternational, isIndia } = useJurisdiction();
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, setIsAuthModalOpen, logout } = useAuth();
-  const { setActiveModal } = useChat();
+  const { setActiveModal, toggleSidebar } = useChat();
 
   const [selectedLang, setSelectedLang] = useState('en');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -37,83 +35,70 @@ export const Header = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-slate-200 dark:border-darkbg-border bg-white/80 dark:bg-darkbg-900/80 backdrop-blur-md">
-      {/* Top Ticker / Status Ribbon */}
-      <div className="hidden sm:flex items-center justify-between px-4 py-1 text-[11px] bg-emerald-500/5 dark:bg-emerald-500/10 border-b border-emerald-500/10 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-400 font-medium">
-        <div className="flex items-center space-x-2">
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span>SIH26045 Verified Regulatory Intelligence Engine</span>
-          <span className="text-slate-400 dark:text-slate-600">•</span>
-          <span>Patents Act 1970 § 3(p)</span>
-          <span className="text-slate-400 dark:text-slate-600">•</span>
-          <span>Biological Diversity Act 2023 Rules</span>
-          <span className="text-slate-400 dark:text-slate-600">•</span>
-          <span>WIPO GRATK Treaty (2024)</span>
-        </div>
-        <div className="flex items-center space-x-3 text-slate-500 dark:text-slate-400">
-          <span className="flex items-center space-x-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>DPDP Aligned</span>
-          </span>
-          <span>Bhashini NMT Active</span>
-        </div>
-      </div>
-
+    <header className="sticky top-0 z-30 w-full border-b border-slate-200 dark:border-darkbg-border bg-white/90 dark:bg-darkbg-950/90 backdrop-blur-md transition-colors">
       {/* Main Navigation Bar */}
-      <div className="flex items-center justify-between px-4 lg:px-6 h-16">
-        {/* Brand Logo */}
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-400 p-0.5 shadow-lg shadow-emerald-500/20 flex items-center justify-center">
+      <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 h-14 sm:h-16 gap-2">
+        {/* Left: Mobile Drawer Trigger & Brand Logo */}
+        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            aria-label="Toggle navigation menu"
+            className="lg:hidden p-1.5 -ml-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-darkbg-card transition-colors flex-shrink-0"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-400 p-0.5 shadow-sm flex items-center justify-center flex-shrink-0">
             <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
+              <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
             </div>
           </div>
-          <div>
+          
+          <div className="min-w-0">
             <div className="flex items-center space-x-1.5">
-              <span className="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">
+              <span className="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white truncate">
                 AyuSakshi
               </span>
-              <span className="text-xs px-1.5 py-0.5 rounded-full font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30">
+              <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 whitespace-nowrap">
                 IP SHAKTHI
               </span>
             </div>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">
+            <p className="hidden md:block text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide truncate">
               Ayurveda Intellectual Property & Regulatory Assistant
             </p>
           </div>
         </div>
 
-        {/* Central Jurisdiction Switcher */}
-        <div className="flex items-center bg-slate-100 dark:bg-darkbg-card p-1 rounded-xl border border-slate-200 dark:border-darkbg-border shadow-inner">
+        {/* Center: Jurisdiction Switcher */}
+        <div className="flex items-center bg-slate-100 dark:bg-darkbg-card p-0.5 sm:p-1 rounded-xl border border-slate-200 dark:border-darkbg-border flex-shrink-0">
           <button
             onClick={setIndia}
-            className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
               isIndia
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <span>India</span>
-            <span className="text-sm">🇮🇳</span>
+            <span className="text-xs sm:text-sm">🇮🇳</span>
           </button>
           <button
             onClick={setInternational}
-            className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
               !isIndia
-                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
+                ? 'bg-cyan-600 text-white shadow-sm shadow-cyan-600/30'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <span>International</span>
-            <span className="text-sm">🌍</span>
+            <span className="hidden xs:inline sm:inline">International</span>
+            <span className="xs:hidden sm:hidden">Intl</span>
+            <span className="text-xs sm:text-sm">🌍</span>
           </button>
         </div>
 
-        {/* Right Action Controls */}
-        <div className="flex items-center space-x-2.5">
+        {/* Right: Actions Controls */}
+        <div className="flex items-center space-x-1.5 sm:space-x-2.5 flex-shrink-0">
           {/* Language Selector */}
           <div className="relative hidden md:flex items-center">
             <select
@@ -134,7 +119,7 @@ export const Header = () => {
           <button
             onClick={toggleTheme}
             aria-label="Toggle Theme"
-            className="p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-darkbg-card border border-slate-200 dark:border-darkbg-border transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-darkbg-card border border-slate-200 dark:border-darkbg-border transition-colors"
           >
             {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
           </button>
@@ -143,7 +128,7 @@ export const Header = () => {
           <button
             onClick={() => setActiveModal('admin')}
             title="Knowledge Corpus Vault"
-            className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-card border border-slate-200 dark:border-darkbg-border transition-colors"
+            className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-card border border-slate-200 dark:border-darkbg-border transition-colors"
           >
             <BookOpen className="w-3.5 h-3.5 text-emerald-500" />
             <span>Corpus</span>

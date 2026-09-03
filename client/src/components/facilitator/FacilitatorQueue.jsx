@@ -51,27 +51,27 @@ export const FacilitatorQueue = () => {
   if (activeModal !== 'facilitator') return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
       <div
-        className="w-full max-w-4xl rounded-2xl bg-white dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95"
+        className="w-full max-w-4xl rounded-2xl bg-white dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh] animate-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-darkbg-border flex items-center justify-between bg-slate-50/50 dark:bg-darkbg-950/50">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 dark:border-darkbg-border flex items-center justify-between bg-slate-50/50 dark:bg-darkbg-950/50">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0">
               <Scale className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
                 Human IP Facilitator Review Workspace
               </h3>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[10.5px] sm:text-[11px] text-slate-500 truncate">
                 Audit trail and resolution for escalated Ayurvedic IP inquiries
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
             <button
               onClick={fetchTickets}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-darkbg-border"
@@ -88,7 +88,7 @@ export const FacilitatorQueue = () => {
         </div>
 
         {/* Workspace Body */}
-        <div className="p-6 overflow-y-auto flex-1 flex flex-col md:flex-row gap-4 text-xs">
+        <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 flex flex-col md:flex-row gap-4 text-xs">
           {/* Tickets List */}
           <div className="w-full md:w-1/2 space-y-2 overflow-y-auto max-h-[60vh] pr-1">
             <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">

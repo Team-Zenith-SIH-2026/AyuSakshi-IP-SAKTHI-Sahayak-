@@ -16,10 +16,10 @@ export const ThinkingTrace = ({ trace = [], durationSeconds = 1.2 }) => {
           <div className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
             <Cpu className="w-2.5 h-2.5" />
           </div>
-          <span className="font-semibold text-[11px] text-slate-700 dark:text-slate-300">
+          <span className="font-semibold text-[10.5px] sm:text-[11px] text-slate-700 dark:text-slate-300 truncate">
             Researched for {durationSeconds}s across statutory regimes
           </span>
-          <span className="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+          <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex-shrink-0">
             {trace.length} steps
           </span>
         </div>

@@ -46,36 +46,36 @@ export const ClassificationWizard = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
       <div
-        className="w-full max-w-2xl rounded-2xl bg-white dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95"
+        className="w-full max-w-2xl rounded-2xl bg-white dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh] animate-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-100 dark:border-darkbg-border flex items-center justify-between bg-slate-50/50 dark:bg-darkbg-950/50">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+        <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 dark:border-darkbg-border flex items-center justify-between bg-slate-50/50 dark:bg-darkbg-950/50">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0">
               <FlaskConical className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
                 Ayurvedic Formulation Classifier
               </h3>
-              <p className="text-[11px] text-slate-500">
-                Determines regulatory category & IP posture across the 6 SIH26045 classes
+              <p className="text-[10.5px] sm:text-[11px] text-slate-500 truncate">
+                Determines regulatory category & IP posture across 6 SIH26045 classes
               </p>
             </div>
           </div>
           <button
             onClick={() => setActiveModal(null)}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white flex-shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-5 overflow-y-auto space-y-4 text-xs">
+        <div className="p-3.5 sm:p-5 overflow-y-auto space-y-4 text-xs">
           {/* Preset Quick Tests */}
           <div>
             <label className="block text-[11px] font-bold uppercase text-slate-400 dark:text-slate-500 mb-1.5">

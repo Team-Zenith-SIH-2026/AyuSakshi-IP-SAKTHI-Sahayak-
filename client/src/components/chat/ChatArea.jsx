@@ -64,18 +64,18 @@ export const ChatArea = () => {
       ];
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 space-y-4 w-full">
+      <div className="max-w-4xl mx-auto w-full">
         {messages.length === 0 ? (
           /* Welcome Splash & Suggested Inquiry Cards */
-          <div className="py-6 sm:py-10 space-y-6 animate-in fade-in">
+          <div className="py-4 sm:py-8 space-y-4 sm:space-y-6 animate-in fade-in max-w-full">
             {/* Splash Header */}
-            <div className="text-center space-y-2 max-w-xl mx-auto">
+            <div className="text-center space-y-2 max-w-xl mx-auto px-2">
               <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>SIH26045 • {jurisdiction.toUpperCase()} REGIME ACTIVE</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 AyuSakshi Regulatory Intelligence
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -83,28 +83,28 @@ export const ChatArea = () => {
               </p>
             </div>
 
-            {/* Quick Starter Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            {/* Quick Starter Cards Grid: 1 col on mobile, 2 cols on tablet/desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 w-full">
               {starterQuestions.map((q, idx) => {
                 const Icon = q.icon;
                 return (
                   <button
                     key={idx}
                     onClick={() => sendMessage(q.desc)}
-                    className="flex items-start space-x-3 p-4 rounded-2xl glass-card hover:border-emerald-500/50 hover:shadow-lg dark:hover:shadow-emerald-950/30 transition-all text-left group"
+                    className="flex items-start space-x-3 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl glass-card hover:border-emerald-500/50 hover:shadow-lg dark:hover:shadow-emerald-950/30 transition-all text-left group w-full min-w-0"
                   >
-                    <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform flex-shrink-0">
-                      <Icon className="w-5 h-5" />
+                    <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform flex-shrink-0 mt-0.5">
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <div className="flex-1">
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white mb-1 group-hover:text-emerald-500 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-emerald-500 transition-colors break-words">
                         {q.title}
                       </h4>
-                      <p className="text-[11.5px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      <p className="text-[11.5px] sm:text-xs text-slate-500 dark:text-slate-400 leading-relaxed break-words">
                         {q.desc}
                       </p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 self-center" />
+                    <ChevronRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 self-center hidden sm:block" />
                   </button>
                 );
               })}
@@ -112,19 +112,19 @@ export const ChatArea = () => {
           </div>
         ) : (
           /* Conversation Message Stream */
-          <div className="space-y-4">
+          <div className="space-y-4 w-full">
             {messages.map((msg, index) => (
               <MessageItem key={msg.id || index} message={msg} />
             ))}
 
             {/* Loading / Thinking Skeleton */}
             {isLoading && (
-              <div className="flex items-start space-x-2.5 max-w-[85%] animate-pulse">
-                <div className="w-8 h-8 rounded-xl bg-emerald-600/20 text-emerald-500 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start space-x-2.5 max-w-full sm:max-w-[85%] animate-pulse">
+                <div className="w-8 h-8 rounded-xl bg-emerald-600/20 text-emerald-500 flex items-center justify-center flex-shrink-0 mt-1">
                   <Sparkles className="w-4 h-4 animate-spin" />
                 </div>
-                <div className="flex-1 p-4 rounded-2xl glass-card border border-slate-200 dark:border-darkbg-border space-y-2">
-                  <div className="h-3 w-48 bg-slate-200 dark:bg-darkbg-border rounded"></div>
+                <div className="flex-1 p-3.5 sm:p-4 rounded-2xl glass-card border border-slate-200 dark:border-darkbg-border space-y-2">
+                  <div className="h-3 w-40 sm:w-48 bg-slate-200 dark:bg-darkbg-border rounded"></div>
                   <div className="h-2.5 w-full bg-slate-100 dark:bg-darkbg-border/60 rounded"></div>
                   <div className="h-2.5 w-3/4 bg-slate-100 dark:bg-darkbg-border/60 rounded"></div>
                 </div>

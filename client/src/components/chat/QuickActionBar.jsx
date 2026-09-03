@@ -49,41 +49,41 @@ export const QuickActionBar = () => {
   };
 
   return (
-    <div className="p-4 border-t border-slate-200 dark:border-darkbg-border bg-white/80 dark:bg-darkbg-950/80 backdrop-blur-md">
-      <div className="max-w-4xl mx-auto">
+    <div className="p-2.5 sm:p-3 md:p-4 border-t border-slate-200 dark:border-darkbg-border bg-white/85 dark:bg-darkbg-950/85 backdrop-blur-md w-full">
+      <div className="max-w-4xl mx-auto w-full">
         <form
           onSubmit={handleSubmit}
-          className="relative rounded-2xl bg-slate-100 dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border focus-within:border-emerald-500/60 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all shadow-lg p-2 flex flex-col justify-between"
+          className="relative rounded-2xl bg-slate-100/90 dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border focus-within:border-emerald-500/60 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all shadow-md p-2 flex flex-col justify-between w-full"
         >
           {/* Textarea Input */}
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask anything about Ayurvedic IP, Section 3(p), ABS Form A/III, or Regulatory Licensing..."
+            placeholder="Ask about Ayurvedic IP, Section 3(p), ABS Form A/III, or Regulatory Licensing..."
             rows={2}
-            className="w-full bg-transparent px-3 py-1.5 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none resize-none"
+            className="w-full bg-transparent px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none resize-none"
           />
 
           {/* Bottom Bar inside Input Box */}
-          <div className="flex items-center justify-between pt-2 px-2 border-t border-slate-200/40 dark:border-darkbg-border/40">
+          <div className="flex items-center justify-between pt-2 px-1 sm:px-2 border-t border-slate-200/40 dark:border-darkbg-border/40 gap-2">
             {/* Model & Source Status Tag */}
-            <div className="flex items-center space-x-2 text-[11px] text-slate-500 dark:text-slate-400">
-              <span className="flex items-center space-x-1 font-medium">
-                <Sparkles className="w-3 h-3 text-emerald-500" />
-                <span>SIH26045 Hybrid RAG</span>
+            <div className="flex items-center space-x-1.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 min-w-0">
+              <span className="flex items-center space-x-1 font-medium text-emerald-700 dark:text-emerald-400 flex-shrink-0">
+                <Sparkles className="w-3 h-3 text-emerald-500 flex-shrink-0" />
+                <span>Hybrid RAG</span>
               </span>
-              <span>•</span>
-              <span>pgvector + Cross-Encoder</span>
+              <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+              <span className="hidden sm:inline truncate">pgvector + Cross-Encoder</span>
             </div>
 
             {/* Action Buttons: Voice Mic + Send */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
               <button
                 type="button"
                 onClick={toggleVoice}
                 title={isListening ? 'Listening...' : 'Voice Input (STT)'}
-                className={`p-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`p-1.5 sm:p-2 rounded-xl text-xs font-semibold transition-all ${
                   isListening
                     ? 'bg-rose-500 text-white animate-pulse'
                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-darkbg-border'
@@ -95,7 +95,7 @@ export const QuickActionBar = () => {
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className={`p-2 rounded-xl transition-all ${
+                className={`p-1.5 sm:p-2 rounded-xl transition-all ${
                   input.trim() && !isLoading
                     ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 active:scale-95'
                     : 'bg-slate-200 dark:bg-darkbg-border text-slate-400 cursor-not-allowed'

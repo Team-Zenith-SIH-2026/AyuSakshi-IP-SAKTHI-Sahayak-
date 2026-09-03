@@ -20,13 +20,13 @@ import { KnowledgeBaseManager } from './components/admin/KnowledgeBaseManager';
 
 function MainLayout() {
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-50 dark:bg-darkbg-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-200">
+    <div className="flex flex-col h-screen h-[100dvh] w-full max-w-full bg-slate-50 dark:bg-darkbg-950 text-slate-900 dark:text-slate-100 overflow-hidden overflow-x-hidden font-sans transition-colors duration-200">
       <Header />
       
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative w-full">
         <Sidebar />
         
-        <main className="flex-1 flex flex-col justify-between overflow-hidden bg-slate-100/50 dark:bg-[#070e12]/60">
+        <main className="flex-1 flex flex-col justify-between overflow-hidden bg-slate-100/50 dark:bg-[#070e12]/60 w-full min-w-0">
           <ChatArea />
           <QuickActionBar />
         </main>
