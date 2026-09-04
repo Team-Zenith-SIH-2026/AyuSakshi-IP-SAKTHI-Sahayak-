@@ -19,10 +19,25 @@ export const ChatProvider = ({ children }) => {
   const [activeModal, setActiveModal] = useState(null); // 'classify' | 'abs' | 'tkdl' | 'escalate' | 'facilitator' | 'admin' | null
   const [escalationPreFill, setEscalationPreFill] = useState(null);
   
-  // Mobile responsive sidebar drawer state
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
-  const closeSidebar = () => setIsSidebarOpen(false);
+  // Responsive sidebar states
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isDesktopSidebarPinned, setIsDesktopSidebarPinned] = useState(true);
+  const [isDesktopSidebarHovered, setIsDesktopSidebarHovered] = useState(false);
+  const setDesktopSidebarHovered = setIsDesktopSidebarHovered;
+
+  const toggleMobileSidebar = () => setIsMobileSidebarOpen((prev) => !prev);
+  const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
+
+  const toggleDesktopSidebar = () => setIsDesktopSidebarPinned((prev) => !prev);
+
+  // Backward compatibility aliases
+  const isSidebarOpen = isMobileSidebarOpen;
+  const setIsSidebarOpen = setIsMobileSidebarOpen;
+  const toggleSidebar = toggleMobileSidebar;
+  const closeSidebar = () => {
+    setIsMobileSidebarOpen(false);
+    setIsDesktopSidebarHovered(false);
+  };
 
   // Load conversations on mount or jurisdiction change
   useEffect(() => {
@@ -186,6 +201,13 @@ export const ChatProvider = ({ children }) => {
         setIsSidebarOpen,
         toggleSidebar,
         closeSidebar,
+        isMobileSidebarOpen,
+        toggleMobileSidebar,
+        closeMobileSidebar,
+        isDesktopSidebarPinned,
+        toggleDesktopSidebar,
+        isDesktopSidebarHovered,
+        setDesktopSidebarHovered,
       }}
     >
       {children}

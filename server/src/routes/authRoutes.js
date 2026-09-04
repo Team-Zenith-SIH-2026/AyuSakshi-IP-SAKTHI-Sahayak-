@@ -10,6 +10,12 @@ router.post('/register', authLimiter, authController.register);
 router.post('/login', authLimiter, authController.login);
 router.get('/profile', authenticate, authController.getProfile);
 
+// Password Management & Reset
+router.post('/change-password', authenticate, authLimiter, authController.changePassword);
+router.post('/forgot-password', authLimiter, authController.forgotPassword);
+router.post('/verify-reset-code', authLimiter, authController.verifyResetCode);
+router.post('/reset-password', authLimiter, authController.resetPassword);
+
 // Social Auth Mock / Direct API endpoint (For frontend social flow)
 router.post('/social', authLimiter, authController.socialAuth);
 

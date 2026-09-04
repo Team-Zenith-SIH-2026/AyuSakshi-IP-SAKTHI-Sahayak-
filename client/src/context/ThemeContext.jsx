@@ -4,8 +4,12 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem('ayusakshi_theme');
-    return saved || 'dark'; // Default to modern sleek dark theme matching user reference
+    try {
+      const saved = localStorage.getItem('ayusakshi_theme');
+      return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+    } catch (e) {
+      return 'dark';
+    }
   });
 
   useEffect(() => {

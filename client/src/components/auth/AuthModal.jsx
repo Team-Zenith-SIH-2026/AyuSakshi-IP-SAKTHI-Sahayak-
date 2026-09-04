@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { X, Sparkles, Lock, Mail, User, ShieldAlert, ArrowRight } from 'lucide-react';
 
 export const AuthModal = () => {
+  const navigate = useNavigate();
   const { isAuthModalOpen, setIsAuthModalOpen, login, register, socialLogin, loading } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState('');
@@ -143,7 +145,21 @@ export const AuthModal = () => {
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">Password</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-[11px] font-bold uppercase text-slate-500">Password</label>
+              {!isRegister && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAuthModalOpen(false);
+                    navigate('/forgot-password');
+                  }}
+                  className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              )}
+            </div>
             <div className="relative">
               <input
                 type="password"

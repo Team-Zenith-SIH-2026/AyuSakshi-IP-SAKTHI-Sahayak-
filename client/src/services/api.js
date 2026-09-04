@@ -41,6 +41,10 @@ export const authAPI = {
   login: (data) => api.post('/auth/login', data),
   getProfile: () => api.get('/auth/profile'),
   socialAuth: (data) => api.post('/auth/social', data),
+  changePassword: (data) => api.post('/auth/change-password', data),
+  forgotPassword: (data) => api.post('/auth/forgot-password', data),
+  verifyResetCode: (data) => api.post('/auth/verify-reset-code', data),
+  resetPassword: (data) => api.post('/auth/reset-password', data),
 };
 
 export const chatAPI = {

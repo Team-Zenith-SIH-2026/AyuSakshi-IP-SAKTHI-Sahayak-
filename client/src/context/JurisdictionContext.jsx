@@ -4,7 +4,12 @@ const JurisdictionContext = createContext();
 
 export const JurisdictionProvider = ({ children }) => {
   const [jurisdiction, setJurisdiction] = useState(() => {
-    return localStorage.getItem('ayusakshi_jurisdiction') || 'india';
+    try {
+      const saved = localStorage.getItem('ayusakshi_jurisdiction');
+      return (saved === 'india' || saved === 'international') ? saved : 'india';
+    } catch (e) {
+      return 'india';
+    }
   });
 
   useEffect(() => {

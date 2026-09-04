@@ -168,10 +168,243 @@ const socialAuth = async (req, res) => {
   }
 };
 
+// Change Password (Authenticated User)
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        error: 'Current password, new password, and confirmation are required.',
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        error: 'New password and confirmation do not match.',
+      });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        error: 'New password must be at least 8 characters long.',
+      });
+    }
+
+    // Fetch user with password_hash
+    const result = await query(
+      'SELECT id, name, email, password_hash, auth_provider FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'User not found.' });
+    }
+
+    const user = result.rows[0];
+
+    if (!user.password_hash) {
+      return res.status(400).json({
+        success: false,
+        error: `This account was created using ${user.auth_provider}. Password cannot be modified directly.`,
+      });
+    }
+
+    const isCurrentMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isCurrentMatch) {
+      return res.status(401).json({
+        success: false,
+        error: 'Incorrect current password. Please try again.',
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const newPasswordHash = await bcrypt.hash(newPassword, salt);
+
+    await query(
+      'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+      [newPasswordHash, userId]
+    );
+
+    // Send confirmation email asynchronously
+    const emailService = require('../services/emailService');
+    emailService.sendPasswordChangeConfirmation({ to: user.email, name: user.name }).catch((err) => {
+      console.warn('[Change Password] Email notification warning:', err.message);
+    });
+
+    return res.json({
+      success: true,
+      message: 'Password updated successfully.',
+    });
+  } catch (error) {
+    console.error('[Change Password Error]', error.message);
+    return res.status(500).json({ success: false, error: 'Failed to update password.' });
+  }
+};
+
+// Forgot Password - Step 1: Send Verification Code / OTP
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({ success: false, error: 'A valid email address is required.' });
+    }
+
+    const emailNormalized = email.trim().toLowerCase();
+    const passwordResetService = require('../services/passwordResetService');
+    const emailService = require('../services/emailService');
+
+    // Check rate limit (max 5 requests per 15 min)
+    const allowed = await passwordResetService.checkRateLimit(emailNormalized);
+    if (!allowed) {
+      return res.status(429).json({
+        success: false,
+        error: 'Too many password reset requests for this email. Please try again after 15 minutes.',
+      });
+    }
+
+    // Check if user exists in database
+    const result = await query(
+      'SELECT id, name, email, auth_provider, password_hash FROM users WHERE email = $1',
+      [emailNormalized]
+    );
+
+    // If user exists and is local (or has a password), dispatch OTP
+    if (result.rows.length > 0) {
+      const user = result.rows[0];
+      const code = passwordResetService.generateCode();
+      await passwordResetService.storeResetCode(emailNormalized, code);
+
+      await emailService.sendPasswordResetOTP({
+        to: emailNormalized,
+        code,
+        name: user.name,
+      });
+    }
+
+    // Return generic message regardless of whether user exists to prevent email enumeration
+    return res.json({
+      success: true,
+      message: 'If an account exists for this email, a 6-digit verification code has been sent.',
+    });
+  } catch (error) {
+    console.error('[Forgot Password Error]', error.message);
+    return res.status(500).json({ success: false, error: 'Failed to process password reset request.' });
+  }
+};
+
+// Forgot Password - Step 2: Verify OTP code
+const verifyResetCode = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ success: false, error: 'Email and verification code are required.' });
+    }
+
+    const emailNormalized = email.trim().toLowerCase();
+    const passwordResetService = require('../services/passwordResetService');
+
+    const result = await passwordResetService.verifyResetCode(emailNormalized, code.trim());
+
+    if (!result.valid) {
+      return res.status(400).json({
+        success: false,
+        error: result.error || 'Invalid or expired verification code.',
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Verification code confirmed. You may now set a new password.',
+      resetToken: result.resetToken,
+    });
+  } catch (error) {
+    console.error('[Verify Reset Code Error]', error.message);
+    return res.status(500).json({ success: false, error: 'Failed to verify code.' });
+  }
+};
+
+// Forgot Password - Step 3: Set New Password with Reset Token
+const resetPassword = async (req, res) => {
+  try {
+    const { resetToken, newPassword, confirmPassword } = req.body;
+
+    if (!resetToken || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        error: 'Reset token, new password, and confirmation are required.',
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        error: 'New password and confirmation do not match.',
+      });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        error: 'New password must be at least 8 characters long.',
+      });
+    }
+
+    const passwordResetService = require('../services/passwordResetService');
+    const userEmail = await passwordResetService.consumeResetToken(resetToken);
+
+    if (!userEmail) {
+      return res.status(400).json({
+        success: false,
+        error: 'Reset token has expired or is invalid. Please restart the forgot-password process.',
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const newPasswordHash = await bcrypt.hash(newPassword, salt);
+
+    // Update in database
+    const updateResult = await query(
+      'UPDATE users SET password_hash = $1, auth_provider = \'local\', updated_at = NOW() WHERE email = $2 RETURNING id, name, email',
+      [newPasswordHash, userEmail]
+    );
+
+    if (updateResult.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'User account not found.' });
+    }
+
+    const user = updateResult.rows[0];
+
+    // Send confirmation email
+    const emailService = require('../services/emailService');
+    emailService.sendPasswordChangeConfirmation({ to: user.email, name: user.name }).catch((e) => {});
+
+    return res.json({
+      success: true,
+      message: 'Password reset successfully. You can now log in with your new password.',
+    });
+  } catch (error) {
+    console.error('[Reset Password Error]', error.message);
+    return res.status(500).json({ success: false, error: 'Failed to reset password.' });
+  }
+};
+
 module.exports = {
   register,
   login,
   getProfile,
   socialAuth,
+  changePassword,
+  forgotPassword,
+  verifyResetCode,
+  resetPassword,
   generateToken,
 };

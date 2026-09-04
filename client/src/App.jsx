@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { JurisdictionProvider } from './context/JurisdictionContext';
@@ -18,7 +19,10 @@ import { EscalationModal } from './components/escalation/EscalationModal';
 import { FacilitatorQueue } from './components/facilitator/FacilitatorQueue';
 import { KnowledgeBaseManager } from './components/admin/KnowledgeBaseManager';
 
-function MainLayout() {
+import { ProfilePage } from './pages/ProfilePage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+
+function AssistantLayout() {
   return (
     <div className="flex flex-col h-screen h-[100dvh] w-full max-w-full bg-slate-50 dark:bg-darkbg-950 text-slate-900 dark:text-slate-100 overflow-hidden overflow-x-hidden font-sans transition-colors duration-200">
       <Header />
@@ -47,14 +51,21 @@ function MainLayout() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <JurisdictionProvider>
-          <ChatProvider>
-            <MainLayout />
-          </ChatProvider>
-        </JurisdictionProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <JurisdictionProvider>
+            <ChatProvider>
+              <Routes>
+                <Route path="/" element={<AssistantLayout />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </ChatProvider>
+          </JurisdictionProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
