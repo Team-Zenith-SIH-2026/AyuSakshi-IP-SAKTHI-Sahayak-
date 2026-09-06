@@ -8,6 +8,7 @@ import { ChatProvider } from './context/ChatContext';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { DisclaimerBar } from './components/layout/DisclaimerBar';
+import { BotanicalBackdrop } from './components/layout/BotanicalBackdrop';
 import { ChatArea } from './components/chat/ChatArea';
 import { QuickActionBar } from './components/chat/QuickActionBar';
 import { SourceDrawer } from './components/chat/SourceDrawer';
@@ -25,13 +26,15 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 
 function AssistantLayout() {
   return (
-    <div className="flex flex-col h-screen h-[100dvh] w-full max-w-full bg-slate-50 dark:bg-darkbg-950 text-slate-900 dark:text-slate-100 overflow-hidden overflow-x-hidden font-sans transition-colors duration-200">
+    <div className="relative flex h-screen h-[100dvh] w-full max-w-full flex-col overflow-hidden overflow-x-hidden font-sans text-slate-900 transition-colors duration-200 dark:text-slate-100">
+      <BotanicalBackdrop />
+
       <Header />
-      
-      <div className="flex flex-1 overflow-hidden relative w-full">
+
+      <div className="relative flex w-full flex-1 overflow-hidden">
         <Sidebar />
-        
-        <main className="flex-1 flex flex-col justify-between overflow-hidden bg-slate-100/50 dark:bg-[#070e12]/60 w-full min-w-0">
+
+        <main className="flex w-full min-w-0 flex-1 flex-col justify-between overflow-hidden">
           <ChatArea />
           <QuickActionBar />
         </main>

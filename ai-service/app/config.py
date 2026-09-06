@@ -33,6 +33,19 @@ class Settings(BaseSettings):
     # which makes measured results hard to quote honestly.
     LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0"))
 
+    # Total time one LLM call may spend, including rate-limit backoff. Must stay
+    # comfortably under the Node backend and browser timeouts (both 45s), so that
+    # a rate-limited request abstains honestly instead of surfacing as a
+    # connection timeout with no explanation.
+    LLM_TOTAL_BUDGET_SECONDS: float = float(os.getenv("LLM_TOTAL_BUDGET_SECONDS", "28"))
+
+    # Must be set explicitly. Rate limiters bill the *reserved* completion length,
+    # not the length actually produced, so omitting it makes the provider reserve
+    # the model's maximum output against the per-minute token budget and reject a
+    # single request as though it had consumed the entire minute's allowance.
+    # 1600 is comfortably above the longest structured answer this system emits.
+    LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "1600"))
+
     # Ollama gives the on-premise story: nothing leaves the machine.
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.1:8b")

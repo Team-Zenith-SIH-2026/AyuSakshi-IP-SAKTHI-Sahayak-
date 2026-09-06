@@ -3,36 +3,43 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
+  html,
+  body {
     overflow-x: hidden;
     max-width: 100%;
   }
+
   body {
-    @apply font-sans;
+    @apply font-sans antialiased;
+    /* Slightly open tracking reads calmer at small sizes and is a large part of
+       why the interface feels less dense than it did. */
+    letter-spacing: -0.005em;
+  }
+
+  /* Headings carry weight through size and space, not through boldness.
+     font-extrabold everywhere was the main reason the old UI felt shouty. */
+  h1,
+  h2,
+  h3 {
+    @apply font-normal tracking-tight;
   }
 }
 
-/* Custom Glassmorphism & Glowing Utilities */
+/* Panels sit on the botanical backdrop, so they are translucent rather than
+   opaque: the leaves stay faintly visible through them, which is what keeps the
+   whole thing feeling like one surface. */
 .glass-panel {
-  @apply bg-white/80 dark:bg-darkbg-card/80 backdrop-blur-md border border-slate-200/80 dark:border-darkbg-border;
+  @apply border border-emerald-900/[0.07] bg-white/70 backdrop-blur-xl dark:border-white/[0.07] dark:bg-white/[0.03];
 }
 
 .glass-card {
-  @apply bg-white/90 dark:bg-[#0c161c]/90 backdrop-blur-lg border border-slate-200 dark:border-[#1a2c35] shadow-sm dark:shadow-2xl dark:shadow-emerald-950/20;
+  @apply border border-emerald-900/[0.07] bg-white/70 backdrop-blur-xl dark:border-white/[0.07] dark:bg-white/[0.025];
 }
 
-.emerald-glow {
-  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.15);
-}
-
-.cyan-glow {
-  box-shadow: 0 0 30px -5px rgba(6, 182, 212, 0.15);
-}
-
-/* Custom Scrollbars */
+/* Scrollbars: present when needed, invisible otherwise. */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -40,14 +47,27 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(100, 116, 139, 0.18);
   border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(30, 41, 59, 0.6);
+  background: rgba(148, 163, 184, 0.16);
+  background-clip: content-box;
+  border: 2px solid transparent;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.4);
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+/* Keyboard focus stays clearly visible even though the chrome is quiet. */
+:focus-visible {
+  outline: 2px solid rgb(16 185 129 / 0.55);
+  outline-offset: 2px;
+  border-radius: 6px;
 }

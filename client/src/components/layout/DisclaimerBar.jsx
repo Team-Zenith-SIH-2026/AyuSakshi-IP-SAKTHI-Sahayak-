@@ -1,33 +1,24 @@
 import React from 'react';
-import { Info } from 'lucide-react';
 
 /**
- * Standing regulatory disclaimer.
+ * Standing legal disclaimer.
  *
- * The problem statement requires an "Information, not legal advice" disclaimer
- * that is always visible. It previously appeared only underneath each assistant
- * message, so it was absent on an empty conversation and scrolled out of view
- * during a long one.
- *
- * Deliberately not dismissible: there is no close control and no persisted
- * hidden state. A user must not be able to remove it.
+ * Required to be visible at all times, so it is not dismissible: there is no
+ * close control and no persisted hidden state. It is styled quietly on purpose.
+ * An amber warning bar competing with the answer trains people to stop reading
+ * it; a calm line of text that never moves gets read once and stays trusted.
  */
 export const DisclaimerBar = () => (
   <div
     role="note"
     aria-label="Legal disclaimer"
-    className="flex-shrink-0 w-full border-t border-amber-300/50 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-950/30 px-3 sm:px-4 py-1.5"
+    className="w-full flex-shrink-0 border-t border-emerald-900/[0.06] bg-white/50 px-4 py-2 backdrop-blur-sm dark:border-white/[0.06] dark:bg-white/[0.02]"
   >
-    <div className="flex items-center justify-center space-x-1.5 text-center">
-      <Info className="w-3 h-3 text-amber-600 dark:text-amber-500 flex-shrink-0" />
-      <p className="text-[10.5px] sm:text-[11px] leading-tight text-amber-800 dark:text-amber-300/90">
-        <span className="font-semibold">Information, not legal advice.</span>{' '}
-        <span className="hidden sm:inline">
-          AyuSakshi provides source-grounded regulatory information for Ayurvedic products. Verify every
-          citation against the official text and consult a qualified IP practitioner before acting.
-        </span>
-        <span className="sm:hidden">Verify citations and consult a practitioner before acting.</span>
-      </p>
-    </div>
+    <p className="mx-auto max-w-3xl text-center text-[11.5px] leading-relaxed text-slate-400 dark:text-slate-500">
+      <span className="font-medium text-slate-500 dark:text-slate-400">Information, not legal advice.</span>{' '}
+      <span className="hidden sm:inline">
+        Check each citation against the official text and speak to a qualified practitioner before acting.
+      </span>
+    </p>
   </div>
 );

@@ -22,15 +22,23 @@ log = logging.getLogger("ayusakshi.llm")
 
 async def _call_groq(system_prompt: str, user_prompt: str, timeout: float = 45.0) -> Optional[str]:
     """
-    Groq chat completion with retry on 429.
+    Groq chat completion with retry on 429, bounded by a total time budget.
 
-    The free tier caps tokens per minute and a batch run trips it easily. Groq
-    reports how long to wait, usually under three seconds, so a short backoff
-    turns a spurious failure into a normal response rather than a silent
-    fallthrough to a lesser provider.
+    The free tier caps tokens per minute and a burst trips it easily. Groq
+    reports how long to wait, so a short backoff turns a spurious failure into a
+    normal response.
+
+    The budget matters as much as the retry. Callers upstream (the Node backend
+    and the browser) both time out at 45s. An unbounded backoff of up to 20s per
+    attempt could spend 80s here, so the user saw a connection timeout instead of
+    either an answer or an honest abstention. Once the budget is gone we give up
+    promptly and let the orchestrator abstain, which is a truthful outcome
+    delivered inside the caller's deadline.
     """
     if not settings.GROQ_API_KEY:
         return None
+
+    deadline = asyncio.get_event_loop().time() + settings.LLM_TOTAL_BUDGET_SECONDS
 
     payload = {
         "model": settings.GROQ_MODEL,
@@ -39,6 +47,7 @@ async def _call_groq(system_prompt: str, user_prompt: str, timeout: float = 45.0
             {"role": "user", "content": user_prompt},
         ],
         "temperature": settings.LLM_TEMPERATURE,
+        "max_tokens": settings.LLM_MAX_TOKENS,
     }
     headers = {
         "Authorization": f"Bearer {settings.GROQ_API_KEY}",
@@ -59,15 +68,27 @@ async def _call_groq(system_prompt: str, user_prompt: str, timeout: float = 45.0
                 retry_after = resp.headers.get("retry-after")
                 if retry_after:
                     try:
-                        wait = min(float(retry_after) + 0.5, 20.0)
+                        wait = float(retry_after) + 0.5
                     except ValueError:
                         pass
                 else:
                     m = re.search(r'try again in ([0-9.]+)(ms|s)', resp.text)
                     if m:
-                        secs = float(m.group(1)) / (1000.0 if m.group(2) == "ms" else 1.0)
-                        wait = min(secs + 0.5, 20.0)
-                log.warning("[LLM groq] rate limited, retrying in %.2fs (attempt %d/4)", wait, attempt + 1)
+                        wait = float(m.group(1)) / (1000.0 if m.group(2) == "ms" else 1.0) + 0.5
+
+                remaining = deadline - asyncio.get_event_loop().time()
+                if wait > remaining:
+                    log.error(
+                        "[LLM groq] rate limited and the %.0fs budget cannot absorb a %.1fs wait. "
+                        "Giving up so the caller can abstain within its deadline.",
+                        settings.LLM_TOTAL_BUDGET_SECONDS, wait,
+                    )
+                    return None
+
+                log.warning(
+                    "[LLM groq] rate limited, retrying in %.2fs (attempt %d/4, %.1fs of budget left)",
+                    wait, attempt + 1, remaining,
+                )
                 await asyncio.sleep(wait)
                 continue
 
@@ -93,6 +114,7 @@ async def _call_openai(system_prompt: str, user_prompt: str, timeout: float = 45
                     {"role": "user", "content": user_prompt},
                 ],
                 "temperature": settings.LLM_TEMPERATURE,
+                "max_tokens": settings.LLM_MAX_TOKENS,
             },
         )
         if resp.status_code == 200:
@@ -112,7 +134,7 @@ async def _call_ollama(system_prompt: str, user_prompt: str, timeout: float = 12
                     {"role": "user", "content": user_prompt},
                 ],
                 "stream": False,
-                "options": {"temperature": settings.LLM_TEMPERATURE},
+                "options": {"temperature": settings.LLM_TEMPERATURE, "num_predict": settings.LLM_MAX_TOKENS},
             },
         )
         if resp.status_code == 200:

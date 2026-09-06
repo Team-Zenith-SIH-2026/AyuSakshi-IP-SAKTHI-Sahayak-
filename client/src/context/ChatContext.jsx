@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { chatAPI } from '../services/api';
 import { useJurisdiction } from './JurisdictionContext';
 
@@ -10,6 +10,11 @@ export const ChatProvider = ({ children }) => {
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  // React state updates are not synchronous, so `isLoading` alone cannot stop a
+  // second submission that fires before the first render commits (a fast
+  // double-click, or Enter followed immediately by a click). This ref is set
+  // synchronously the instant sendMessage is entered, closing that window.
+  const isSendingRef = useRef(false);
   const [currentThinking, setCurrentThinking] = useState(null);
   
   // Selected citation for Source Inspection Drawer
@@ -99,10 +104,22 @@ export const ChatProvider = ({ children }) => {
   const sendMessage = async (content, language = 'en') => {
     if (!content.trim()) return;
 
+    // Closes the race that let a double-click or Enter+click send the same
+    // question twice: React had not yet re-rendered with isLoading=true while
+    // startNewConversation() was still in flight for a brand new conversation,
+    // so the button's disabled guard did not catch the second call in time.
+    if (isSendingRef.current) return;
+    isSendingRef.current = true;
+    setIsLoading(true);
+
     let convId = activeConversationId;
     if (!convId) {
       const newConv = await startNewConversation(content.slice(0, 40));
-      if (!newConv) return;
+      if (!newConv) {
+        isSendingRef.current = false;
+        setIsLoading(false);
+        return;
+      }
       convId = newConv.id;
     }
 
@@ -116,7 +133,6 @@ export const ChatProvider = ({ children }) => {
       created_at: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, tempUserMsg]);
-    setIsLoading(true);
 
     try {
       const res = await chatAPI.sendMessage(convId, {
@@ -149,6 +165,7 @@ export const ChatProvider = ({ children }) => {
       };
       setMessages((prev) => [...prev, errorAssistantMsg]);
     } finally {
+      isSendingRef.current = false;
       setIsLoading(false);
     }
   };

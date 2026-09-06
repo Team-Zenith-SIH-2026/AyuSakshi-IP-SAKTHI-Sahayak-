@@ -2,131 +2,135 @@ import React, { useEffect, useRef } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { useJurisdiction } from '../../context/JurisdictionContext';
 import { MessageItem } from './MessageItem';
-import {
-  Sparkles,
-  FlaskConical,
-  Scale,
-  Dna,
-  ShieldCheck,
-  ChevronRight,
-  HelpCircle,
-  BookOpen,
-} from 'lucide-react';
+import { LeafMark } from '../layout/LeafMark';
+import { Sprout, Scale, Leaf, FileSearch, Globe2, ArrowUpRight } from 'lucide-react';
 
 export const ChatArea = () => {
-  const { messages, isLoading, sendMessage, setActiveModal } = useChat();
-  const { jurisdiction, isIndia } = useJurisdiction();
+  const { messages, isLoading, sendMessage } = useChat();
+  const { isIndia } = useJurisdiction();
   const scrollRef = useRef(null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  const starterQuestions = isIndia
+  // Written as a person would actually ask them, not as feature names.
+  const suggestions = isIndia
     ? [
         {
-          title: 'Section 3(p) Patentability Check',
-          desc: 'Can I patent an Ayurvedic herbal formulation if its components are listed in Charaka Samhita?',
           icon: Scale,
+          title: 'Can I patent this?',
+          desc: 'Whether a formulation built on classical texts can be protected.',
+          ask: 'Can a classical formulation from the Charaka Samhita be patented in India?',
         },
         {
-          title: 'ABS Compliance & NBA Form III',
-          desc: 'What are the benefit-sharing obligations under Biological Diversity Act 2023 for Ayurvedic startups?',
-          icon: Dna,
+          icon: Leaf,
+          title: 'Do I need approval to use this plant?',
+          desc: 'Permissions and benefit sharing when you use Indian plants.',
+          ask: 'Do I need National Biodiversity Authority approval before filing a patent using an Indian medicinal plant?',
         },
         {
-          title: 'Classical vs P or P Drug Licensing',
-          desc: 'What is the regulatory difference between a Classical Ayurvedic Drug and Patent/Proprietary medicine?',
-          icon: FlaskConical,
+          icon: Sprout,
+          title: 'Is my product a medicine or a food?',
+          desc: 'Which licence you need, and what you may claim on the label.',
+          ask: 'What is the difference between a patent or proprietary medicine and a new drug for licensing purposes?',
         },
         {
-          title: 'FSSAI Ayurveda Aahara Guidelines',
-          desc: 'How to register a health supplement under Food Safety and Standards (Ayurveda Aahara) Regulations 2022?',
-          icon: ShieldCheck,
+          icon: FileSearch,
+          title: 'Has someone already claimed this?',
+          desc: 'Where traditional recipes are recorded, and what that protects.',
+          ask: 'How do I stop a foreign company patenting a formulation from our tradition?',
         },
       ]
     : [
         {
-          title: 'WIPO GRATK Treaty (2024)',
-          desc: 'What mandatory disclosure requirements exist for patent applications based on traditional knowledge?',
+          icon: Globe2,
+          title: 'What must I disclose abroad?',
+          desc: 'New global rules on naming where your plants came from.',
+          ask: 'What does the WIPO GRATK Treaty require me to disclose when filing abroad?',
+        },
+        {
+          icon: Leaf,
+          title: 'Rules on sharing benefits',
+          desc: 'Consent and terms when genetic resources cross borders.',
+          ask: 'Is prior informed consent required to access genetic resources under the Nagoya Protocol?',
+        },
+        {
           icon: Scale,
-        },
-        {
-          title: 'Nagoya Protocol International ABS',
-          desc: 'How do international buyers comply with Prior Informed Consent (PIC) when importing Indian botanical extracts?',
-          icon: Dna,
-        },
-        {
-          title: 'PCT & Madrid Trademark Filing',
-          desc: 'How to protect an Ayurvedic brand and novel herbal process across multiple export markets?',
-          icon: BookOpen,
+          title: 'Can plants be patented at all?',
+          desc: 'What international agreements let countries exclude.',
+          ask: 'Does TRIPS allow countries to exclude plants from patentability?',
         },
       ];
 
   return (
-    <div className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 space-y-4 w-full">
-      <div className="max-w-4xl mx-auto w-full">
+    <div className="w-full flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mx-auto w-full max-w-3xl">
         {messages.length === 0 ? (
-          /* Welcome Splash & Suggested Inquiry Cards */
-          <div className="py-4 sm:py-8 space-y-4 sm:space-y-6 animate-in fade-in max-w-full">
-            {/* Splash Header */}
-            <div className="text-center space-y-2 max-w-xl mx-auto px-2">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>SIH26045 • {jurisdiction.toUpperCase()} REGIME ACTIVE</span>
-              </div>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                AyuSakshi Regulatory Intelligence
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Multilingual, source-grounded assistant for Intellectual Property, ABS compliance, and regulatory classification in Ayurveda.
+          <div className="animate-in fade-in duration-500">
+            {/* Greeting */}
+            <div className="pb-9 pt-8 sm:pt-14">
+              <span className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/10 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/15">
+                <LeafMark className="h-6 w-6" />
+              </span>
+              <h1 className="text-[26px] font-normal leading-snug tracking-tight text-slate-900 dark:text-white sm:text-[32px]">
+                Protect what you have made.
+              </h1>
+              <p className="mt-3 max-w-lg text-[14.5px] leading-relaxed text-slate-500 dark:text-slate-400">
+                Ask about patents, trademarks, biodiversity approvals or product licensing for
+                Ayurvedic products. Every answer points to the law it came from.
               </p>
             </div>
 
-            {/* Quick Starter Cards Grid: 1 col on mobile, 2 cols on tablet/desktop */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 w-full">
-              {starterQuestions.map((q, idx) => {
-                const Icon = q.icon;
+            {/* Suggestions */}
+            <div className="space-y-2">
+              <p className="px-1 pb-1 text-[11px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Start with
+              </p>
+              {suggestions.map((s, idx) => {
+                const Icon = s.icon;
                 return (
                   <button
                     key={idx}
-                    onClick={() => sendMessage(q.desc)}
-                    className="flex items-start space-x-3 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl glass-card hover:border-emerald-500/50 hover:shadow-lg dark:hover:shadow-emerald-950/30 transition-all text-left group w-full min-w-0"
+                    onClick={() => sendMessage(s.ask)}
+                    className="group flex w-full items-center gap-4 rounded-2xl border border-emerald-900/[0.07] bg-white/60 px-4 py-3.5 text-left backdrop-blur-sm transition-all hover:border-emerald-600/25 hover:bg-white/90 dark:border-white/[0.07] dark:bg-white/[0.02] dark:hover:border-emerald-400/20 dark:hover:bg-white/[0.05]"
                   >
-                    <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform flex-shrink-0 mt-0.5">
-                      <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-emerald-500 transition-colors break-words">
-                        {q.title}
-                      </h4>
-                      <p className="text-[11.5px] sm:text-xs text-slate-500 dark:text-slate-400 leading-relaxed break-words">
-                        {q.desc}
-                      </p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 self-center hidden sm:block" />
+                    <Icon
+                      className="h-[18px] w-[18px] flex-shrink-0 text-emerald-600/70 dark:text-emerald-400/70"
+                      strokeWidth={1.6}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[14px] font-medium text-slate-800 dark:text-slate-100">
+                        {s.title}
+                      </span>
+                      <span className="mt-0.5 block truncate text-[12.5px] text-slate-400 dark:text-slate-500">
+                        {s.desc}
+                      </span>
+                    </span>
+                    <ArrowUpRight
+                      className="h-4 w-4 flex-shrink-0 text-slate-300 opacity-0 transition-opacity group-hover:opacity-100 dark:text-slate-600"
+                      strokeWidth={1.75}
+                    />
                   </button>
                 );
               })}
             </div>
           </div>
         ) : (
-          /* Conversation Message Stream */
-          <div className="space-y-4 w-full">
+          <div className="w-full space-y-5">
             {messages.map((msg, index) => (
               <MessageItem key={msg.id || index} message={msg} />
             ))}
 
-            {/* Loading / Thinking Skeleton */}
             {isLoading && (
-              <div className="flex items-start space-x-2.5 max-w-full sm:max-w-[85%] animate-pulse">
-                <div className="w-8 h-8 rounded-xl bg-emerald-600/20 text-emerald-500 flex items-center justify-center flex-shrink-0 mt-1">
-                  <Sparkles className="w-4 h-4 animate-spin" />
-                </div>
-                <div className="flex-1 p-3.5 sm:p-4 rounded-2xl glass-card border border-slate-200 dark:border-darkbg-border space-y-2">
-                  <div className="h-3 w-40 sm:w-48 bg-slate-200 dark:bg-darkbg-border rounded"></div>
-                  <div className="h-2.5 w-full bg-slate-100 dark:bg-darkbg-border/60 rounded"></div>
-                  <div className="h-2.5 w-3/4 bg-slate-100 dark:bg-darkbg-border/60 rounded"></div>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                  <LeafMark className="h-4 w-4" />
+                </span>
+                <div className="flex-1 space-y-2.5 pt-1.5">
+                  <div className="h-2.5 w-32 animate-pulse rounded-full bg-slate-200/80 dark:bg-white/[0.07]" />
+                  <div className="h-2.5 w-full animate-pulse rounded-full bg-slate-100 dark:bg-white/[0.04]" />
+                  <div className="h-2.5 w-4/5 animate-pulse rounded-full bg-slate-100 dark:bg-white/[0.04]" />
                 </div>
               </div>
             )}

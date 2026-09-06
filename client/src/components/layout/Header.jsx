@@ -4,36 +4,17 @@ import { useJurisdiction } from '../../context/JurisdictionContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useChat } from '../../context/ChatContext';
-import {
-  Globe,
-  Sun,
-  Moon,
-  Sparkles,
-  User,
-  LogOut,
-  Languages,
-  BookOpen,
-  Scale,
-  Menu,
-  ChevronDown,
-  PanelLeft,
-  PanelLeftClose,
-} from 'lucide-react';
+import { LeafMark } from './LeafMark';
+import { Sun, Moon, User, LogOut, Menu, ChevronDown, Scale, PanelLeft } from 'lucide-react';
 
 export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { jurisdiction, setIndia, setInternational, isIndia } = useJurisdiction();
+  const { setIndia, setInternational, isIndia } = useJurisdiction();
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, setIsAuthModalOpen, logout } = useAuth();
-  const {
-    setActiveModal,
-    toggleMobileSidebar,
-    toggleDesktopSidebar,
-    isDesktopSidebarPinned,
-    isMobileSidebarOpen,
-  } = useChat();
+  const { setActiveModal, toggleMobileSidebar, toggleDesktopSidebar, isMobileSidebarOpen } = useChat();
 
   const [selectedLang, setSelectedLang] = useState('en');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -41,7 +22,6 @@ export const Header = () => {
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
 
-  // Close dropdown on outside click, touch, or Escape
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (
@@ -54,18 +34,15 @@ export const Header = () => {
         setIsUserMenuOpen(false);
       }
     };
-
     const handleKeyDown = (event) => {
       if (event.key === 'Escape' && isUserMenuOpen) {
         setIsUserMenuOpen(false);
         buttonRef.current?.focus();
       }
     };
-
     document.addEventListener('mousedown', handleOutsideClick);
     document.addEventListener('touchstart', handleOutsideClick);
     document.addEventListener('keydown', handleKeyDown);
-
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
       document.removeEventListener('touchstart', handleOutsideClick);
@@ -73,228 +50,168 @@ export const Header = () => {
     };
   }, [isUserMenuOpen]);
 
-  // Close dropdown on route change
   useEffect(() => {
     setIsUserMenuOpen(false);
   }, [location.pathname]);
 
   const languages = [
     { code: 'en', label: 'English' },
-    { code: 'hi', label: 'हिन्दी (Hindi)' },
-    { code: 'sa', label: 'संस्कृतम् (Sanskrit)' },
-    { code: 'ta', label: 'தமிழ் (Tamil)' },
-    { code: 'te', label: 'తెలుగు (Telugu)' },
-    { code: 'mr', label: 'मराठी (Marathi)' },
+    { code: 'hi', label: 'हिन्दी' },
+    { code: 'sa', label: 'संस्कृतम्' },
+    { code: 'ta', label: 'தமிழ்' },
+    { code: 'te', label: 'తెలుగు' },
+    { code: 'mr', label: 'मराठी' },
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-slate-200 dark:border-darkbg-border bg-white/90 dark:bg-darkbg-950/90 backdrop-blur-md transition-colors">
-      {/* Main Navigation Bar */}
-      <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 h-14 sm:h-16 gap-2">
-        {/* Left: Sidebar Toggles (Mobile Hamburger & Desktop Collapse) & Brand Logo */}
-        <div className="flex items-center space-x-1.5 sm:space-x-2.5 min-w-0">
-          {/* Mobile / Tablet Drawer Toggle Hamburger */}
+    <header className="sticky top-0 z-30 w-full border-b border-emerald-900/[0.06] dark:border-white/[0.06] bg-white/70 dark:bg-[#060d10]/70 backdrop-blur-xl transition-colors">
+      <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        {/* Left: menu + wordmark */}
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={toggleMobileSidebar}
             aria-label="Toggle navigation menu"
             aria-expanded={isMobileSidebarOpen}
-            className="lg:hidden p-1.5 -ml-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-darkbg-card transition-colors flex-shrink-0"
+            className="-ml-1 rounded-lg p-2 text-slate-500 transition-colors hover:bg-emerald-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white lg:hidden"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="h-5 w-5" />
           </button>
 
-          {/* Desktop Responsive Sidebar Toggle */}
           <button
             type="button"
             onClick={toggleDesktopSidebar}
-            aria-label={isDesktopSidebarPinned ? 'Collapse sidebar' : 'Expand sidebar'}
-            aria-expanded={isDesktopSidebarPinned}
-            title={isDesktopSidebarPinned ? 'Collapse sidebar' : 'Expand sidebar'}
-            className="hidden lg:flex p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-darkbg-card border border-transparent hover:border-slate-200 dark:hover:border-darkbg-border transition-colors flex-shrink-0"
+            aria-label="Toggle sidebar"
+            className="hidden rounded-lg p-2 text-slate-400 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-white/5 dark:hover:text-emerald-300 lg:block"
           >
-            {isDesktopSidebarPinned ? (
-              <PanelLeftClose className="w-4 h-4 text-emerald-500" />
-            ) : (
-              <PanelLeft className="w-4 h-4 text-slate-400 hover:text-emerald-400" />
-            )}
+            <PanelLeft className="h-4 w-4" />
           </button>
 
-          {/* Logo & Brand Name */}
-          <div
+          <button
             onClick={() => navigate('/')}
-            className="flex items-center space-x-2 sm:space-x-2.5 cursor-pointer select-none min-w-0"
+            className="flex min-w-0 select-none items-center gap-2.5 text-left"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-400 p-0.5 shadow-sm flex items-center justify-center flex-shrink-0">
-              <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
-              </div>
-            </div>
-            
-            <div className="min-w-0">
-              <div className="flex items-center space-x-1.5">
-                <span className="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white truncate">
-                  AyuSakshi
-                </span>
-                <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 whitespace-nowrap">
-                  IP SHAKTHI
-                </span>
-              </div>
-              <p className="hidden md:block text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide truncate">
-                Ayurveda Intellectual Property & Regulatory Assistant
-              </p>
-            </div>
-          </div>
+            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/10 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/15">
+              <LeafMark className="h-5 w-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-[17px] font-medium leading-tight tracking-tight text-slate-900 dark:text-white">
+                AyuSakshi
+              </span>
+              <span className="hidden truncate text-[11px] font-normal leading-tight text-slate-400 dark:text-slate-500 sm:block">
+                Ayurveda · IP · Compliance
+              </span>
+            </span>
+          </button>
         </div>
 
-        {/* Center: Jurisdiction Switcher */}
-        <div className="flex items-center bg-slate-100 dark:bg-darkbg-card p-0.5 sm:p-1 rounded-xl border border-slate-200 dark:border-darkbg-border flex-shrink-0">
+        {/* Centre: where the question applies */}
+        <div className="flex flex-shrink-0 items-center rounded-full bg-slate-100/80 p-0.5 dark:bg-white/[0.06]">
           <button
             onClick={setIndia}
-            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+            className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all sm:px-4 ${
               isIndia
-                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white text-emerald-800 shadow-sm dark:bg-emerald-500/15 dark:text-emerald-200'
+                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            <span>India</span>
-            <span className="text-xs sm:text-sm">🇮🇳</span>
+            India
           </button>
           <button
             onClick={setInternational}
-            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+            className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all sm:px-4 ${
               !isIndia
-                ? 'bg-cyan-600 text-white shadow-sm shadow-cyan-600/30'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white text-teal-800 shadow-sm dark:bg-teal-500/15 dark:text-teal-200'
+                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            <span className="hidden xs:inline sm:inline">International</span>
-            <span className="xs:hidden sm:hidden">Intl</span>
-            <span className="text-xs sm:text-sm">🌍</span>
+            International
           </button>
         </div>
 
-        {/* Right: Action Controls & User Menu */}
-        <div className="flex items-center space-x-1.5 sm:space-x-2.5 flex-shrink-0">
-          {/* Language Selector */}
-          <div className="relative hidden md:flex items-center">
-            <select
-              value={selectedLang}
-              onChange={(e) => setSelectedLang(e.target.value)}
-              className="appearance-none bg-slate-100 dark:bg-darkbg-card text-xs font-medium text-slate-700 dark:text-slate-300 pl-7 pr-6 py-1.5 rounded-lg border border-slate-200 dark:border-darkbg-border focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
-            >
-              {languages.map((l) => (
-                <option key={l.code} value={l.code} className="bg-white dark:bg-darkbg-card text-slate-800 dark:text-slate-200">
-                  {l.label}
-                </option>
-              ))}
-            </select>
-            <Languages className="w-3.5 h-3.5 text-slate-500 absolute left-2 pointer-events-none" />
-          </div>
+        {/* Right: language, theme, account */}
+        <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
+          <select
+            value={selectedLang}
+            onChange={(e) => setSelectedLang(e.target.value)}
+            aria-label="Language"
+            className="hidden cursor-pointer appearance-none rounded-lg bg-transparent px-2 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400 dark:text-slate-300 dark:hover:bg-white/5 md:block"
+          >
+            {languages.map((l) => (
+              <option key={l.code} value={l.code} className="bg-white text-slate-800 dark:bg-[#0e181e] dark:text-slate-200">
+                {l.label}
+              </option>
+            ))}
+          </select>
 
-          {/* Theme Toggler */}
           <button
             onClick={toggleTheme}
-            aria-label="Toggle Theme"
-            className="p-1.5 sm:p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-darkbg-card border border-slate-200 dark:border-darkbg-border transition-colors"
+            aria-label="Toggle theme"
+            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/5 dark:hover:text-slate-200"
           >
-            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
+            {isDark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
           </button>
 
-          {/* Knowledge Corpus Vault Quick Link */}
-          <button
-            onClick={() => setActiveModal('admin')}
-            title="Knowledge Corpus Vault"
-            className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-card border border-slate-200 dark:border-darkbg-border transition-colors"
-          >
-            <BookOpen className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Corpus</span>
-          </button>
-
-          {/* Auth Button / User Profile Dropdown */}
           {isAuthenticated ? (
             <div className="relative">
-              {/* User Toggle Button */}
               <button
                 ref={buttonRef}
                 onClick={() => setIsUserMenuOpen((prev) => !prev)}
                 aria-haspopup="menu"
                 aria-expanded={isUserMenuOpen}
-                aria-label="User account menu"
-                className={`flex items-center space-x-2 pl-2 pr-2.5 py-1 rounded-xl bg-slate-100 dark:bg-darkbg-card border transition-all ${
-                  isUserMenuOpen
-                    ? 'border-emerald-500 ring-2 ring-emerald-500/20'
-                    : 'border-slate-200 dark:border-darkbg-border hover:border-emerald-500/50'
-                }`}
+                aria-label="Account menu"
+                className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-slate-100 dark:hover:bg-white/5"
               >
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-[13px] font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
                   {user?.name ? user.name[0].toUpperCase() : 'U'}
-                </div>
-                <div className="text-left hidden sm:block max-w-[110px]">
-                  <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-tight truncate">
-                    {user?.name || 'Test1'}
-                  </div>
-                  <div className="text-[10px] text-emerald-600 dark:text-emerald-400 capitalize truncate">
-                    {user?.role || 'User'}
-                  </div>
-                </div>
+                </span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
-                    isUserMenuOpen ? 'rotate-180 text-emerald-500' : ''
-                  }`}
+                  className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}
                 />
               </button>
 
-              {/* Accessible User Menu Dropdown */}
               {isUserMenuOpen && (
                 <div
                   ref={menuRef}
                   role="menu"
-                  aria-label="User profile options"
-                  className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border shadow-2xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 overflow-hidden"
+                  className="animate-in fade-in slide-in-from-top-1 absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-2xl border border-slate-200/80 bg-white py-1.5 shadow-xl shadow-emerald-950/[0.06] dark:border-white/10 dark:bg-[#0e181e] dark:shadow-black/40"
                 >
-                  {/* User Email & Name Header */}
-                  <div className="px-3.5 py-2.5 border-b border-slate-100 dark:border-darkbg-border bg-slate-50/50 dark:bg-darkbg-950/40">
-                    <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                      {user?.name || 'Test1'}
+                  <div className="border-b border-slate-100 px-4 py-3 dark:border-white/[0.06]">
+                    <div className="truncate text-sm font-medium text-slate-900 dark:text-white">
+                      {user?.name || 'Account'}
                     </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5" title={user?.email}>
-                      {user?.email || 'test@example.com'}
+                    <div className="mt-0.5 truncate text-xs text-slate-400" title={user?.email}>
+                      {user?.email}
                     </div>
                   </div>
 
-                  {/* Profile Item */}
-                  <div className="py-1">
+                  <button
+                    role="menuitem"
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      navigate('/profile');
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13px] text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/5"
+                  >
+                    <User className="h-4 w-4 text-slate-400" />
+                    Profile
+                  </button>
+
+                  {['facilitator', 'admin'].includes(user?.role) && (
                     <button
                       role="menuitem"
                       onClick={() => {
                         setIsUserMenuOpen(false);
-                        navigate('/profile');
+                        setActiveModal('facilitator');
                       }}
-                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 flex items-center space-x-2.5 transition-colors group"
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13px] text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/5"
                     >
-                      <User className="w-3.5 h-3.5 text-emerald-500 group-hover:scale-110 transition-transform flex-shrink-0" />
-                      <span>Profile</span>
+                      <Scale className="h-4 w-4 text-slate-400" />
+                      Review queue
                     </button>
+                  )}
 
-                    {/* Facilitator Queue for privileged roles */}
-                    {['facilitator', 'admin'].includes(user?.role) && (
-                      <button
-                        role="menuitem"
-                        onClick={() => {
-                          setIsUserMenuOpen(false);
-                          setActiveModal('facilitator');
-                        }}
-                        className="w-full text-left px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 flex items-center space-x-2.5 transition-colors group"
-                      >
-                        <Scale className="w-3.5 h-3.5 text-teal-500 group-hover:scale-110 transition-transform flex-shrink-0" />
-                        <span>Facilitator Queue</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Logout Button */}
-                  <div className="border-t border-slate-100 dark:border-darkbg-border pt-1">
+                  <div className="mt-1 border-t border-slate-100 pt-1 dark:border-white/[0.06]">
                     <button
                       role="menuitem"
                       onClick={() => {
@@ -302,10 +219,10 @@ export const Header = () => {
                         logout();
                         navigate('/');
                       }}
-                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center space-x-2.5 transition-colors group"
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13px] text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20"
                     >
-                      <LogOut className="w-3.5 h-3.5 text-rose-500 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
-                      <span>Logout</span>
+                      <LogOut className="h-4 w-4" />
+                      Sign out
                     </button>
                   </div>
                 </div>
@@ -314,10 +231,9 @@ export const Header = () => {
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}
-              className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-md shadow-emerald-600/20"
+              className="rounded-full bg-emerald-700 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
             >
-              <User className="w-3.5 h-3.5" />
-              <span>Sign In</span>
+              Sign in
             </button>
           )}
         </div>
