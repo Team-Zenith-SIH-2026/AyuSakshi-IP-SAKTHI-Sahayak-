@@ -1,11 +1,7 @@
-import asyncio
-import os
-import json
 import logging
-import re
-import httpx
 from typing import Dict, Any, List, Optional, Tuple
 from app.config import settings
+from app.llm.providers import call_llm
 from app.memory.conversation_memory import ConversationMemory
 from app.multilingual.bhashini_service import BhashiniService
 from app.agents.formulation_classifier import FormulationClassifier
@@ -204,106 +200,12 @@ class RAGOrchestrator:
         }
 
     # ---------------------------------------------------------------------
-    # LLM providers
+    # Answer synthesis
+    #
+    # The LLM provider chain lives in app.llm.providers so that the RAG
+    # pipeline and the translation service share one implementation rather
+    # than each carrying its own copy of the Groq/OpenAI/Ollama logic.
     # ---------------------------------------------------------------------
-
-    @staticmethod
-    async def _call_groq(system_prompt: str, user_prompt: str) -> Optional[str]:
-        """
-        Groq chat completion with retry on 429.
-
-        The free tier caps tokens per minute, and a batch evaluation run trips it
-        easily. Groq reports how long to wait, which is usually under 3 seconds,
-        so a short backoff turns a spurious failure into a normal response
-        instead of silently dropping through to the template fallback.
-        """
-        if not settings.GROQ_API_KEY:
-            return None
-
-        payload = {
-            "model": settings.GROQ_MODEL,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            "temperature": 0.2
-        }
-        headers = {"Authorization": f"Bearer {settings.GROQ_API_KEY}", "Content-Type": "application/json"}
-
-        async with httpx.AsyncClient(timeout=45.0) as client:
-            for attempt in range(4):
-                resp = await client.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers=headers, json=payload
-                )
-                if resp.status_code == 200:
-                    return resp.json()["choices"][0]["message"]["content"]
-
-                if resp.status_code == 429:
-                    wait = 2.0 * (attempt + 1)
-                    retry_after = resp.headers.get("retry-after")
-                    if retry_after:
-                        try:
-                            wait = min(float(retry_after) + 0.5, 20.0)
-                        except ValueError:
-                            pass
-                    else:
-                        m = re.search(r'try again in ([0-9.]+)(ms|s)', resp.text)
-                        if m:
-                            secs = float(m.group(1)) / (1000.0 if m.group(2) == "ms" else 1.0)
-                            wait = min(secs + 0.5, 20.0)
-                    log.warning("[LLM groq] rate limited, retrying in %.2fs (attempt %d/4)", wait, attempt + 1)
-                    await asyncio.sleep(wait)
-                    continue
-
-                log.error("[LLM groq] HTTP %s: %s", resp.status_code, resp.text[:300])
-                return None
-
-        log.error("[LLM groq] exhausted retries against rate limit")
-        return None
-
-    @staticmethod
-    async def _call_openai(system_prompt: str, user_prompt: str) -> Optional[str]:
-        key = settings.OPENAI_API_KEY
-        if not key or key.startswith("mock") or key.startswith("your_"):
-            return None
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.post(
-                "https://api.openai.com/v1/chat/completions",
-                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-                json={
-                    "model": settings.OPENAI_MODEL,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    "temperature": 0.2
-                }
-            )
-            if resp.status_code == 200:
-                return resp.json()["choices"][0]["message"]["content"]
-            log.error("[LLM openai] HTTP %s: %s", resp.status_code, resp.text[:300])
-            return None
-
-    @staticmethod
-    async def _call_ollama(system_prompt: str, user_prompt: str) -> Optional[str]:
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            resp = await client.post(
-                f"{settings.OLLAMA_BASE_URL.rstrip('/')}/api/chat",
-                json={
-                    "model": settings.OLLAMA_MODEL,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    "stream": False,
-                    "options": {"temperature": 0.2}
-                }
-            )
-            if resp.status_code == 200:
-                return resp.json().get("message", {}).get("content")
-            log.error("[LLM ollama] HTTP %s: %s", resp.status_code, resp.text[:300])
-            return None
 
     @classmethod
     async def _synthesize_grounded_answer(
@@ -368,22 +270,9 @@ class RAGOrchestrator:
             f"Answer the query using only the evidence above."
         )
 
-        # Try the configured provider first, then the others.
-        order = [settings.LLM_PROVIDER] + [p for p in ("groq", "openai", "ollama") if p != settings.LLM_PROVIDER]
-        callers = {"groq": cls._call_groq, "openai": cls._call_openai, "ollama": cls._call_ollama}
-
-        for provider in order:
-            caller = callers.get(provider)
-            if not caller:
-                continue
-            try:
-                text = await caller(system_prompt, user_prompt)
-                if text and text.strip():
-                    log.info("[LLM OK] provider=%s produced a grounded answer (%d chars)", provider, len(text))
-                    return text, f"llm:{provider}"
-                log.warning("[LLM SKIP] provider=%s unavailable or returned nothing", provider)
-            except Exception as e:
-                log.warning("[LLM FAIL] provider=%s error=%s", provider, e)
+        text, provider = await call_llm(system_prompt, user_prompt)
+        if text:
+            return text, f"llm:{provider}"
 
         # ------------------------------------------------------------------
         # No LLM reachable. Emit the deterministic template, but label it, so a

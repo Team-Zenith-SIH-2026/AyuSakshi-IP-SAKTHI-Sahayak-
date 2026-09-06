@@ -7,6 +7,7 @@ import { ChatProvider } from './context/ChatContext';
 
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
+import { DisclaimerBar } from './components/layout/DisclaimerBar';
 import { ChatArea } from './components/chat/ChatArea';
 import { QuickActionBar } from './components/chat/QuickActionBar';
 import { SourceDrawer } from './components/chat/SourceDrawer';
@@ -35,6 +36,9 @@ function AssistantLayout() {
           <QuickActionBar />
         </main>
       </div>
+
+      {/* Always visible, not dismissible. Required by the problem statement. */}
+      <DisclaimerBar />
 
       {/* Global Modals & Overlay Drawers */}
       <SourceDrawer />

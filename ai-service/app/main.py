@@ -10,6 +10,7 @@ from app.agents import classification_tree
 from app.multilingual.bhashini_service import BhashiniService
 from app.core.pdf_extractor import PDFExtractor
 from app.core.chunker import LegalAwareChunker
+from app.core.ingestion import ingest_document_version
 from app.rag.embeddings import generate_embedding
 from app.rag.hybrid_retriever import register_in_memory_chunk
 from app.seed_knowledge import seed_database
@@ -69,7 +70,9 @@ class TranslateRequest(BaseModel):
     target_language: Optional[str] = "en"
 
 class DocumentIngestRequest(BaseModel):
-    document_id: str
+    # Optional: the backend supplies one, but direct ingestion derives a stable
+    # id from the document title and jurisdiction instead.
+    document_id: Optional[str] = None
     version_tag: str
     file_path: Optional[str] = None
     title: str
@@ -171,33 +174,34 @@ async def ingest_document(request: DocumentIngestRequest):
             
         pages = PDFExtractor.extract_document(request.file_path)
         chunks = LegalAwareChunker.chunk_document(pages)
-        
-        # Save chunks to DB/memory
-        for chunk in chunks:
-            chunk_dict = {
-                "id": str(uuid.uuid4()),
-                "chunk_index": chunk["chunk_index"],
-                "section_identifier": chunk["section_identifier"],
-                "title": chunk["title"],
-                "doc_title": request.title,
-                "authority": request.authority,
-                "jurisdiction": request.jurisdiction,
-                "category": request.category,
-                "document_type": request.document_type,
-                "source_url": request.source_url,
-                "version_tag": request.version_tag,
-                "content": chunk["content"],
-                "embedding": generate_embedding(chunk["content"])
+
+        if not chunks:
+            return {
+                "status": "error",
+                "message": (
+                    "No text could be extracted from this file. If it is a scanned PDF it has no "
+                    "text layer and needs OCR before ingestion."
+                ),
+                "pages_extracted": len(pages),
+                "chunks_count": 0,
+                "persisted_to_postgres": False,
             }
-            register_in_memory_chunk(chunk_dict)
-            
-        return {
-            "status": "success",
-            "document_id": request.document_id,
-            "version_tag": request.version_tag,
-            "pages_extracted": len(pages),
-            "chunks_count": len(chunks)
-        }
+
+        result = ingest_document_version(
+            title=request.title,
+            authority=request.authority,
+            document_type=request.document_type,
+            jurisdiction=request.jurisdiction,
+            category=request.category,
+            source_url=request.source_url or "",
+            version_tag=request.version_tag,
+            chunks=chunks,
+            document_id=request.document_id,
+            raw_text_length=sum(len(p.get("text", "")) for p in pages),
+        )
+        result["version_tag"] = request.version_tag
+        result["pages_extracted"] = len(pages)
+        return result
     except Exception as e:
         print(f"[Document Ingest Error]: {e}")
         raise HTTPException(status_code=500, detail=f"Ingestion failed: {str(e)}")
