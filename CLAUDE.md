@@ -90,6 +90,15 @@ Today is 5 September. Three days to the PPT.
 
 # 3. CURRENT STATE OF THE CODEBASE
 
+> **STATUS UPDATE, 6 September 2026.** Defects 1, 2, 3, 5 and 6 below are FIXED.
+> Defect 4 (no real corpus) is partly fixed: the international corpus is now 16
+> verbatim chunks in `knowledge-base/corpus/international.json`; the Indian corpus
+> is still paraphrased and awaits the downloads listed in
+> `knowledge-base/DOWNLOAD_LIST.md`. Corpus totals are **9 documents / 30 chunks**,
+> not the ~10 / 22 estimated below. Measured results are in `walkthrough.md`.
+> The defect descriptions are kept as written because they explain why the code
+> looks the way it does now.
+
 Roughly 107 files, ~8,700 lines. Built fast, likely AI-scaffolded. **Breadth is well ahead of depth: many features exist as files that do not do what their filename says.** Do not assume a feature works because the file exists.
 
 ## Stack as built

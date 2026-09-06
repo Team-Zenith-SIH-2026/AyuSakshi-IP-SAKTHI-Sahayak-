@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
+    # Default 0. In a legal domain there is no value in sampling variety, and a
+    # non-zero temperature made the benchmark move by a case or two between runs,
+    # which makes measured results hard to quote honestly.
+    LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0"))
+
     # Ollama gives the on-premise story: nothing leaves the machine.
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.1:8b")

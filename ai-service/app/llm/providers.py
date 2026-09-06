@@ -38,7 +38,7 @@ async def _call_groq(system_prompt: str, user_prompt: str, timeout: float = 45.0
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        "temperature": 0.2,
+        "temperature": settings.LLM_TEMPERATURE,
     }
     headers = {
         "Authorization": f"Bearer {settings.GROQ_API_KEY}",
@@ -92,7 +92,7 @@ async def _call_openai(system_prompt: str, user_prompt: str, timeout: float = 45
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
-                "temperature": 0.2,
+                "temperature": settings.LLM_TEMPERATURE,
             },
         )
         if resp.status_code == 200:
@@ -112,7 +112,7 @@ async def _call_ollama(system_prompt: str, user_prompt: str, timeout: float = 12
                     {"role": "user", "content": user_prompt},
                 ],
                 "stream": False,
-                "options": {"temperature": 0.2},
+                "options": {"temperature": settings.LLM_TEMPERATURE},
             },
         )
         if resp.status_code == 200:

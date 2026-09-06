@@ -35,7 +35,7 @@ That directory is already mounted into the ai-service container at
 | Drugs and Magic Remedies (Objectionable Advertisements) Act, 1954 | Completely absent from the corpus. Brief question 6 ("Can I advertise my product as a cure for diabetes?") abstains today purely because of this. Need Section 3 and the Schedule | [195421.pdf](https://www.indiacode.nic.in/bitstream/123456789/1412/1/195421.pdf) |
 | Drugs and Cosmetics Act, 1940 | The classification backbone. Need Chapter IVA, the ASU drug definition, and above all the **First Schedule** list of authoritative texts, which the brief calls the entry point to the whole classification tree | [a1940-23.pdf](https://www.indiacode.nic.in/bitstream/123456789/2409/1/a1940-23.pdf) or [the_drugs_and_cosmetics_act,_1940.pdf](https://www.indiacode.nic.in/bitstream/123456789/18562/1/the_drugs_and_cosmetics_act,_1940.pdf) — compare the two and take the one with the later "as on" date |
 | Biological Diversity Act, 2002 | The ABS pillar. Need Sections 3, 4, 6, 7, 19 to 21 | [the_biological_diversity_act,_2002.pdf](https://www.indiacode.nic.in/bitstream/123456789/21545/1/the_biological_diversity_act,_2002.pdf) |
-| Biological Diversity (Amendment) Act, 2023 | **Separate document.** The 2023 exemptions for codified traditional knowledge and registered AYUSH practitioners are the single most valuable thing in the corpus and are not in the 2002 act | Search India Code for "Biological Diversity (Amendment) Act, 2023" |
+| Biological Diversity (Amendment) Act, 2023 | **Separate document.** Act No. 10 of 2023, in force 1 April 2024. The exemptions for codified traditional knowledge and registered AYUSH practitioners are the single most valuable thing in the corpus | [247815.pdf](https://egazette.gov.in/WritereadData/2023/247815.pdf) (eGazette) |
 | Patents Act, 1970 | Sections 3(d), 3(e), 3(p), 2(1)(j), 10, 25, 64 | [A1970-39.pdf](https://www.indiacode.nic.in/bitstream/123456789/1392/1/A1970-39.pdf) — title page says "As on the 1st Oct, 2025" |
 
 ## Priority 2
@@ -49,13 +49,13 @@ That directory is already mounted into the ai-service container at
 
 ## Priority 3 — completeness, only if time allows
 
-| Act | Why |
-|---|---|
-| Copyright Act, 1957 | Absent. Brief section 3.9. Explains what copyright can and cannot protect here |
-| Designs Act, 2000 | Absent. Brief section 3.10. Packaging and container protection |
-| Protection of Plant Varieties and Farmers' Rights Act, 2001 | Currently one paraphrased chunk |
-| Biological Diversity Rules, 2024 | The operative rules replacing the 2004 rules |
-| Drugs and Cosmetics Rules, 1945 | Rule 158-B licensing evidence requirements, Schedule T GMP |
+| Act | Why | Link |
+|---|---|---|
+| Copyright Act, 1957 | Absent. Brief section 3.9. Explains what copyright can and cannot protect here | [A195714.pdf](https://www.indiacode.nic.in/bitstream/123456789/1367/1/A195714.pdf) as on 15 June 2026 |
+| Designs Act, 2000 | Absent. Brief section 3.10. Packaging and container protection | [200016.pdf](https://www.indiacode.nic.in/bitstream/123456789/1917/1/200016.pdf) |
+| Protection of Plant Varieties and Farmers' Rights Act, 2001 | Currently one paraphrased chunk | [A2001-53.pdf](https://www.indiacode.nic.in/bitstream/123456789/1909/1/A2001-53.pdf) |
+| Biological Diversity Rules, 2024 | The operative rules replacing the 2004 rules | nbaindia.org |
+| Drugs and Cosmetics Rules, 1945 | Rule 158-B licensing evidence requirements, Schedule T GMP | India Code, filed as rules under the 1940 Act |
 
 ## What happens once the files land
 

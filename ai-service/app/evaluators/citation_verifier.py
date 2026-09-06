@@ -105,11 +105,19 @@ class CitationVerifier:
         for chunk in retrieved_evidence:
             sec = chunk.get("section_identifier", "") or ""
             content = chunk.get("content", "") or ""
-            # A bare section identifier such as "Section 3(p)" plus any reference
-            # quoted inside the statutory text itself, which is equally legitimate.
-            parsed = _parse_ref(sec.split(None, 1)[-1] if sec else "")
-            if parsed:
-                evidence_refs.add(parsed)
+            # A chunk is sometimes labelled with more than one provision, e.g.
+            # "Section 3(a) & 33EEB" or "Section 7 & 2023 Proviso". Parsing the
+            # whole label as a single reference made a correct citation of the
+            # second provision look invented, so each component is registered
+            # separately.
+            for part in re.split(r'\s*(?:&|,|\band\b)\s*', sec):
+                part = re.sub(
+                    r'^\s*(?:Section|Sec\.?|Rule|Article|Art\.?|Regulation|Reg\.?)\s*',
+                    '', part, flags=re.IGNORECASE
+                )
+                parsed = _parse_ref(part)
+                if parsed:
+                    evidence_refs.add(parsed)
             for m in CITATION_PATTERN.finditer(sec + " " + content):
                 p = _parse_ref(m.group(1))
                 if p:
@@ -145,8 +153,16 @@ class CitationVerifier:
             # A chunk is cited if the answer names its provision, names its
             # document, or demonstrably reproduces its substance.
             is_cited = False
-            chunk_ref = _parse_ref(sec_id.split(None, 1)[-1] if sec_id else "")
-            if chunk_ref and any(_is_grounded_ref(r, {chunk_ref}) for r in cited_refs):
+            chunk_refs = set()
+            for part in re.split(r'\s*(?:&|,|\band\b)\s*', sec_id or ""):
+                part = re.sub(
+                    r'^\s*(?:Section|Sec\.?|Rule|Article|Art\.?|Regulation|Reg\.?)\s*',
+                    '', part, flags=re.IGNORECASE
+                )
+                p = _parse_ref(part)
+                if p:
+                    chunk_refs.add(p)
+            if chunk_refs and any(_is_grounded_ref(r, chunk_refs) for r in cited_refs):
                 is_cited = True
             if not is_cited and sec_id and sec_id.lower() in gen_lower:
                 is_cited = True

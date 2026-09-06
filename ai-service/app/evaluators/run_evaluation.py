@@ -30,7 +30,7 @@ from app.seed_knowledge import seed_database
 
 # Groq's free tier caps tokens per minute. The orchestrator retries on 429, but
 # pacing the run keeps the benchmark from spending most of its time backing off.
-PACE_SECONDS = float(os.getenv("EVAL_PACE_SECONDS", "3"))
+PACE_SECONDS = float(os.getenv("EVAL_PACE_SECONDS", "8"))
 
 
 def _citation_blob(citations):

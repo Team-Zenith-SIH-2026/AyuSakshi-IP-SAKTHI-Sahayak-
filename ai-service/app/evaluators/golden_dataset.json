@@ -88,9 +88,8 @@
     "jurisdiction": "india",
     "expected_category": "Ayurvedic Formulation / Legal Query",
     "expected_statutes": ["GI of Goods Act 1999"],
-    "expected_abstain": true,
-    "abstain_reason": "corpus_gap",
-    "corpus_gap_note": "Only a single paraphrased GI chunk exists. Flip to false once the GI Act 1999 definition, prohibited grounds and authorised-user provisions are ingested verbatim.",
+    "expected_abstain": false,
+    "corpus_gap_note": "The corpus can address this only from a single paraphrased GI chunk, so the answer is thin. Expected to improve, not to change verdict, once the GI Act 1999 definition, prohibited grounds and authorised-user provisions are ingested verbatim. This case was briefly marked expected_abstain:true, which was an error: the expectation had been set from observed behaviour rather than from whether the question is answerable.",
     "concepts": ["GI definition", "authorised user", "collective right"]
   },
   {

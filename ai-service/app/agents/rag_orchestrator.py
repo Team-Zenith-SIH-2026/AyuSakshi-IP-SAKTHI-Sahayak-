@@ -124,6 +124,37 @@ class RAGOrchestrator:
             "detail": f"Answer synthesised via: {synthesis_path}."
         })
 
+        # 9b. The static template is not grounded in the retrieved evidence. It is
+        # orientation text for offline development, and it must never be returned
+        # as though it were an answer.
+        #
+        # Marking it loudly was not enough. Benchmarking caught the template
+        # answering an out-of-scope question at exactly the abstention threshold:
+        # its boilerplate section references happened to match retrieved chunks,
+        # so citation verification passed it and it was delivered as a grounded
+        # answer. Abstain instead, and carry the template separately.
+        if not synthesis_path.startswith("llm:"):
+            log.error(
+                "[ABSTAIN] reason=llm_unavailable path=%s query=%r "
+                "(no provider responded; refusing to return template text as an answer)",
+                synthesis_path, reformulated_query[:80]
+            )
+            thinking_trace.append({
+                "step": "Safe Abstention Gate",
+                "detail": (
+                    "No language model provider was reachable, so no answer could be generated from the "
+                    "retrieved evidence. Withholding rather than returning ungrounded template text."
+                )
+            })
+            abstain_resp = CitationVerifier.get_abstention_response(
+                jurisdiction=jurisdiction, reason="llm_unavailable"
+            )
+            abstain_resp["thinking_trace"] = thinking_trace
+            abstain_resp["classification"] = classification_result
+            abstain_resp["synthesis_path"] = synthesis_path
+            abstain_resp["template_orientation"] = raw_answer
+            return abstain_resp
+
         # 10. Citation Verification & Confidence Scoring
         citations, conf_score, conf_level, fabricated = CitationVerifier.verify_and_extract_citations(
             generated_text=raw_answer,

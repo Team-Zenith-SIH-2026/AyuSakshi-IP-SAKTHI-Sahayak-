@@ -1,15 +1,15 @@
 {
-  "run_at": "2026-09-06T11:15:20.211682+00:00",
+  "run_at": "2026-09-06T13:19:54.183668+00:00",
   "llm_provider": "groq",
   "llm_model": "openai/gpt-oss-120b",
   "abstain_threshold": 0.5,
   "case_count": 25,
   "metrics": {
-    "answer_grounding_pct": 100.0,
-    "citation_correctness_pct": 86.7,
-    "abstention_accuracy_pct": 96.0,
-    "false_answers": 0,
-    "false_refusals": 1,
+    "answer_grounding_pct": 93.8,
+    "citation_correctness_pct": 85.7,
+    "abstention_accuracy_pct": 84.0,
+    "false_answers": 2,
+    "false_refusals": 2,
     "fabricated_authority_delivered": 0,
     "fabricated_authority_detected_and_blocked": 3
   },
@@ -24,14 +24,14 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 4,
+      "citations_found": 5,
       "expected_statutes": [
         "Section 3(p)"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.7989,
+      "confidence_score": 0.7919,
       "synthesis_path": "llm:groq"
     },
     {
@@ -75,7 +75,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.8882,
+      "confidence_score": 0.8787,
       "synthesis_path": "llm:groq"
     },
     {
@@ -108,14 +108,14 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 5,
+      "citations_found": 2,
       "expected_statutes": [
         "Rule 158-B"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.6988,
+      "confidence_score": 0.6515,
       "synthesis_path": "llm:groq"
     },
     {
@@ -188,21 +188,19 @@
       "jurisdiction": "india",
       "expected_abstain": true,
       "abstain_reason": "corpus_gap",
-      "did_abstain": true,
-      "abstention_ok": true,
+      "did_abstain": false,
+      "abstention_ok": false,
       "false_refusal": false,
-      "false_answer": false,
-      "citations_found": 0,
+      "false_answer": true,
+      "citations_found": 3,
       "expected_statutes": [
         "GI of Goods Act 1999"
       ],
-      "missing_statutes": [
-        "GI of Goods Act 1999"
-      ],
-      "citation_ok": false,
+      "missing_statutes": [],
+      "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.0,
-      "synthesis_path": "abstained"
+      "confidence_score": 0.5286,
+      "synthesis_path": "llm:groq"
     },
     {
       "id": "brief_10",
@@ -221,7 +219,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.5434,
+      "confidence_score": 0.5383,
       "synthesis_path": "llm:groq"
     },
     {
@@ -243,7 +241,7 @@
       ],
       "citation_ok": false,
       "fabricated": [],
-      "confidence_score": 0.5446,
+      "confidence_score": 0.5482,
       "synthesis_path": "llm:groq"
     },
     {
@@ -274,14 +272,14 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 3,
+      "citations_found": 4,
       "expected_statutes": [
         "Article 17"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.5568,
+      "confidence_score": 0.5487,
       "synthesis_path": "llm:groq"
     },
     {
@@ -301,7 +299,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.5514,
+      "confidence_score": 0.5393,
       "synthesis_path": "llm:groq"
     },
     {
@@ -341,7 +339,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.9573,
+      "confidence_score": 0.9551,
       "synthesis_path": "llm:groq"
     },
     {
@@ -361,7 +359,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.8135,
+      "confidence_score": 0.8118,
       "synthesis_path": "llm:groq"
     },
     {
@@ -381,7 +379,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.798,
+      "confidence_score": 0.8225,
       "synthesis_path": "llm:groq"
     },
     {
@@ -390,19 +388,23 @@
       "jurisdiction": "india",
       "expected_abstain": false,
       "abstain_reason": null,
-      "did_abstain": false,
-      "abstention_ok": true,
-      "false_refusal": false,
+      "did_abstain": true,
+      "abstention_ok": false,
+      "false_refusal": true,
       "false_answer": false,
-      "citations_found": 2,
+      "citations_found": 0,
       "expected_statutes": [
         "Section 10(4)"
       ],
-      "missing_statutes": [],
-      "citation_ok": true,
-      "fabricated": [],
-      "confidence_score": 0.6827,
-      "synthesis_path": "llm:groq"
+      "missing_statutes": [
+        "Section 10(4)"
+      ],
+      "citation_ok": false,
+      "fabricated": [
+        "Section 3(p)"
+      ],
+      "confidence_score": 0.0,
+      "synthesis_path": "abstained"
     },
     {
       "id": "oos_01",
@@ -428,17 +430,17 @@
       "jurisdiction": "india",
       "expected_abstain": true,
       "abstain_reason": "out_of_scope",
-      "did_abstain": true,
-      "abstention_ok": true,
+      "did_abstain": false,
+      "abstention_ok": false,
       "false_refusal": false,
-      "false_answer": false,
-      "citations_found": 0,
+      "false_answer": true,
+      "citations_found": 4,
       "expected_statutes": [],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.0,
-      "synthesis_path": "abstained"
+      "confidence_score": 0.5044,
+      "synthesis_path": "deterministic_template_fallback"
     },
     {
       "id": "oos_03",
@@ -455,8 +457,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [
-        "Section\u202f7",
-        "Rule\u202f33EEB"
+        "Section\u202f7"
       ],
       "confidence_score": 0.0,
       "synthesis_path": "abstained"
