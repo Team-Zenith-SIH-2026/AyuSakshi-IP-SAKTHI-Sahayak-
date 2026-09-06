@@ -21,6 +21,7 @@ import { KnowledgeBaseManager } from './components/admin/KnowledgeBaseManager';
 
 import { ProfilePage } from './pages/ProfilePage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { OAuthCallbackPage } from './pages/OAuthCallbackPage';
 
 function AssistantLayout() {
   return (
@@ -60,6 +61,7 @@ export default function App() {
                 <Route path="/" element={<AssistantLayout />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/auth/callback" element={<OAuthCallbackPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </ChatProvider>

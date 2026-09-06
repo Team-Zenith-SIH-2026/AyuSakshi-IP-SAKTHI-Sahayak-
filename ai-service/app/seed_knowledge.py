@@ -319,11 +319,127 @@ def seed_database():
                 
     if conn and cur:
         conn.commit()
-        cur.close()
-        conn.close()
         print(f"[Seed Knowledge] Successfully seeded PostgreSQL with {len(AUTHORITATIVE_CORPUS)} documents and {total_chunks} chunks.")
     else:
         print(f"[Seed Knowledge] Registered {total_chunks} authoritative chunks in in-memory vector store.")
 
+    # 3. Scan Knowledge-Base Directory Recursively for PDF files (India, International, Case-Law)
+    scan_knowledge_base_directory(conn, cur)
+
+    if conn and cur:
+        cur.close()
+        conn.close()
+
+def scan_knowledge_base_directory(conn=None, cur=None):
+    """
+    Recursively scan knowledge-base subdirectories for PDF/Text files and ingest them using PyMuPDF & LegalAwareChunker.
+    """
+    try:
+        from app.core.pdf_extractor import PDFExtractor
+        from app.core.chunker import LegalAwareChunker
+    except ImportError:
+        PDFExtractor = None
+        LegalAwareChunker = None
+
+    if not PDFExtractor or not LegalAwareChunker:
+        print("[Seed Directory Scan] PDFExtractor/LegalAwareChunker modules not available. Skipping directory PDF scan.")
+        return
+
+    kb_dir = os.getenv("KNOWLEDGE_BASE_DIR", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "knowledge-base")))
+    if not os.path.exists(kb_dir):
+        kb_dir = "/app/knowledge-base"
+
+    if not os.path.exists(kb_dir):
+        print(f"[Seed Directory Scan] Directory not found: {kb_dir}")
+        return
+
+    print(f"[Seed Directory Scan] Scanning directory for legal PDFs: {kb_dir}")
+    pdf_count = 0
+    total_pdf_chunks = 0
+
+    for root, dirs, files in os.walk(kb_dir):
+        for f in files:
+            if f.endswith(('.pdf', '.txt', '.md')) and not f.startswith('.'):
+                file_path = os.path.join(root, f)
+                rel_path = os.path.relpath(file_path, kb_dir)
+                
+                # Determine jurisdiction & category from folder structure
+                parts = rel_path.replace("\\", "/").split("/")
+                jurisdiction = "india"
+                category = "patents"
+                if len(parts) > 1:
+                    if parts[0] in ['india', 'international', 'case-law']:
+                        jurisdiction = parts[0]
+                    if len(parts) > 2:
+                        category = parts[1]
+
+                title = os.path.splitext(f)[0].replace("_", " ").title()
+                doc_id = str(uuid.uuid4())
+                version_id = str(uuid.uuid4())
+
+                try:
+                    pages_data = PDFExtractor.extract_document(file_path)
+                    chunks = LegalAwareChunker.chunk_document(pages_data)
+                    if not chunks:
+                        continue
+
+                    pdf_count += 1
+
+                    for idx, chunk in enumerate(chunks):
+                        c_dict = {
+                            "id": f"{doc_id}-{idx}",
+                            "chunk_index": idx,
+                            "section_identifier": chunk["section_identifier"],
+                            "title": chunk["title"],
+                            "doc_title": title,
+                            "authority": "Official Statutory Register",
+                            "jurisdiction": jurisdiction,
+                            "category": category,
+                            "document_type": "statute",
+                            "source_url": file_path,
+                            "version_tag": "ingested-v1",
+                            "content": chunk["content"],
+                            "embedding": generate_embedding(chunk["content"])
+                        }
+                        register_in_memory_chunk(c_dict)
+                        total_pdf_chunks += 1
+
+                    if cur:
+                        cur.execute(
+                            """
+                            INSERT INTO documents (id, title, authority, document_type, jurisdiction, category, source_url)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
+                            ON CONFLICT DO NOTHING;
+                            """,
+                            (doc_id, title, "Official Statutory Register", "statute", jurisdiction if jurisdiction in ['india', 'international'] else 'india', category, rel_path)
+                        )
+                        cur.execute(
+                            """
+                            INSERT INTO document_versions (id, document_id, version_tag, content_hash, is_current, file_path, chunk_count)
+                            VALUES (%s, %s, %s, %s, TRUE, %s, %s)
+                            ON CONFLICT DO NOTHING;
+                            """,
+                            (version_id, doc_id, "ingested-v1", "sha256-" + str(uuid.uuid4())[:8], rel_path, len(chunks))
+                        )
+                        for idx, chunk in enumerate(chunks):
+                            emb = generate_embedding(chunk["content"])
+                            cur.execute(
+                                """
+                                INSERT INTO document_chunks (document_version_id, chunk_index, section_identifier, title, content, embedding)
+                                VALUES (%s, %s, %s, %s, %s, %s::vector);
+                                """,
+                                (version_id, idx, chunk["section_identifier"], chunk["title"], chunk["content"], str(emb))
+                            )
+                        if conn:
+                            conn.commit()
+
+                    print(f"[Seed Directory Scan] Ingested '{title}' ({len(pages_data)} pages, {len(chunks)} chunks) from {rel_path}")
+
+                except Exception as e:
+                    print(f"[Seed Directory Scan Error] Failed processing {f}: {e}")
+
+    print(f"[Seed Directory Scan] Completed. Processed {pdf_count} PDF documents resulting in {total_pdf_chunks} chunks.")
+
 if __name__ == "__main__":
     seed_database()
+

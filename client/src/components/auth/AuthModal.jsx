@@ -5,7 +5,7 @@ import { X, Sparkles, Lock, Mail, User, ShieldAlert, ArrowRight } from 'lucide-r
 
 export const AuthModal = () => {
   const navigate = useNavigate();
-  const { isAuthModalOpen, setIsAuthModalOpen, login, register, socialLogin, loading } = useAuth();
+  const { isAuthModalOpen, setIsAuthModalOpen, login, register, loading } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -29,12 +29,11 @@ export const AuthModal = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Mock Social Login or OAuth redirect
-    socialLogin('Google', `${email || 'user'}@gmail.com`, name || 'Google User', 'https://lh3.googleusercontent.com/a/default-user');
+    window.location.assign('/api/auth/google');
   };
 
   const handleFacebookLogin = () => {
-    socialLogin('Facebook', `${email || 'user'}@facebook.com`, name || 'Facebook User', null);
+    window.location.assign('/api/auth/facebook');
   };
 
   return (
