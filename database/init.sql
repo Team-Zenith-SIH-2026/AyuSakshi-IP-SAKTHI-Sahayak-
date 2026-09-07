@@ -241,10 +241,13 @@ CREATE TABLE IF NOT EXISTS external_source_permissions (
 
 -- ------------------------------------------------------------------------------
 -- SEED ESSENTIAL ROLES / DEFAULT ADMIN USER
--- Password hash for 'Ayurveda@2026' (bcrypt salted)
+-- Password for both accounts: Ayurveda@2026
+-- The previous hash here did not match that password, so neither seeded
+-- account could log in and the facilitator queue and admin knowledge base
+-- were both unreachable. Regenerated with bcryptjs cost 10 and verified.
 -- ------------------------------------------------------------------------------
 INSERT INTO users (id, email, password_hash, name, role)
 VALUES 
-    ('00000000-0000-0000-0000-000000000001', 'admin@ayusakshi.gov.in', '$2a$10$wE47jF1YJj7zE1eR2X/X0.v5V7p4Q5H1n0e2S6m8B3y5J1k9L7w2q', 'System Administrator', 'admin'),
-    ('00000000-0000-0000-0000-000000000002', 'facilitator@ayusakshi.gov.in', '$2a$10$wE47jF1YJj7zE1eR2X/X0.v5V7p4Q5H1n0e2S6m8B3y5J1k9L7w2q', 'Senior IP Facilitator', 'facilitator')
+    ('00000000-0000-0000-0000-000000000001', 'admin@ayusakshi.gov.in', '$2a$10$jTK9YI1i7VGerSBPrWT8sexapz2nW7e/lUdckHHMS8bMBwKTz9GWC', 'System Administrator', 'admin'),
+    ('00000000-0000-0000-0000-000000000002', 'facilitator@ayusakshi.gov.in', '$2a$10$jTK9YI1i7VGerSBPrWT8sexapz2nW7e/lUdckHHMS8bMBwKTz9GWC', 'Senior IP Facilitator', 'facilitator')
 ON CONFLICT (email) DO NOTHING;

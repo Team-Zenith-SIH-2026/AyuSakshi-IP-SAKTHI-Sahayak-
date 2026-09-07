@@ -1,0 +1,182 @@
+{
+  "corpus_id": "international",
+  "corpus_version": "2026-09-06.1",
+  "retrieved_date": "2026-09-06",
+  "collection_rules": "Official sources only. Verbatim text only, transcribed exactly as published. No paraphrase, no commentary, no AI-generated explainers. Every chunk records its exact source URL and retrieval date. Section and article numbers require human spot-check before demo.",
+  "documents": [
+    {
+      "title": "Nagoya Protocol on Access to Genetic Resources and the Fair and Equitable Sharing of Benefits Arising from their Utilization to the Convention on Biological Diversity",
+      "short_title": "Nagoya Protocol, 2010",
+      "authority": "Secretariat of the Convention on Biological Diversity (United Nations)",
+      "document_type": "treaty",
+      "jurisdiction": "international",
+      "category": "treaties",
+      "source_url": "https://www.cbd.int/abs/text/",
+      "version_tag": "2010-Adopted-Nagoya",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "chunks": [
+        {
+          "section_identifier": "Article 5",
+          "title": "Fair and Equitable Benefit-sharing",
+          "source_url": "https://www.cbd.int/abs/text/articles/?sec=abs-05",
+          "verbatim_text": "Article 5. Fair and Equitable Benefit-sharing\n\n1. In accordance with Article 15, paragraphs 3 and 7 of the Convention, benefits arising from the utilization of genetic resources as well as subsequent applications and commercialization shall be shared in a fair and equitable way with the Party providing such resources that is the country of origin of such resources or a Party that has acquired the genetic resources in accordance with the Convention. Such sharing shall be upon mutually agreed terms.\n\n2. Each Party shall take legislative, administrative or policy measures, as appropriate, with the aim of ensuring that benefits arising from the utilization of genetic resources that are held by indigenous and local communities, in accordance with domestic legislation regarding the established rights of these indigenous and local communities over these genetic resources, are shared in a fair and equitable way with the communities concerned, based on mutually agreed terms.\n\n3. To implement paragraph 1 above, each Party shall take legislative, administrative or policy measures, as appropriate.\n\n4. Benefits may include monetary and non-monetary benefits, including but not limited to those listed in the Annex.\n\n5. Each Party shall take legislative, administrative or policy measures, as appropriate, in order that the benefits arising from the utilization of traditional knowledge associated with genetic resources are shared in a fair and equitable way with indigenous and local communities holding such knowledge. Such sharing shall be upon mutually agreed terms.",
+          "retrieval_context": "fair equitable benefit sharing monetary non-monetary benefits mutually agreed terms genetic resources traditional knowledge"
+        },
+        {
+          "section_identifier": "Article 6",
+          "title": "Access to Genetic Resources",
+          "source_url": "https://www.cbd.int/abs/text/articles/?sec=abs-06",
+          "verbatim_text": "Article 6. Access to Genetic Resources\n\n1. In the exercise of sovereign rights over natural resources, and subject to domestic access and benefit-sharing legislation or regulatory requirements, access to genetic resources for their utilization shall be subject to the prior informed consent of the Party providing such resources that is the country of origin of such resources or a Party that has acquired the genetic resources in accordance with the Convention, unless otherwise determined by that Party.\n\n2. In accordance with domestic law, each Party shall take measures, as appropriate, with the aim of ensuring that the prior informed consent or approval and involvement of indigenous and local communities is obtained for access to genetic resources where they have the established right to grant access to such resources.\n\n3. Pursuant to paragraph 1 above, each Party requiring prior informed consent shall take the necessary legislative, administrative or policy measures, as appropriate, to:\n\n(a) Provide for legal certainty, clarity and transparency of their domestic access and benefit-sharing legislation or regulatory requirements;\n\n(b) Provide for fair and non-arbitrary rules and procedures on accessing genetic resources;\n\n(c) Provide information on how to apply for prior informed consent;\n\n(d) Provide for a clear and transparent written decision by a competent national authority, in a cost-effective manner and within a reasonable period of time;\n\n(e) Provide for the issuance at the time of access of a permit or its equivalent as evidence of the decision to grant prior informed consent and of the establishment of mutually agreed terms, and notify the Access and Benefit-sharing Clearing-House accordingly;\n\n(f) Where applicable, and subject to domestic legislation, set out criteria and/or processes for obtaining prior informed consent or approval and involvement of indigenous and local communities for access to genetic resources; and\n\n(g) Establish clear rules and procedures for requiring and establishing mutually agreed terms. Such terms shall be set out in writing and may include, inter alia:\n\n(i) A dispute settlement clause;\n\n(ii) Terms on benefit-sharing, including in relation to intellectual property rights;\n\n(iii) Terms on subsequent third-party use, if any; and\n\n(iv) Terms on changes of intent, where applicable.",
+          "retrieval_context": "prior informed consent PIC access to genetic resources permit competent national authority mutually agreed terms"
+        },
+        {
+          "section_identifier": "Article 7",
+          "title": "Access to Traditional Knowledge Associated with Genetic Resources",
+          "source_url": "https://www.cbd.int/abs/text/articles/?sec=abs-07",
+          "verbatim_text": "Article 7. Access to Traditional Knowledge Associated with Genetic Resources\n\nIn accordance with domestic law, each Party shall take measures, as appropriate, with the aim of ensuring that traditional knowledge associated with genetic resources that is held by indigenous and local communities is accessed with the prior and informed consent or approval and involvement of these indigenous and local communities, and that mutually agreed terms have been established.",
+          "retrieval_context": "access to traditional knowledge associated with genetic resources indigenous local communities prior informed consent"
+        },
+        {
+          "section_identifier": "Article 15",
+          "title": "Compliance with Domestic Legislation or Regulatory Requirements on Access and Benefit-sharing",
+          "source_url": "https://www.cbd.int/abs/text/articles/?sec=abs-15",
+          "verbatim_text": "Article 15. Compliance with Domestic Legislation or Regulatory Requirements on Access and Benefit-sharing\n\n1. Each Party shall take appropriate, effective and proportionate legislative, administrative or policy measures to provide that genetic resources utilized within its jurisdiction have been accessed in accordance with prior informed consent and that mutually agreed terms have been established, as required by the domestic access and benefit-sharing legislation or regulatory requirements of the other Party.\n\n2. Parties shall take appropriate, effective and proportionate measures to address situations of non-compliance with measures adopted in accordance with paragraph 1 above.\n\n3. Parties shall, as far as possible and as appropriate, cooperate in cases of alleged violation of domestic access and benefit-sharing legislation or regulatory requirements referred to in paragraph 1 above.",
+          "retrieval_context": "compliance domestic access benefit sharing legislation utilised within jurisdiction non-compliance"
+        },
+        {
+          "section_identifier": "Article 16",
+          "title": "Compliance with Domestic Legislation or Regulatory Requirements on Access and Benefit-sharing for Traditional Knowledge Associated with Genetic Resources",
+          "source_url": "https://www.cbd.int/abs/text/articles/?sec=abs-16",
+          "verbatim_text": "Article 16. Compliance with Domestic Legislation or Regulatory Requirements on Access and Benefit-sharing for Traditional Knowledge Associated with Genetic Resources\n\n1. Each Party shall take appropriate, effective and proportionate legislative, administrative or policy measures, as appropriate, to provide that traditional knowledge associated with genetic resources utilized within their jurisdiction has been accessed in accordance with prior informed consent or approval and involvement of indigenous and local communities and that mutually agreed terms have been established, as required by domestic access and benefit-sharing legislation or regulatory requirements of the other Party where such indigenous and local communities are located.\n\n2. Each Party shall take appropriate, effective and proportionate measures to address situations of non-compliance with measures adopted in accordance with paragraph 1 above.\n\n3. Parties shall, as far as possible and as appropriate, cooperate in cases of alleged violation of domestic access and benefit-sharing legislation or regulatory requirements referred to in paragraph 1 above.",
+          "retrieval_context": "compliance traditional knowledge associated with genetic resources indigenous local communities"
+        },
+        {
+          "section_identifier": "Article 17",
+          "title": "Monitoring the Utilization of Genetic Resources",
+          "source_url": "https://www.cbd.int/abs/text/articles/?sec=abs-17",
+          "verbatim_text": "Article 17. Monitoring the Utilization of Genetic Resources\n\n1. To support compliance, each Party shall take measures, as appropriate, to monitor and to enhance transparency about the utilization of genetic resources. Such measures shall include:\n\n(a) The designation of one or more checkpoints, as follows:\n\n(i) Designated checkpoints would collect or receive, as appropriate, relevant information related to prior informed consent, to the source of the genetic resource, to the establishment of mutually agreed terms, and/or to the utilization of genetic resources, as appropriate;\n\n(ii) Each Party shall, as appropriate and depending on the particular characteristics of a designated checkpoint, require users of genetic resources to provide the information specified in the above paragraph at a designated checkpoint. Each Party shall take appropriate, effective and proportionate measures to address situations of non-compliance;\n\n(iii) Such information, including from internationally recognized certificates of compliance where they are available, will, without prejudice to the protection of confidential information, be provided to relevant national authorities, to the Party providing prior informed consent and to the Access and Benefit-sharing Clearing-House, as appropriate;\n\n(iv) Checkpoints must be effective and should have functions relevant to implementation of this subparagraph (a). They should be relevant to the utilization of genetic resources, or to the collection of relevant information at, inter alia, any stage of research, development, innovation, pre commercialization or commercialization.\n\n(b) Encouraging users and providers of genetic resources to include provisions in mutually agreed terms to share information on the implementation of such terms, including through reporting requirements; and\n\n(c) Encouraging the use of cost-effective communication tools and systems.\n\n2. A permit or its equivalent issued in accordance with Article 6, paragraph 3 (e) and made available to the Access and Benefit-sharing Clearing-House, shall constitute an internationally recognized certificate of compliance.\n\n3. An internationally recognized certificate of compliance shall serve as evidence that the genetic resource which it covers has been accessed in accordance with prior informed consent and that mutually agreed terms have been established, as required by the domestic access and benefit-sharing legislation or regulatory requirements of the Party providing prior informed consent.\n\n4. The internationally recognized certificate of compliance shall contain the following minimum information when it is not confidential:\n\n(a) Issuing authority;\n\n(b) Date of issuance;\n\n(c) The provider;\n\n(d) Unique identifier of the certificate;\n\n(e) The person or entity to whom prior informed consent was granted;\n\n(f) Subject-matter or genetic resources covered by the certificate;\n\n(g) Confirmation that mutually agreed terms were established;\n\n(h) Confirmation that prior informed consent was obtained; and\n\n(i) Commercial and/or non-commercial use.",
+          "retrieval_context": "monitoring utilisation checkpoints internationally recognised certificate of compliance permit"
+        }
+      ]
+    },
+    {
+      "title": "Convention on Biological Diversity, 1992",
+      "short_title": "CBD, 1992",
+      "authority": "Secretariat of the Convention on Biological Diversity (United Nations)",
+      "document_type": "treaty",
+      "jurisdiction": "international",
+      "category": "treaties",
+      "source_url": "https://www.cbd.int/convention/text/",
+      "version_tag": "1992-Adopted-Rio",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "chunks": [
+        {
+          "section_identifier": "Article 8(j)",
+          "title": "In-situ Conservation - Traditional Knowledge of Indigenous and Local Communities",
+          "source_url": "https://www.cbd.int/convention/articles/?a=cbd-08",
+          "verbatim_text": "Article 8. In-situ Conservation\n\nEach Contracting Party shall, as far as possible and as appropriate:\n\n(j) Subject to its national legislation, respect, preserve and maintain knowledge, innovations and practices of indigenous and local communities embodying traditional lifestyles relevant for the conservation and sustainable use of biological diversity and promote their wider application with the approval and involvement of the holders of such knowledge, innovations and practices and encourage the equitable sharing of the benefits arising from the utilization of such knowledge, innovations and practices;",
+          "extraction_note": "Clause (j) extracted verbatim from the full text of Article 8. The chapeau of Article 8 is reproduced above it for context; clauses (a) to (i) and (k) to (m) are not included in this chunk.",
+          "retrieval_context": "traditional knowledge indigenous local communities respect preserve maintain equitable sharing convention on biological diversity"
+        },
+        {
+          "section_identifier": "Article 15",
+          "title": "Access to Genetic Resources",
+          "source_url": "https://www.cbd.int/convention/articles/?a=cbd-15",
+          "verbatim_text": "Article 15. Access to Genetic Resources\n\n1. Recognizing the sovereign rights of States over their natural resources, the authority to determine access to genetic resources rests with the national governments and is subject to national legislation.\n\n2. Each Contracting Party shall endeavour to create conditions to facilitate access to genetic resources for environmentally sound uses by other Contracting Parties and not to impose restrictions that run counter to the objectives of this Convention.\n\n3. For the purpose of this Convention, the genetic resources being provided by a Contracting Party, as referred to in this Article and Articles 16 and 19, are only those that are provided by Contracting Parties that are countries of origin of such resources or by the Parties that have acquired the genetic resources in accordance with this Convention.\n\n4. Access, where granted, shall be on mutually agreed terms and subject to the provisions of this Article.\n\n5. Access to genetic resources shall be subject to prior informed consent of the Contracting Party providing such resources, unless otherwise determined by that Party.\n\n6. Each Contracting Party shall endeavour to develop and carry out scientific research based on genetic resources provided by other Contracting Parties with the full participation of, and where possible in, such Contracting Parties.\n\n7. Each Contracting Party shall take legislative, administrative or policy measures, as appropriate, and in accordance with Articles 16 and 19 and, where necessary, through the financial mechanism established by Articles 20 and 21 with the aim of sharing in a fair and equitable way the results of research and development and the benefits arising from the commercial and other utilization of genetic resources with the Contracting Party providing such resources. Such sharing shall be upon mutually agreed terms.",
+          "retrieval_context": "compliance domestic access benefit sharing legislation utilised within jurisdiction non-compliance"
+        }
+      ]
+    },
+    {
+      "title": "Agreement on Trade-Related Aspects of Intellectual Property Rights (TRIPS Agreement)",
+      "short_title": "TRIPS Agreement",
+      "authority": "World Trade Organization (WTO)",
+      "document_type": "treaty",
+      "jurisdiction": "international",
+      "category": "treaties",
+      "source_url": "https://www.wto.org/english/docs_e/legal_e/27-trips_01_e.htm",
+      "version_tag": "1994-Uruguay-Round",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "chunks": [
+        {
+          "section_identifier": "Article 27",
+          "title": "Patentable Subject Matter",
+          "source_url": "https://www.wto.org/english/docs_e/legal_e/27-trips_04c_e.htm",
+          "verbatim_text": "Article 27\nPatentable Subject Matter\n\n1. Subject to the provisions of paragraphs 2 and 3, patents shall be available for any inventions, whether products or processes, in all fields of technology, provided that they are new, involve an inventive step and are capable of industrial application. Subject to paragraph 4 of Article 65, paragraph 8 of Article 70 and paragraph 3 of this Article, patents shall be available and patent rights enjoyable without discrimination as to the place of invention, the field of technology and whether products are imported or locally produced.\n\n2. Members may exclude from patentability inventions, the prevention within their territory of the commercial exploitation of which is necessary to protect ordre public or morality, including to protect human, animal or plant life or health or to avoid serious prejudice to the environment, provided that such exclusion is not made merely because the exploitation is prohibited by their law.\n\n3. Members may also exclude from patentability:\n\n(a) diagnostic, therapeutic and surgical methods for the treatment of humans or animals;\n\n(b) plants and animals other than micro-organisms, and essentially biological processes for the production of plants or animals other than non-biological and microbiological processes. However, Members shall provide for the protection of plant varieties either by patents or by an effective sui generis system or by any combination thereof. The provisions of this subparagraph shall be reviewed four years after the date of entry into force of the WTO Agreement.",
+          "extraction_note": "Footnote marker (5) after 'industrial application' in paragraph 1 omitted from the transcription; footnote text not included.",
+          "retrieval_context": "TRIPS patentable subject matter exclude plants animals from patentability sui generis plant variety protection micro-organisms"
+        },
+        {
+          "section_identifier": "Article 22",
+          "title": "Protection of Geographical Indications",
+          "source_url": "https://www.wto.org/english/docs_e/legal_e/27-trips_04b_e.htm",
+          "verbatim_text": "Article 22\nProtection of Geographical Indications\n\n1. Geographical indications are, for the purposes of this Agreement, indications which identify a good as originating in the territory of a Member, or a region or locality in that territory, where a given quality, reputation or other characteristic of the good is essentially attributable to its geographical origin.\n\n2. In respect of geographical indications, Members shall provide the legal means for interested parties to prevent:\n\n(a) the use of any means in the designation or presentation of a good that indicates or suggests that the good in question originates in a geographical area other than the true place of origin in a manner which misleads the public as to the geographical origin of the good;\n\n(b) any use which constitutes an act of unfair competition within the meaning of Article 10bis of the Paris Convention (1967).\n\n3. A Member shall, ex officio if its legislation so permits or at the request of an interested party, refuse or invalidate the registration of a trademark which contains or consists of a geographical indication with respect to goods not originating in the territory indicated, if use of the indication in the trademark for such goods in that Member is of such a nature as to mislead the public as to the true place of origin.\n\n4. The protection under paragraphs 1, 2 and 3 shall be applicable against a geographical indication which, although literally true as to the territory, region or locality in which the goods originate, falsely represents to the public that the goods originate in another territory.",
+          "retrieval_context": "TRIPS geographical indications protection identify goods originating quality reputation"
+        }
+      ]
+    },
+    {
+      "title": "WIPO Treaty on Intellectual Property, Genetic Resources and Associated Traditional Knowledge",
+      "short_title": "WIPO GRATK Treaty, 2024",
+      "authority": "World Intellectual Property Organization (WIPO)",
+      "document_type": "treaty",
+      "jurisdiction": "international",
+      "category": "treaties",
+      "source_url": "https://www.wipo.int/wipolex/en/text/593055",
+      "version_tag": "2024-Adopted-Geneva",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "document_note": "Adopted at Geneva on May 24, 2024. WIPO Lex reference TRT/GRATK/001. Not yet in force at the retrieval date; entry into force is governed by Article 17.",
+      "chunks": [
+        {
+          "section_identifier": "Article 1",
+          "title": "Objectives",
+          "source_url": "https://www.wipo.int/wipolex/en/text/593055",
+          "verbatim_text": "Article 1\nObjectives\n\nThe objectives of this Treaty are to:\n\n(a) enhance the efficacy, transparency and quality of the patent system with regard to genetic resources and traditional knowledge associated with genetic resources, and\n\n(b) prevent patents from being granted erroneously for inventions that are not novel or inventive with regard to genetic resources and traditional knowledge associated with genetic resources.",
+          "retrieval_context": "GRATK treaty objectives patent system genetic resources traditional knowledge erroneously granted patents"
+        },
+        {
+          "section_identifier": "Article 2",
+          "title": "List of Terms - Definitions of 'Based on', 'Country of origin', 'Genetic resources'",
+          "source_url": "https://www.wipo.int/wipolex/en/text/593055",
+          "verbatim_text": "Article 2\nList of Terms\n\nFor the purposes of this Treaty:\n\n\"Applicant\" means the person whom the records of the Office show, pursuant to the applicable law, as the person who is applying for the granting of a patent, or as another person who is filing or prosecuting the application.\n\n\"Application\" means an application for granting of a patent.\n\n\"Contracting Party\" means any State or intergovernmental organization party to this Treaty.\n\n\"Country of origin of genetic resources\" means the country which possesses those genetic resources in in situ conditions.\n\n\"Based on\" means that the genetic resources and/or traditional knowledge associated with genetic resources must have been necessary for the claimed invention, and that the claimed invention must depend on the specific properties of the genetic resources and/or on the traditional knowledge associated with genetic resources.\n\n\"Genetic material\" means any material of plant, animal, microbial or other origin containing functional units of heredity.\n\n\"Genetic resources\" are genetic material of actual or potential value.",
+          "extraction_note": "Partial transcription of Article 2. Contains the definitions material to this system; remaining defined terms in Article 2 are not yet transcribed.",
+          "retrieval_context": "GRATK definitions based on country of origin genetic material genetic resources applicant"
+        },
+        {
+          "section_identifier": "Article 3",
+          "title": "Disclosure Requirement",
+          "source_url": "https://www.wipo.int/wipolex/en/text/593055",
+          "verbatim_text": "Article 3\nDisclosure Requirement\n\n3.1 Where the claimed invention in a patent application is based on genetic resources, each Contracting Party shall require applicants to disclose:\n\n(a) the country of origin of the genetic resources, or,\n\n(b) in cases where the information in Article 3.1(a) is not known to the applicant, or where Article 3.1(a) does not apply, the source of the genetic resources.\n\n3.2 Where the claimed invention in a patent application is based on traditional knowledge associated with genetic resources, each Contracting Party shall require applicants to disclose:\n\n(a) the Indigenous Peoples or local community, as applicable, who provided the traditional knowledge associated with genetic resources, or,\n\n(b) in cases where the information in Article 3.2(a) is not known to the applicant, or where Article 3.2(a) does not apply, the source of the traditional knowledge associated with genetic resources.\n\n3.3 In cases where none of the information in Articles 3.1 and/or 3.2 is known to the applicant, each Contracting Party shall require the applicant to make a declaration to that effect, affirming that the content of the declaration is true and correct to the best knowledge of the applicant.\n\n3.4 Contracting Parties shall provide guidance to patent applicants on how to meet the disclosure requirement as well as an opportunity for patent applicants to rectify a failure to include the minimum information referred to in Articles 3.1 and 3.2 or correct any disclosures that are erroneous or incorrect.\n\n3.5 Contracting Parties shall not place an obligation on Offices to verify the authenticity of the disclosure.\n\n3.6 Each Contracting Party shall make the information disclosed available in accordance with patent procedures, without prejudice to the protection of confidential information.",
+          "extraction_note": "Footnote markers [2] and [3] present in the source after 'genetic resources' (3.1(a)) and 'as applicable' (3.2(a)) are omitted from this transcription; footnote text not included.",
+          "retrieval_context": "GRATK mandatory disclosure requirement country of origin source of genetic resources indigenous peoples local community filing patent abroad declaration"
+        },
+        {
+          "section_identifier": "Article 4",
+          "title": "Non-Retroactivity",
+          "source_url": "https://www.wipo.int/wipolex/en/text/593055",
+          "verbatim_text": "Article 4\nNon-Retroactivity\n\nA Contracting Party shall not impose the obligations of this Treaty in relation to patent applications which have been filed prior to the entry into force of this Treaty with regard to that Contracting Party, without prejudice to existing national laws on disclosure that apply to such patent applications.",
+          "retrieval_context": "GRATK non-retroactivity applications filed before entry into force"
+        },
+        {
+          "section_identifier": "Article 5",
+          "title": "Sanctions and Remedies",
+          "source_url": "https://www.wipo.int/wipolex/en/text/593055",
+          "verbatim_text": "Article 5\nSanctions and Remedies\n\n5.1 Each Contracting Party shall put in place appropriate, effective and proportionate legal, administrative, and/or policy measures to address a failure to provide the information required in Article 3 of this Treaty.\n\n5.2 Subject to Article 5.2(bis), each Contracting Party shall provide an opportunity to rectify a failure to disclose the information required in Article 3 before implementing sanctions or directing remedies.\n\n5.2(bis) A Contracting Party may exclude from the opportunity to rectify under Article 5.2 cases where there has been fraudulent conduct or intent as prescribed by national law.\n\n5.3 Subject to Article 5.4, no Contracting Party shall revoke, invalidate, or render unenforceable the conferred patent rights solely on the basis of an applicant's failure to disclose the information specified in Article 3 of this Treaty.\n\n5.4 Each Contracting Party may provide for post grant sanctions or remedies where there has been fraudulent intent in regard to the disclosure requirement in Article 3 of this Treaty, in accordance with its national law.",
+          "retrieval_context": "fair equitable benefit sharing monetary non-monetary benefits mutually agreed terms genetic resources traditional knowledge"
+        },
+        {
+          "section_identifier": "Article 6",
+          "title": "Information Systems",
+          "source_url": "https://www.wipo.int/wipolex/en/text/593055",
+          "verbatim_text": "Article 6\nInformation Systems\n\n6.1 Contracting Parties may establish information systems (such as databases) of genetic resources and traditional knowledge associated with genetic resources, in consultation, where applicable, with Indigenous Peoples and local communities, and other stakeholders, taking into account their national circumstances.",
+          "extraction_note": "Paragraph 6.1 only. Paragraph 6.2 onwards not yet transcribed.",
+          "retrieval_context": "prior informed consent PIC access to genetic resources permit competent national authority mutually agreed terms"
+        }
+      ]
+    }
+  ]
+}

@@ -57,6 +57,8 @@ export const chatAPI = {
 
 export const formulationAPI = {
   classify: (data) => api.post('/formulations/classify', data),
+  wizardTree: () => api.get('/formulations/wizard/tree'),
+  wizardStep: (data) => api.post('/formulations/wizard/step', data),
 };
 
 export const documentAPI = {

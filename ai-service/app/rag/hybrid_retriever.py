@@ -1,4 +1,5 @@
 import os
+import re
 try:
     import psycopg2
     from psycopg2.extras import RealDictCursor
@@ -18,6 +19,49 @@ _in_memory_chunks = []
 def register_in_memory_chunk(chunk: Dict[str, Any]):
     global _in_memory_chunks
     _in_memory_chunks.append(chunk)
+
+
+def reset_in_memory_chunks():
+    """Clear the in-memory store so re-seeding does not duplicate the corpus."""
+    global _in_memory_chunks
+    _in_memory_chunks = []
+
+_TSQUERY_STOPWORDS = {
+    "a", "an", "the", "is", "are", "was", "were", "be", "been", "being", "am",
+    "do", "does", "did", "can", "could", "shall", "should", "will", "would",
+    "may", "might", "must", "have", "has", "had", "i", "we", "you", "he", "she",
+    "it", "they", "my", "our", "your", "of", "for", "to", "in", "on", "at", "by",
+    "with", "from", "as", "and", "or", "if", "that", "this", "these", "those",
+    "what", "which", "who", "whom", "how", "when", "where", "why", "any", "all",
+    "about", "into", "under", "over", "there", "their", "its", "me", "us",
+}
+
+
+def _build_or_tsquery(query: str) -> Optional[str]:
+    """
+    Build an OR tsquery from a natural-language question.
+
+    PostgreSQL's plainto_tsquery ANDs every term, so a real question like
+    "Can a classical formulation from the Charaka Samhita be patented in India?"
+    only matches a chunk containing *all* of those words. No statute does, so
+    sparse retrieval silently returned zero rows for essentially every query and
+    the hybrid search was running on the dense half alone.
+
+    ORing the terms lets ts_rank_cd score by how many matched, which is the
+    behaviour the fusion step assumes.
+    """
+    terms = re.findall(r"[A-Za-z][A-Za-z0-9\-']{2,}", query.lower())
+    terms = [t for t in terms if t not in _TSQUERY_STOPWORDS]
+    # Deduplicate while preserving order.
+    seen, kept = set(), []
+    for t in terms:
+        if t not in seen:
+            seen.add(t)
+            kept.append(t)
+    if not kept:
+        return None
+    return " | ".join(kept[:30])
+
 
 def get_db_connection():
     try:
@@ -98,23 +142,25 @@ def hybrid_retrieve(query: str, jurisdiction: str = "india", category: Optional[
                     SELECT c.id, c.chunk_index, c.section_identifier, c.title, c.content, c.metadata,
                            d.title as doc_title, d.authority, d.jurisdiction, d.category, d.document_type, d.source_url,
                            v.version_tag,
-                           ts_rank_cd(c.tsv_content, plainto_tsquery('english', %s)) AS bm25_score
+                           ts_rank_cd(c.tsv_content, to_tsquery('english', %s)) AS bm25_score
                     FROM document_chunks c
                     JOIN document_versions v ON c.document_version_id = v.id
                     JOIN documents d ON v.document_id = d.id
                     WHERE v.is_current = TRUE
                       AND d.jurisdiction = %s
                       AND d.status = 'active'
-                      AND c.tsv_content @@ plainto_tsquery('english', %s)
+                      AND c.tsv_content @@ to_tsquery('english', %s)
                 """
-                s_params = [query, jurisdiction, query]
+                ts_query = _build_or_tsquery(query)
+                s_params = [ts_query, jurisdiction, ts_query]
                 if category:
                     sparse_sql += " AND d.category = %s"
                     s_params.append(category)
                 sparse_sql += " ORDER BY bm25_score DESC LIMIT 15;"
                 
-                cur.execute(sparse_sql, s_params)
-                sparse_results = [dict(r) for r in cur.fetchall()]
+                if ts_query:
+                    cur.execute(sparse_sql, s_params)
+                    sparse_results = [dict(r) for r in cur.fetchall()]
                 
             conn.close()
         except Exception as e:

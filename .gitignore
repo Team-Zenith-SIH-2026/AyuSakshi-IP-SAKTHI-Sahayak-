@@ -48,3 +48,6 @@ Thumbs.db
 # Docker Volumes
 postgres_data/
 redis_data/
+
+# Intermediate PDF text dumps, regenerated from knowledge-base/source/
+knowledge-base/_extracted/

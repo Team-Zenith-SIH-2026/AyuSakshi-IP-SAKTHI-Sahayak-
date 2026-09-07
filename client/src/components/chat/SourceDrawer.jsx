@@ -44,10 +44,19 @@ export const SourceDrawer = () => {
               <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 tracking-wider">
                 {inspectingSource.jurisdiction?.toUpperCase()} REGULATORY REGIME
               </span>
-              <span className="flex items-center space-x-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                <ShieldCheck className="w-3 h-3" />
-                <span>Grounding Verified</span>
-              </span>
+              {/* Reflects the verifier's actual result. Previously hardcoded,
+                  which meant the badge said "verified" no matter what. */}
+              {inspectingSource.verified_grounded === true ? (
+                <span className="flex items-center space-x-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                  <ShieldCheck className="w-3 h-3" />
+                  <span>Grounding Verified</span>
+                </span>
+              ) : (
+                <span className="flex items-center space-x-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                  <ShieldCheck className="w-3 h-3" />
+                  <span>Retrieved, Not Verified</span>
+                </span>
+              )}
             </div>
             <h4 className="text-sm font-bold text-slate-900 dark:text-white">
               {inspectingSource.source_title}
@@ -78,9 +87,13 @@ export const SourceDrawer = () => {
               <span className="font-semibold text-slate-700 dark:text-slate-300">{inspectingSource.version_tag || 'Current Official Consolidated'}</span>
             </div>
             <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-darkbg-950 border border-slate-100 dark:border-darkbg-border">
-              <span className="text-slate-400 dark:text-slate-500 block text-[10px] uppercase">Retrieval Grounding</span>
+              <span className="text-slate-400 dark:text-slate-500 block text-[10px] uppercase">Retrieval Score</span>
+              {/* Label says what this number is: reranker relevance, not entailment.
+                  No invented default when the score is missing. */}
               <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                {(inspectingSource.similarity_score ? (inspectingSource.similarity_score * 100).toFixed(1) : 92.4)}% Entailment
+                {inspectingSource.similarity_score != null
+                  ? `${(inspectingSource.similarity_score * 100).toFixed(1)}% relevance`
+                  : 'Not scored'}
               </span>
             </div>
           </div>

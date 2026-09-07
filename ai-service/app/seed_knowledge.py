@@ -1,3 +1,6 @@
+import glob
+import hashlib
+import json
 import os
 import uuid
 try:
@@ -8,278 +11,184 @@ except ImportError:
     RealDictCursor = None
 from app.config import settings
 from app.rag.embeddings import generate_embedding
-from app.rag.hybrid_retriever import register_in_memory_chunk
+from app.rag.hybrid_retriever import register_in_memory_chunk, reset_in_memory_chunks
 
 # Curated Official Authoritative Corpus Data (SIH26045 Official Register)
-AUTHORITATIVE_CORPUS = [
-    # -------------------------------------------------------------------------
-    # 1. INDIAN PATENTS REGIME
-    # -------------------------------------------------------------------------
-    {
-        "title": "The Patents Act, 1970 (Consolidated with 2024 Amendments)",
-        "authority": "Indian Patent Office (CGPDTM)",
-        "document_type": "statute",
-        "jurisdiction": "india",
-        "category": "patents",
-        "source_url": "https://ipindia.gov.in/pages/patents/publications/acts",
-        "version_tag": "1970-Consolidated-2024",
-        "chunks": [
-            {
-                "section_identifier": "Section 3(p)",
-                "title": "Inventions Not Patentable - Traditional Knowledge",
-                "content": (
-                    "Section 3(p) of the Patents Act, 1970: The following are not inventions within the meaning of this Act: "
-                    "an invention which in effect, is traditional knowledge or which is an aggregation or duplication of known properties of traditionally known component or components. "
-                    "Ayurvedic classical medicines, home remedies, and known multi-herbal combinations documented in classical texts (such as Charaka Samhita or Ayurvedic Formulary) fall strictly under Section 3(p) and cannot be patented in India."
-                )
-            },
-            {
-                "section_identifier": "Section 3(e)",
-                "title": "Inventions Not Patentable - Mere Admixture & Synergy",
-                "content": (
-                    "Section 3(e) of the Patents Act, 1970: A substance obtained by a mere admixture resulting only in the aggregation of the properties of the components thereof or a process for producing such substance is not patentable. "
-                    "In Ayurvedic and herbal formulations, combining two or more herbs is considered a mere admixture unless unexpected synergistic bio-efficacy is demonstrated through comparative quantitative pharmacological assays."
-                )
-            },
-            {
-                "section_identifier": "Section 3(d)",
-                "title": "Inventions Not Patentable - Known Substances & Enhanced Efficacy",
-                "content": (
-                    "Section 3(d) of the Patents Act, 1970: The mere discovery of a new form of a known substance which does not result in the enhancement of the known efficacy of that substance is not patentable. "
-                    "In herbal chemistry and phytopharmaceuticals, derivatives, salts, polymorphs, or modified particle sizes (e.g. nano-herbals) must establish significantly enhanced therapeutic efficacy."
-                )
-            },
-            {
-                "section_identifier": "Section 10(4)",
-                "title": "Specification - Biological Material Source & Origin Disclosure",
-                "content": (
-                    "Section 10(4)(ii)(D) of the Patents Act, 1970: The complete specification shall disclose the source and geographical origin of the biological material in the specification, when that material used in the invention is or was obtained from India. "
-                    "Failure to disclose or wrongful disclosure of biological source or traditional knowledge is a valid ground for pre-grant opposition under Section 25(1)(j) and post-grant revocation under Section 64(1)(p)."
-                )
-            }
-        ]
-    },
+# ---------------------------------------------------------------------------
+# The corpus now lives in knowledge-base/corpus/*.json as verbatim statutory
+# text with source URLs and retrieval dates.
+#
+# The paraphrased summaries that used to sit here were the project's weakest
+# point: the citation panel promised "exact statutory provision" and showed
+# someone's interpretation instead. They have been replaced by india.json and
+# international.json and are deliberately not kept as a fallback, because a
+# silent fallback to paraphrase is exactly the failure mode being removed.
+# ---------------------------------------------------------------------------
+AUTHORITATIVE_CORPUS = []
 
-    # -------------------------------------------------------------------------
-    # 2. BIODIVERSITY & ABS REGIME
-    # -------------------------------------------------------------------------
-    {
-        "title": "Biological Diversity Act, 2002 (As Amended by Biological Diversity (Amendment) Act, 2023)",
-        "authority": "National Biodiversity Authority (NBA)",
-        "document_type": "statute",
-        "jurisdiction": "india",
-        "category": "biodiversity",
-        "source_url": "https://www.indiacode.nic.in/handle/123456789/18553",
-        "version_tag": "2002-Amended-2023",
-        "chunks": [
-            {
-                "section_identifier": "Section 6(1)",
-                "title": "Prior Approval of NBA for Intellectual Property Rights Application",
-                "content": (
-                    "Section 6(1) of Biological Diversity Act: No person shall apply for any intellectual property right, by whatever name called, in or outside India for any invention based on any research or information on a biological resource obtained from India, without obtaining the previous approval of the National Biodiversity Authority before grant of such right. "
-                    "Application must be filed via Form III before NBA prior to the grant of the patent."
-                )
-            },
-            {
-                "section_identifier": "Section 7 & 2023 Proviso",
-                "title": "Prior Intimation to SBB and AYUSH Practitioner Exemptions",
-                "content": (
-                    "Section 7 of Biological Diversity Act: No person who is a citizen of India or a body corporate registered in India shall access biological resources for commercial utilization without giving prior intimation to the concerned State Biodiversity Board. "
-                    "2023 Amendment Proviso: Registered AYUSH practitioners (Vaidyas and Hakims) and local people who have been practicing indigenous medicine, growers, and cultivators of biological resources are exempted from prior approval and ABS fee payment."
-                )
-            },
-            {
-                "section_identifier": "Section 3 & Form I",
-                "title": "Access to Biological Resources by Foreign Entities",
-                "content": (
-                    "Section 3 of Biological Diversity Act: Non-Indian citizens, non-resident Indians (NRIs), foreign corporations, or Indian companies with foreign shareholding/management must obtain mandatory prior approval from NBA via Form I before accessing any Indian biological resource for research, bio-survey, or commercial utilization."
-                )
-            }
-        ]
-    },
+CORPUS_DIR = os.getenv(
+    "CORPUS_DIR",
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "knowledge-base", "corpus"))
+)
 
-    # -------------------------------------------------------------------------
-    # 3. AYUSH & DRUGS AND COSMETICS REGIME
-    # -------------------------------------------------------------------------
-    {
-        "title": "Drugs and Cosmetics Act, 1940 & Rules 1945 (Chapter IV-A: ASU Drugs)",
-        "authority": "Ministry of AYUSH / CDSCO",
-        "document_type": "statute",
-        "jurisdiction": "india",
-        "category": "ayush",
-        "source_url": "https://www.ayush.gov.in/",
-        "version_tag": "1940-Consolidated",
-        "chunks": [
-            {
-                "section_identifier": "Section 3(a) & 33EEB",
-                "title": "Classical vs Patent or Proprietary (P or P) Ayurvedic Drugs",
-                "content": (
-                    "Under Drugs and Cosmetics Act 1940: "
-                    "(1) Classical Ayurvedic Drug (Section 3(a)): Manufactured exclusively in accordance with formulae prescribed in authoritative classical texts listed in the First Schedule (e.g. Charaka Samhita, Sushruta Samhita, AFI). Exempted from clinical trials for licensing. "
-                    "(2) Patent or Proprietary (P or P) Ayurvedic Medicine (Section 3(h) & 33EEB): Contains ingredients mentioned in First Schedule texts but formulated in a non-classical combination, new ratio, or proprietary dosage form. Requires safety and pilot proof-of-concept data."
-                )
-            },
-            {
-                "section_identifier": "Rule 158-B",
-                "title": "Guidelines for Issue of License for Ayurvedic, Siddha and Unani Drugs",
-                "content": (
-                    "Rule 158-B of Drugs and Cosmetics Rules, 1945: Specifies evidentiary requirements for ASU drug licensing. Classical drugs require citation of authoritative First Schedule text. P or P medicines with classical ingredients for traditional indications require published literature or textual evidence. Formulations with modified extracts or novel therapeutic indications require clinical and safety trial evidence."
-                )
-            },
-            {
-                "section_identifier": "Phytopharmaceutical Regulations",
-                "title": "CDSCO Phytopharmaceutical Drug Definition (Rule 122E)",
-                "content": (
-                    "Phytopharmaceutical Drug (Rule 122E CDSCO): Defined as purified and standardized fraction with defined minimum four bioactive/analytical markers of an extract of a medicinal plant or its part, for internal or external use of human beings or animals. Subject to CDSCO Schedule Y approval, safety toxicology, and Phase I-III clinical trial pathways."
-                )
-            }
-        ]
-    },
 
-    # -------------------------------------------------------------------------
-    # 4. FSSAI & AYURVEDA AAHARA REGIME
-    # -------------------------------------------------------------------------
-    {
-        "title": "Food Safety and Standards (Ayurveda Aahara) Regulations, 2022",
-        "authority": "FSSAI (Food Safety and Standards Authority of India)",
-        "document_type": "regulation",
-        "jurisdiction": "india",
-        "category": "fssai",
-        "source_url": "https://www.fssai.gov.in/food-law/regulations",
-        "version_tag": "2022-Regulations",
-        "chunks": [
-            {
-                "section_identifier": "Regulation 3 & 4",
-                "title": "Scope and Definition of Ayurveda Aahara",
-                "content": (
-                    "FSSAI Ayurveda Aahara Regulations 2022: 'Ayurveda Aahara' means food prepared in accordance with recipes or ingredients/processes described in authoritative Ayurvedic books listed in Schedule A. "
-                    "It shall not include Ayurvedic drugs covered under Drugs and Cosmetics Act 1940. Every food business operator manufacturing Ayurveda Aahara must display the official Ayurveda Aahara logo and print mandatory disclaimer: 'NOT FOR MEDICINAL USE'."
-                )
-            }
-        ]
-    },
+def load_corpus_files():
+    """
+    Load verbatim corpus documents from knowledge-base/corpus/*.json.
 
-    # -------------------------------------------------------------------------
-    # 5. TRADEMARKS, GI, DESIGNS & PLANT VARIETY
-    # -------------------------------------------------------------------------
-    {
-        "title": "Trade Marks Act 1999 & GI of Goods Act 1999",
-        "authority": "Trade Marks Registry & GI Registry of India",
-        "document_type": "statute",
-        "jurisdiction": "india",
-        "category": "trademarks",
-        "source_url": "https://ipindia.gov.in/",
-        "version_tag": "1999-Consolidated",
-        "chunks": [
-            {
-                "section_identifier": "Class 5, 3, 30 Classification",
-                "title": "Nice Classification for Ayurvedic Products",
-                "content": (
-                    "Trade Marks Classification for Ayurveda: "
-                    "- Class 5: Ayurvedic medicinal preparations, therapeutic formulations, and medicated oils. "
-                    "- Class 3: Ayurvedic cosmetics, herbal soaps, non-medicated skin creams, hair oils, shampoos. "
-                    "- Class 30 & 32: Ayurveda-Aahar, herbal teas, health tonics (food), dietary nutritional preparations. "
-                    "Generic Sanskrit medicine names (e.g., 'Chyawanprash', 'Triphala') cannot be monopolized as trademarks; only distinctive invented prefix marks are registerable."
-                )
-            },
-            {
-                "section_identifier": "GI of Goods Act 1999",
-                "title": "Geographical Indications for Ayurvedic Herbs & Products",
-                "content": (
-                    "Geographical Indications of Goods (Registration and Protection) Act, 1999: Protects goods having special quality or reputation attributable to their geographical origin (e.g. Kashmiri Saffron, Malabar Pepper, Navara Rice, Kangra Tea). Authorised users gain collective intellectual property rights preventing counterfeit origin claims."
-                )
-            },
-            {
-                "section_identifier": "PPVFR Act 2001",
-                "title": "Protection of Plant Varieties and Farmers Rights Act, 2001",
-                "content": (
-                    "PPVFR Act 2001: Provides intellectual property protection to plant breeders, farmers, and researchers who develop Distinct, Uniform, and Stable (DUS) varieties of medicinal plants. Farmers retain rights to save, use, sow, re-sow, exchange, or sell farm produce/seeds."
-                )
-            }
-        ]
-    },
+    These files are the source of truth. Each chunk carries `verbatim_text`
+    transcribed exactly from an official source, with its own source URL and
+    retrieval date. Nothing here is paraphrased, which is what makes the
+    "click a citation and read the actual statute" claim true.
+    """
+    loaded = []
+    if not os.path.isdir(CORPUS_DIR):
+        print(f"[Seed Knowledge] *** NO CORPUS DIRECTORY at {CORPUS_DIR}. The system has no evidence to retrieve.")
+        return loaded
 
-    # -------------------------------------------------------------------------
-    # 6. INTERNATIONAL IP, TREATIES & TK
-    # -------------------------------------------------------------------------
-    {
-        "title": "WIPO GRATK Treaty (2024) & Nagoya Protocol on ABS",
-        "authority": "WIPO / UN Convention on Biological Diversity",
-        "document_type": "treaty",
-        "jurisdiction": "international",
-        "category": "treaties",
-        "source_url": "https://www.wipo.int/treaties/ip/gratk/",
-        "version_tag": "2024-Treaty",
-        "chunks": [
-            {
-                "section_identifier": "WIPO GRATK Treaty (2024)",
-                "title": "Mandatory Patent Disclosure of Genetic Resources and Traditional Knowledge",
-                "content": (
-                    "WIPO Treaty on Intellectual Property, Genetic Resources and Associated Traditional Knowledge (adopted May 2024): "
-                    "Establishes a mandatory disclosure requirement in international patent applications. Where a claimed invention is based on genetic resources or associated traditional knowledge, patent applicants must disclose the country of origin or indigenous source. Provides a global defensive framework against biopiracy."
-                )
-            },
-            {
-                "section_identifier": "Nagoya Protocol Article 5 & 6",
-                "title": "Access and Benefit Sharing (ABS) International Standards",
-                "content": (
-                    "Nagoya Protocol on Access to Genetic Resources and the Fair and Equitable Sharing of Benefits Arising from their Utilization: "
-                    "Parties must ensure that genetic resources and traditional knowledge associated with genetic resources held by indigenous communities are accessed only with Prior Informed Consent (PIC) and based on Mutually Agreed Terms (MAT). Exporters of Ayurvedic botanical extracts to member nations must satisfy domestic ABS clearance."
-                )
-            },
-            {
-                "section_identifier": "TRIPS Agreement Article 27.3(b)",
-                "title": "Patentability of Biological Inventions and Plant Protection",
-                "content": (
-                    "WTO TRIPS Agreement Article 27.3(b): Members may exclude from patentability plants and animals other than microorganisms, and essentially biological processes for the production of plants or animals. Members must provide for the protection of plant varieties either by patents or by an effective sui generis system (such as India's PPVFRA)."
-                )
-            },
-            {
-                "section_identifier": "PCT (Patent Cooperation Treaty) & Madrid System",
-                "title": "International Filing Mechanisms for Patents and Trademarks",
-                "content": (
-                    "Patent Cooperation Treaty (PCT): Unified patent filing across 157+ countries with an International Search Report (ISR). "
-                    "Madrid System: Streamlined international registration of trademarks across 130+ member countries via a single centralized application filed through the Indian Trade Marks Registry."
-                )
-            }
-        ]
-    }
-]
+    for path in sorted(glob.glob(os.path.join(CORPUS_DIR, "*.json"))):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            print(f"[Seed Knowledge] *** FAILED to parse corpus file {path}: {e}")
+            continue
+
+        for doc in data.get("documents", []):
+            chunks = []
+            for c in doc.get("chunks", []):
+                text = c.get("verbatim_text") or c.get("content") or ""
+                if not text.strip():
+                    print(f"[Seed Knowledge] *** SKIPPING empty chunk {c.get('section_identifier')} in {doc.get('title')}")
+                    continue
+                # Statutes are not written in the words people search with.
+                # Section 3(p) of the Patents Act never says "patent",
+                # "Ayurvedic", "formulation" or "Charaka Samhita" -- it says
+                # "are not inventions ... traditional knowledge". The old
+                # paraphrased seed text happened to contain all those words,
+                # so it was quietly doing the work of bridging that vocabulary
+                # gap. Replacing it with verbatim law removed the bridge and
+                # retrieval stopped finding the right provisions.
+                #
+                # retrieval_context restores the bridge honestly: it is indexed
+                # for search but is NEVER part of `content`, so the citation a
+                # user reads stays purely verbatim.
+                chunks.append({
+                    "section_identifier": c["section_identifier"],
+                    "title": c.get("title", ""),
+                    "retrieval_context": c.get("retrieval_context", ""),
+                    "content": text,
+                    "chunk_source_url": c.get("source_url", doc.get("source_url", "")),
+                })
+            if not chunks:
+                continue
+            loaded.append({
+                "title": doc["title"],
+                "authority": doc["authority"],
+                "document_type": doc["document_type"],
+                "jurisdiction": doc["jurisdiction"],
+                "category": doc["category"],
+                "source_url": doc.get("source_url", ""),
+                "version_tag": doc.get("version_tag", "unversioned"),
+                "text_provenance": "verbatim",
+                "chunks": chunks,
+            })
+        print(f"[Seed Knowledge] Loaded {len(data.get('documents', []))} document(s) from {os.path.basename(path)} "
+              f"(corpus_version {data.get('corpus_version', 'unknown')}).")
+
+    return loaded
+
+
+def build_corpus():
+    """Verbatim corpus files, plus any hardcoded document they do not supersede."""
+    verbatim = load_corpus_files()
+    seen = {(d["title"], d["jurisdiction"]) for d in verbatim}
+    merged = list(verbatim)
+    legacy = 0
+    for doc in AUTHORITATIVE_CORPUS:
+        if (doc["title"], doc["jurisdiction"]) in seen:
+            continue
+        d = dict(doc)
+        d.setdefault("text_provenance", "paraphrase_pending_replacement")
+        merged.append(d)
+        legacy += 1
+    if legacy:
+        print(f"[Seed Knowledge] *** {legacy} document(s) still use PARAPHRASED seed text and need verbatim replacement.")
+    return merged
+
+
+def _document_id(doc) -> str:
+    """Stable id for a document, so re-seeding updates rather than duplicates."""
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"ayusakshi:{doc['jurisdiction']}:{doc['title']}"))
+
+
+def _content_hash(doc) -> str:
+    """Hash of the document's chunk text. Changing the text creates a new version."""
+    h = hashlib.sha256()
+    for chunk in doc["chunks"]:
+        h.update(chunk["section_identifier"].encode("utf-8"))
+        h.update(chunk["content"].encode("utf-8"))
+    return h.hexdigest()
+
 
 def seed_database():
     """
-    Seed authoritative corpus into PostgreSQL (and register in in-memory retriever for tests).
+    Seed the authoritative corpus into PostgreSQL and the in-memory retriever.
+
+    Idempotent. Document and version ids are derived deterministically from the
+    document identity and a hash of its text, so restarting the service does not
+    duplicate the corpus, and editing a statute's text produces a genuinely new
+    version with the previous one marked is_current = FALSE.
     """
     print("[Seed Knowledge] Seeding Authoritative Legal Corpus...")
+
+    # In-memory store is rebuilt from scratch each time.
+    reset_in_memory_chunks()
+
     conn = None
-    try:
-        conn = psycopg2.connect(settings.DATABASE_URL)
-        cur = conn.cursor()
-    except Exception as e:
-        print(f"[Seed Knowledge] PostgreSQL connection not available for seeding ({e}). Registering in memory.")
-        cur = None
+    cur = None
+    if psycopg2 is None:
+        print("[Seed Knowledge] *** psycopg2 IS NOT INSTALLED. PostgreSQL and pgvector are NOT in use. ***")
+    else:
+        try:
+            conn = psycopg2.connect(settings.DATABASE_URL)
+            cur = conn.cursor()
+            print("[Seed Knowledge] PostgreSQL connection established.")
+        except Exception as e:
+            print(f"[Seed Knowledge] *** PostgreSQL UNAVAILABLE ({e}). Falling back to in-memory store. ***")
+            cur = None
+
+    corpus = build_corpus()
 
     total_chunks = 0
-    for doc in AUTHORITATIVE_CORPUS:
-        doc_id = str(uuid.uuid4())
-        version_id = str(uuid.uuid4())
-        
+    inserted_versions = 0
+    skipped_versions = 0
+
+    for doc in corpus:
+        doc_id = _document_id(doc)
+        c_hash = _content_hash(doc)
+        version_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"{doc_id}:{doc['version_tag']}:{c_hash}"))
+
         # 1. Register in-memory for instant fallback retrieval
         for idx, chunk in enumerate(doc["chunks"]):
+            # Indexed for search; never shown as the citation text.
+            search_title = " ".join(filter(None, [chunk.get("title", ""), chunk.get("retrieval_context", "")]))
+            search_text = " ".join(filter(None, [chunk["content"], chunk.get("retrieval_context", "")]))
             c_dict = {
                 "id": f"{doc_id}-{idx}",
                 "chunk_index": idx,
                 "section_identifier": chunk["section_identifier"],
-                "title": chunk["title"],
+                "title": search_title,
                 "doc_title": doc["title"],
                 "authority": doc["authority"],
                 "jurisdiction": doc["jurisdiction"],
                 "category": doc["category"],
                 "document_type": doc["document_type"],
-                "source_url": doc["source_url"],
+                "source_url": chunk.get("chunk_source_url") or doc["source_url"],
                 "version_tag": doc["version_tag"],
+                "text_provenance": doc.get("text_provenance", "paraphrase_pending_replacement"),
                 "content": chunk["content"],
-                "embedding": generate_embedding(chunk["content"])
+                "embedding": generate_embedding(search_text)
             }
             register_in_memory_chunk(c_dict)
             total_chunks += 1
@@ -291,155 +200,63 @@ def seed_database():
                     """
                     INSERT INTO documents (id, title, authority, document_type, jurisdiction, category, source_url)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT DO NOTHING;
+                    ON CONFLICT (id) DO UPDATE SET
+                        authority = EXCLUDED.authority,
+                        source_url = EXCLUDED.source_url,
+                        updated_at = CURRENT_TIMESTAMP;
                     """,
                     (doc_id, doc["title"], doc["authority"], doc["document_type"], doc["jurisdiction"], doc["category"], doc["source_url"])
                 )
-                
+
+                # This exact text already ingested? Then there is nothing to do.
+                cur.execute("SELECT 1 FROM document_versions WHERE id = %s;", (version_id,))
+                if cur.fetchone():
+                    skipped_versions += 1
+                    continue
+
+                # New text for this document. Retire the previous current version.
+                cur.execute(
+                    "UPDATE document_versions SET is_current = FALSE WHERE document_id = %s;",
+                    (doc_id,)
+                )
                 cur.execute(
                     """
                     INSERT INTO document_versions (id, document_id, version_tag, content_hash, is_current, chunk_count)
-                    VALUES (%s, %s, %s, %s, TRUE, %s)
-                    ON CONFLICT DO NOTHING;
+                    VALUES (%s, %s, %s, %s, TRUE, %s);
                     """,
-                    (version_id, doc_id, doc["version_tag"], "sha256-seeded-auth", len(doc["chunks"]))
+                    (version_id, doc_id, doc["version_tag"], c_hash, len(doc["chunks"]))
                 )
-                
+
                 for idx, chunk in enumerate(doc["chunks"]):
-                    emb = generate_embedding(chunk["content"])
+                    # title carries the retrieval aid so PostgreSQL's generated
+                    # tsv_content column indexes it for keyword search; content
+                    # stays verbatim so the citation shown to a user is the law.
+                    ins_title = " ".join(filter(None, [chunk.get("title", ""), chunk.get("retrieval_context", "")]))
+                    ins_search = " ".join(filter(None, [chunk["content"], chunk.get("retrieval_context", "")]))
+                    emb = generate_embedding(ins_search)
                     cur.execute(
                         """
                         INSERT INTO document_chunks (document_version_id, chunk_index, section_identifier, title, content, embedding)
                         VALUES (%s, %s, %s, %s, %s, %s::vector);
                         """,
-                        (version_id, idx, chunk["section_identifier"], chunk["title"], chunk["content"], str(emb))
+                        (version_id, idx, chunk["section_identifier"], ins_title, chunk["content"], str(emb))
                     )
+                inserted_versions += 1
             except Exception as e:
                 print(f"[Seed DB Error on doc {doc['title']}]: {e}")
-                
+                conn.rollback()
+
     if conn and cur:
         conn.commit()
-        print(f"[Seed Knowledge] Successfully seeded PostgreSQL with {len(AUTHORITATIVE_CORPUS)} documents and {total_chunks} chunks.")
-    else:
-        print(f"[Seed Knowledge] Registered {total_chunks} authoritative chunks in in-memory vector store.")
-
-    # 3. Scan Knowledge-Base Directory Recursively for PDF files (India, International, Case-Law)
-    scan_knowledge_base_directory(conn, cur)
-
-    if conn and cur:
         cur.close()
         conn.close()
-
-def scan_knowledge_base_directory(conn=None, cur=None):
-    """
-    Recursively scan knowledge-base subdirectories for PDF/Text files and ingest them using PyMuPDF & LegalAwareChunker.
-    """
-    try:
-        from app.core.pdf_extractor import PDFExtractor
-        from app.core.chunker import LegalAwareChunker
-    except ImportError:
-        PDFExtractor = None
-        LegalAwareChunker = None
-
-    if not PDFExtractor or not LegalAwareChunker:
-        print("[Seed Directory Scan] PDFExtractor/LegalAwareChunker modules not available. Skipping directory PDF scan.")
-        return
-
-    kb_dir = os.getenv("KNOWLEDGE_BASE_DIR", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "knowledge-base")))
-    if not os.path.exists(kb_dir):
-        kb_dir = "/app/knowledge-base"
-
-    if not os.path.exists(kb_dir):
-        print(f"[Seed Directory Scan] Directory not found: {kb_dir}")
-        return
-
-    print(f"[Seed Directory Scan] Scanning directory for legal PDFs: {kb_dir}")
-    pdf_count = 0
-    total_pdf_chunks = 0
-
-    for root, dirs, files in os.walk(kb_dir):
-        for f in files:
-            if f.endswith(('.pdf', '.txt', '.md')) and not f.startswith('.'):
-                file_path = os.path.join(root, f)
-                rel_path = os.path.relpath(file_path, kb_dir)
-                
-                # Determine jurisdiction & category from folder structure
-                parts = rel_path.replace("\\", "/").split("/")
-                jurisdiction = "india"
-                category = "patents"
-                if len(parts) > 1:
-                    if parts[0] in ['india', 'international', 'case-law']:
-                        jurisdiction = parts[0]
-                    if len(parts) > 2:
-                        category = parts[1]
-
-                title = os.path.splitext(f)[0].replace("_", " ").title()
-                doc_id = str(uuid.uuid4())
-                version_id = str(uuid.uuid4())
-
-                try:
-                    pages_data = PDFExtractor.extract_document(file_path)
-                    chunks = LegalAwareChunker.chunk_document(pages_data)
-                    if not chunks:
-                        continue
-
-                    pdf_count += 1
-
-                    for idx, chunk in enumerate(chunks):
-                        c_dict = {
-                            "id": f"{doc_id}-{idx}",
-                            "chunk_index": idx,
-                            "section_identifier": chunk["section_identifier"],
-                            "title": chunk["title"],
-                            "doc_title": title,
-                            "authority": "Official Statutory Register",
-                            "jurisdiction": jurisdiction,
-                            "category": category,
-                            "document_type": "statute",
-                            "source_url": file_path,
-                            "version_tag": "ingested-v1",
-                            "content": chunk["content"],
-                            "embedding": generate_embedding(chunk["content"])
-                        }
-                        register_in_memory_chunk(c_dict)
-                        total_pdf_chunks += 1
-
-                    if cur:
-                        cur.execute(
-                            """
-                            INSERT INTO documents (id, title, authority, document_type, jurisdiction, category, source_url)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s)
-                            ON CONFLICT DO NOTHING;
-                            """,
-                            (doc_id, title, "Official Statutory Register", "statute", jurisdiction if jurisdiction in ['india', 'international'] else 'india', category, rel_path)
-                        )
-                        cur.execute(
-                            """
-                            INSERT INTO document_versions (id, document_id, version_tag, content_hash, is_current, file_path, chunk_count)
-                            VALUES (%s, %s, %s, %s, TRUE, %s, %s)
-                            ON CONFLICT DO NOTHING;
-                            """,
-                            (version_id, doc_id, "ingested-v1", "sha256-" + str(uuid.uuid4())[:8], rel_path, len(chunks))
-                        )
-                        for idx, chunk in enumerate(chunks):
-                            emb = generate_embedding(chunk["content"])
-                            cur.execute(
-                                """
-                                INSERT INTO document_chunks (document_version_id, chunk_index, section_identifier, title, content, embedding)
-                                VALUES (%s, %s, %s, %s, %s, %s::vector);
-                                """,
-                                (version_id, idx, chunk["section_identifier"], chunk["title"], chunk["content"], str(emb))
-                            )
-                        if conn:
-                            conn.commit()
-
-                    print(f"[Seed Directory Scan] Ingested '{title}' ({len(pages_data)} pages, {len(chunks)} chunks) from {rel_path}")
-
-                except Exception as e:
-                    print(f"[Seed Directory Scan Error] Failed processing {f}: {e}")
-
-    print(f"[Seed Directory Scan] Completed. Processed {pdf_count} PDF documents resulting in {total_pdf_chunks} chunks.")
+        print(
+            f"[Seed Knowledge] PostgreSQL corpus in sync: {len(corpus)} documents, "
+            f"{inserted_versions} new version(s) ingested, {skipped_versions} already current, "
+            f"{total_chunks} chunks registered in memory."
+        )
+    else:
+        print(f"[Seed Knowledge] Registered {total_chunks} authoritative chunks in IN-MEMORY store only (no PostgreSQL).")
 
 if __name__ == "__main__":
     seed_database()
-

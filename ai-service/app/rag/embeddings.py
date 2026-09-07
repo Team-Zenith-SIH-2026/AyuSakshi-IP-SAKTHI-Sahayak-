@@ -14,8 +14,13 @@ def get_embedding_model():
             from sentence_transformers import SentenceTransformer
             print(f"[Embeddings] Loading embedding model: {settings.EMBEDDING_MODEL_NAME}...")
             _model = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
+            print(f"[Embeddings] REAL MODEL LOADED. Semantic search is active.")
         except Exception as e:
-            print(f"[Embeddings Warning] Could not load SentenceTransformer ({e}). Using deterministic embedding fallback.")
+            print("=" * 78)
+            print(f"[Embeddings] *** SENTENCE-TRANSFORMERS UNAVAILABLE: {e}")
+            print("[Embeddings] *** FALLING BACK TO HASH PROJECTION.")
+            print("[Embeddings] *** SEMANTIC SEARCH IS DISABLED. Similarity scores are meaningless.")
+            print("=" * 78)
             _model = "fallback"
     return _model
 

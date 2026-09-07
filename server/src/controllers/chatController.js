@@ -151,28 +151,27 @@ const sendMessage = async (req, res) => {
         formulation_state: conversation.formulation_state || {},
       });
     } catch (aiErr) {
-      console.warn('[AI Service Warning - Falling back to safe response]:', aiErr.message);
+      // The retrieval engine is unreachable, so nothing can be grounded. Abstain.
+      //
+      // This branch previously invented a complete answer with a hardcoded
+      // Section 3(p) citation marked verified_grounded:true at 0.85 confidence.
+      // That produced a confidently cited legal answer with the RAG pipeline
+      // entirely offline, which is the exact failure this project exists to prevent.
+      console.error('[AI Service Unreachable - abstaining]:', aiErr.message);
       ragResponse = {
-        answer: 'I encountered a temporary service issue connecting to the regulatory intelligence engine. However, based on Indian Ayurvedic IP principles, under Section 3(p) of the Patents Act 1970, traditional formulations cannot be patented as they constitute traditional knowledge. For detailed evidence, please try again in a few moments or request human facilitator escalation.',
-        confidence_score: 0.85,
-        confidence_level: 'medium',
-        citations: [
-          {
-            source_title: 'The Patents Act, 1970',
-            section_reference: 'Section 3(p)',
-            jurisdiction: 'india',
-            authority: 'Indian Patent Office',
-            claim_text: 'Inventions which in effect are traditional knowledge or an aggregation/duplication of known properties of traditionally known components are non-patentable.',
-            verified_grounded: true,
-            source_url: 'https://ipindia.gov.in/pages/patents/publications/acts'
-          }
-        ],
+        answer:
+          'The regulatory intelligence engine is currently unreachable, so I cannot ground an answer in statutory sources. ' +
+          'Rather than answer from memory, I am withholding a response. Please retry shortly, or request human facilitator escalation below.',
+        confidence_score: 0,
+        confidence_level: 'abstained',
+        citations: [],
         thinking_trace: [
           { step: 'Jurisdiction Check', detail: `Selected jurisdiction: ${jurisdiction}` },
-          { step: 'Fallback Reasoning', detail: 'Authoritative statutory fallback active.' }
+          { step: 'Retrieval Engine', detail: `Unreachable: ${aiErr.message}` },
+          { step: 'Safety Gate', detail: 'Abstained rather than answering without retrieved evidence.' },
         ],
-        ip_domains: ['patents', 'traditional_knowledge'],
-        classification: conversation.formulation_state || null,
+        ip_domains: [],
+        classification: null,
         abs_summary: null,
         tkdl_summary: null,
         updated_formulation_state: conversation.formulation_state || {},
@@ -210,8 +209,11 @@ const sendMessage = async (req, res) => {
         ragResponse.answer,
         lang,
         JSON.stringify(ragResponse.thinking_trace || []),
-        ragResponse.confidence_score || 0.85,
-        ragResponse.confidence_level || 'high',
+        // Do NOT use `|| 0.85` here. An abstention carries confidence_score 0,
+        // and 0 is falsy in JS, so the fallback rewrote every abstention to 0.85
+        // before it reached the database.
+        ragResponse.confidence_score ?? 0,
+        ragResponse.confidence_level || 'low',
         JSON.stringify(ragResponse.citations || []),
         ragResponse.ip_domains || [],
         ragResponse.classification ? JSON.stringify(ragResponse.classification) : null,
@@ -234,8 +236,8 @@ const sendMessage = async (req, res) => {
             cit.source_title || 'Statute / Rule',
             cit.section_reference || '',
             cit.jurisdiction || jurisdiction,
-            cit.verified_grounded !== false,
-            cit.similarity_score || 0.9,
+            cit.verified_grounded === true,
+            cit.similarity_score ?? 0,
           ]
         );
       }

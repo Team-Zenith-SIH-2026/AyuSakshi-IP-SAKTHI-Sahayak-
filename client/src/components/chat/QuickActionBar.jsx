@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useChat } from '../../context/ChatContext';
-import { Send, Mic, MicOff, Sparkles, CornerDownLeft } from 'lucide-react';
+import { ArrowUp, Mic, MicOff } from 'lucide-react';
 
 export const QuickActionBar = () => {
   const { sendMessage, isLoading } = useChat();
@@ -21,7 +21,6 @@ export const QuickActionBar = () => {
     }
   };
 
-  // Mock Voice STT Toggle
   const toggleVoice = () => {
     if (!isListening) {
       setIsListening(true);
@@ -38,72 +37,57 @@ export const QuickActionBar = () => {
         recognition.onend = () => setIsListening(false);
         recognition.start();
       } else {
-        setTimeout(() => {
-          setInput('Can I patent an Ayurvedic polyherbal formulation based on classical texts?');
-          setIsListening(false);
-        }, 1200);
+        setIsListening(false);
       }
     } else {
       setIsListening(false);
     }
   };
 
+  const canSend = input.trim() && !isLoading;
+
   return (
-    <div className="p-2.5 sm:p-3 md:p-4 border-t border-slate-200 dark:border-darkbg-border bg-white/85 dark:bg-darkbg-950/85 backdrop-blur-md w-full">
-      <div className="max-w-4xl mx-auto w-full">
+    <div className="w-full px-4 pb-4 sm:px-6 sm:pb-5">
+      <div className="mx-auto w-full max-w-3xl">
         <form
           onSubmit={handleSubmit}
-          className="relative rounded-2xl bg-slate-100/90 dark:bg-darkbg-card border border-slate-200 dark:border-darkbg-border focus-within:border-emerald-500/60 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all shadow-md p-2 flex flex-col justify-between w-full"
+          className="relative flex items-end gap-2 rounded-[20px] border border-emerald-900/[0.09] bg-white/85 py-2 pl-4 pr-2 shadow-sm shadow-emerald-950/[0.03] backdrop-blur-xl transition-colors focus-within:border-emerald-600/30 dark:border-white/[0.09] dark:bg-white/[0.04] dark:shadow-none dark:focus-within:border-emerald-400/25"
         >
-          {/* Textarea Input */}
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about Ayurvedic IP, Section 3(p), ABS Form A/III, or Regulatory Licensing..."
-            rows={2}
-            className="w-full bg-transparent px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none resize-none"
+            placeholder="Ask about your product, a licence, or a section of the law..."
+            rows={1}
+            className="max-h-40 min-h-[2.25rem] w-full flex-1 resize-none self-center bg-transparent py-1.5 text-[14.5px] leading-relaxed text-slate-800 placeholder-slate-400 focus:outline-none dark:text-slate-100 dark:placeholder-slate-500"
           />
 
-          {/* Bottom Bar inside Input Box */}
-          <div className="flex items-center justify-between pt-2 px-1 sm:px-2 border-t border-slate-200/40 dark:border-darkbg-border/40 gap-2">
-            {/* Model & Source Status Tag */}
-            <div className="flex items-center space-x-1.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 min-w-0">
-              <span className="flex items-center space-x-1 font-medium text-emerald-700 dark:text-emerald-400 flex-shrink-0">
-                <Sparkles className="w-3 h-3 text-emerald-500 flex-shrink-0" />
-                <span>Hybrid RAG</span>
-              </span>
-              <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
-              <span className="hidden sm:inline truncate">pgvector + Cross-Encoder</span>
-            </div>
+          <div className="flex flex-shrink-0 items-center gap-1 pb-0.5">
+            <button
+              type="button"
+              onClick={toggleVoice}
+              title={isListening ? 'Listening' : 'Speak your question'}
+              className={`rounded-full p-2 transition-colors ${
+                isListening
+                  ? 'bg-rose-500 text-white'
+                  : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/5 dark:hover:text-slate-300'
+              }`}
+            >
+              {isListening ? <MicOff className="h-4 w-4" strokeWidth={1.75} /> : <Mic className="h-4 w-4" strokeWidth={1.75} />}
+            </button>
 
-            {/* Action Buttons: Voice Mic + Send */}
-            <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
-              <button
-                type="button"
-                onClick={toggleVoice}
-                title={isListening ? 'Listening...' : 'Voice Input (STT)'}
-                className={`p-1.5 sm:p-2 rounded-xl text-xs font-semibold transition-all ${
-                  isListening
-                    ? 'bg-rose-500 text-white animate-pulse'
-                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-darkbg-border'
-                }`}
-              >
-                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              </button>
-
-              <button
-                type="submit"
-                disabled={!input.trim() || isLoading}
-                className={`p-1.5 sm:p-2 rounded-xl transition-all ${
-                  input.trim() && !isLoading
-                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 active:scale-95'
-                    : 'bg-slate-200 dark:bg-darkbg-border text-slate-400 cursor-not-allowed'
-                }`}
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={!canSend}
+              aria-label="Send"
+              className={`rounded-full p-2 transition-all ${
+                canSend
+                  ? 'bg-emerald-700 text-white hover:bg-emerald-800 active:scale-95 dark:bg-emerald-600 dark:hover:bg-emerald-500'
+                  : 'bg-slate-100 text-slate-300 dark:bg-white/[0.06] dark:text-slate-600'
+              }`}
+            >
+              <ArrowUp className="h-4 w-4" strokeWidth={2} />
+            </button>
           </div>
         </form>
       </div>

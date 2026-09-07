@@ -6,4 +6,8 @@ const { chatLimiter } = require('../middlewares/rateLimiter');
 
 router.post('/classify', optionalAuth, chatLimiter, classificationController.classify);
 
+// Rule-based decision tree wizard
+router.get('/wizard/tree', optionalAuth, classificationController.wizardTree);
+router.post('/wizard/step', optionalAuth, chatLimiter, classificationController.wizardStep);
+
 module.exports = router;

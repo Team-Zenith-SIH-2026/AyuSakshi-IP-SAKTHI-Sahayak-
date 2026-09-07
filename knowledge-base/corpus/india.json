@@ -1,0 +1,299 @@
+{
+  "corpus_id": "india",
+  "corpus_version": "2026-09-06.1",
+  "retrieved_date": "2026-09-06",
+  "collection_rules": "Official sources only. Verbatim statutory text transcribed from the PDFs in knowledge-base/source/, which were downloaded from India Code and the eGazette. No paraphrase and no commentary. Footnote reference markers and amendment annotations present in the source PDFs have been removed so the operative words read cleanly; nothing else is altered. Section numbers require human spot-check against knowledge-base/VERIFICATION_SHEET.md before demo.",
+  "documents": [
+    {
+      "title": "The Patents Act, 1970",
+      "short_title": "Patents Act, 1970",
+      "authority": "Office of the Controller General of Patents, Designs and Trade Marks",
+      "document_type": "statute",
+      "jurisdiction": "india",
+      "category": "patents",
+      "source_url": "https://www.indiacode.nic.in/bitstream/123456789/1392/1/A1970-39.pdf",
+      "source_file": "Patents Act, 1970.pdf",
+      "version_tag": "1970-consolidated-retrieved-2026-09-06",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "document_note": "Consolidation date is not stated on the title page of the downloaded PDF. The version tag therefore records the retrieval date rather than an as-on date.",
+      "chunks": [
+        {
+          "section_identifier": "Section 2(1)(j)",
+          "title": "Definition of invention",
+          "verbatim_text": "2. Definitions and interpretation.\n\n(1) In this Act, unless the context otherwise requires,—\n\n(j) \"invention\" means a new product or process involving an inventive step and capable of industrial application;\n\n(ja) \"inventive step\" means a feature of an invention that involves technical advance as compared to the existing knowledge or having economic significance or both and that makes the invention not obvious to a person skilled in the art;",
+          "retrieval_context": "definition of invention novelty inventive step industrial application what counts as an invention patentable"
+        },
+        {
+          "section_identifier": "Section 3(d)",
+          "title": "What are not inventions - new form of a known substance",
+          "verbatim_text": "3. What are not inventions.—The following are not inventions within the meaning of this Act,—\n\n(d) the mere discovery of a new form of a known substance which does not result in the enhancement of the known efficacy of that substance or the mere discovery of any new property or new use for a known substance or of the mere use of a known process, machine or apparatus unless such known process results in a new product or employs at least one new reactant.\n\nExplanation.—For the purposes of this clause, salts, esters, ethers, polymorphs, metabolites, pure form, particle size, isomers, mixtures of isomers, complexes, combinations and other derivatives of known substance shall be considered to be the same substance, unless they differ significantly in properties with regard to efficacy;",
+          "extraction_note": "The chapeau of section 3 is reproduced above the clause so the chunk stands on its own. Clauses (a) to (c) and (e) to (p) are in their own chunks or are not ingested.",
+          "retrieval_context": "patent new form of a known substance enhanced efficacy derivatives salts polymorphs particle size nano herbal reformulated classical preparation evergreening"
+        },
+        {
+          "section_identifier": "Section 3(e)",
+          "title": "What are not inventions - mere admixture",
+          "verbatim_text": "3. What are not inventions.—The following are not inventions within the meaning of this Act,—\n\n(e) a substance obtained by a mere admixture resulting only in the aggregation of the properties of the components thereof or a process for producing such substance;",
+          "extraction_note": "The chapeau of section 3 is reproduced above the clause so the chunk stands on its own.",
+          "retrieval_context": "patent mere admixture combining two or more herbs polyherbal combination blend new ratio of classical herbs synergy synergistic efficacy mixture of known ingredients"
+        },
+        {
+          "section_identifier": "Section 3(p)",
+          "title": "What are not inventions - traditional knowledge",
+          "verbatim_text": "3. What are not inventions.—The following are not inventions within the meaning of this Act,—\n\n(p) an invention which in effect, is traditional knowledge or which is an aggregation or duplication of known properties of traditionally known component or components.",
+          "extraction_note": "The chapeau of section 3 is reproduced above the clause so the chunk stands on its own. This chunk replaces earlier seed text that appended interpretive commentary about Ayurvedic classical medicines to the statutory words; that commentary was not part of the Act.",
+          "retrieval_context": "patent traditional knowledge cannot be patented classical Ayurvedic formulation Charaka Samhita Sushruta Ashtanga Hridaya classical texts patentability bar for traditional medicine Ayurveda TKDL prior art"
+        },
+        {
+          "section_identifier": "Section 10(4)",
+          "title": "Contents of specification - disclosure of source and geographical origin of biological material",
+          "verbatim_text": "10. Contents of specifications.\n\n(4) Every complete specification shall—\n\n(ii) ... (D) disclose the source and geographical origin of the biological material in the specification, when used in an invention.",
+          "extraction_note": "Sub-clause (D) of section 10(4)(ii) only. The surrounding sub-clauses (A) to (C), which concern deposit of biological material with a depository institution, are not reproduced here; the ellipsis marks that omission.",
+          "retrieval_context": "patent specification disclose source and geographical origin of biological material Indian plant used in invention disclosure requirement"
+        },
+        {
+          "section_identifier": "Section 25(1)(j)",
+          "title": "Opposition to the patent - non-disclosure of source of biological material",
+          "verbatim_text": "25. Opposition to the patent.\n\n(1) Where an application for a patent has been published but a patent has not been granted, any person may, in writing, represent by way of opposition to the Controller against the grant of patent on the ground—\n\n(j) that the complete specification does not disclose or wrongly mentions the source or geographical origin of biological material used for the invention;\n\n(k) that the invention so far as claimed in any claim of the complete specification is anticipated having regard to the knowledge, oral or otherwise, available within any local or indigenous community in India or elsewhere,\n\nbut on no other ground.",
+          "extraction_note": "Grounds (j) and (k) only, with the opening words of section 25(1) reproduced for context. Grounds (a) to (i) are not ingested.",
+          "retrieval_context": "pre-grant opposition oppose a patent application non-disclosure of biological source anticipation by local or indigenous community knowledge stop a patent"
+        },
+        {
+          "section_identifier": "Section 64(1)(p)",
+          "title": "Revocation of patents - non-disclosure of source of biological material",
+          "verbatim_text": "64. Revocation of patents.\n\n(1) Subject to the provisions contained in this Act, a patent, whether granted before or after the commencement of this Act, may, on the petition of any person interested or of the Central Government or on a counter-claim in a suit for infringement of the patent, be revoked by the High Court on any of the following grounds, that is to say—\n\n(p) that the complete specification does not disclose or wrongly mentions the source or geographical origin of biological material used for the invention;\n\n(q) that the invention so far as claimed in any claim of the complete specification was anticipated having regard to the knowledge, oral or otherwise, available within any local or indigenous community in India or elsewhere.",
+          "extraction_note": "Grounds (p) and (q) only, with the opening words of section 64(1) reproduced for context. Grounds (a) to (o) are not ingested.",
+          "retrieval_context": "revoke a patent post-grant revocation High Court stop a foreign company patenting a formulation from our tradition biopiracy indigenous knowledge"
+        }
+      ]
+    },
+    {
+      "title": "The Biological Diversity Act, 2002",
+      "short_title": "Biological Diversity Act, 2002",
+      "authority": "National Biodiversity Authority",
+      "document_type": "statute",
+      "jurisdiction": "india",
+      "category": "biodiversity",
+      "source_url": "https://www.indiacode.nic.in/bitstream/123456789/21545/1/the_biological_diversity_act,_2002.pdf",
+      "source_file": "Biological Diversity Act, 2002.pdf",
+      "version_tag": "2002-as-enacted",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "document_note": "Act No. 18 of 2003, dated 5 February 2003. This is the text as originally enacted. Sections 6 and 7 were substantially amended by the Biological Diversity (Amendment) Act, 2023, which is a separate document in this corpus. Where the two differ, the 2023 text governs.",
+      "chunks": [
+        {
+          "section_identifier": "Section 3",
+          "title": "Certain persons not to undertake biodiversity related activities without approval of National Biodiversity Authority",
+          "verbatim_text": "3. (1) No person referred to in sub-section (2) shall, without previous approval of the National Biodiversity Authority, obtain any biological resource occurring in India or knowledge associated thereto for research or for commercial utilization or for bio-survey and bio-utilisation.\n\n(2) The persons who shall be required to take the approval of the National Biodiversity Authority under sub-section (1) are the following, namely:—\n\n(a) a person who is not a citizen of India;\n\n(b) a citizen of India, who is a non-resident as defined in clause (30) of section 2 of the Income-tax Act, 1961;\n\n(c) a body corporate, association or organization—\n\n(i) not incorporated or registered in India; or\n\n(ii) incorporated or registered in India under any law for the time being in force which has any non-Indian participation in its share capital or management.",
+          "retrieval_context": "foreign company non-resident NRI overseas entity needs National Biodiversity Authority NBA approval to access Indian plants biological resources research commercial use"
+        },
+        {
+          "section_identifier": "Section 4",
+          "title": "Results of research not to be transferred to certain persons without approval",
+          "verbatim_text": "4. No person shall, without the previous approval of the National Biodiversity Authority, transfer the results of any research relating to any biological resources occurring in, or obtained from, India for monetary consideration or otherwise to any person who is not a citizen of India or citizen of India who is non-resident as defined in clause (30) of section 2 of the Income-tax Act, 1961 or a body corporate or organisation which is not registered or incorporated in India or which has any non-Indian participation in its share capital or management.",
+          "retrieval_context": "transfer research results on Indian biological resources to foreign person NBA approval"
+        },
+        {
+          "section_identifier": "Section 6",
+          "title": "Application for intellectual property rights not to be made without approval of National Biodiversity Authority (as enacted 2002)",
+          "verbatim_text": "6. (1) No person shall apply for any intellectual property right, by whatever name called, in or outside India for any invention based on any research or information on a biological resource obtained from India without obtaining the previous approval of the National Biodiversity Authority before making such application:\n\nProvided that if a person applies for a patent, permission of the National Biodiversity Authority may be obtained after the acceptance of the patent but before the sealing of the patent by the patent authority concerned:\n\nProvided further that the National Biodiversity Authority shall dispose of the application for permission made to it within a period of ninety days from the date of receipt thereof.\n\n(2) The National Biodiversity Authority may, while granting the approval under this section, impose benefit sharing fee or royalty or both or impose conditions including the sharing of financial benefits arising out of the commercial utilization of such rights.\n\n(3) The provisions of this section shall not apply to any person making an application for any right under any law relating to protection of plant varieties.",
+          "extraction_note": "This is the 2002 text. It was substituted by the Biological Diversity (Amendment) Act, 2023, which requires approval before GRANT of the right rather than before making the application. Read alongside the 2023 version.",
+          "retrieval_context": "NBA approval before applying for a patent or intellectual property using Indian biological resource benefit sharing fee royalty"
+        },
+        {
+          "section_identifier": "Section 7",
+          "title": "Prior intimation to State Biodiversity Board for obtaining biological resource (as enacted 2002)",
+          "verbatim_text": "7. No person, who is a citizen of India or a body corporate, association or organisation which is registered in India, shall obtain any biological resource for commercial utilization, or bio-survey and bio-utilisation for commercial utilization except after giving prior intimation to the State Biodiversity Board concerned:\n\nProvided that the provisions of this section shall not apply to the local people and communities of the area, including growers and cultivators of biodiversity, and vaids and hakims, who have been practising indigenous medicine.",
+          "extraction_note": "This is the 2002 text. The exemption proviso was widened by the Biological Diversity (Amendment) Act, 2023 to cover codified traditional knowledge, cultivated medicinal plants and registered AYUSH practitioners. Read alongside the 2023 version.",
+          "retrieval_context": "Indian company prior intimation to State Biodiversity Board SBB commercial utilisation exemption for vaids hakims growers cultivators local communities"
+        }
+      ]
+    },
+    {
+      "title": "The Biological Diversity (Amendment) Act, 2023",
+      "short_title": "Biological Diversity (Amendment) Act, 2023",
+      "authority": "Ministry of Environment, Forest and Climate Change / National Biodiversity Authority",
+      "document_type": "statute",
+      "jurisdiction": "india",
+      "category": "biodiversity",
+      "source_url": "https://egazette.gov.in/WritereadData/2023/247815.pdf",
+      "source_file": "Biological Diversity (Amendment) Act, 2023.pdf",
+      "version_tag": "2023-amendment-act-10-of-2023",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "document_note": "Act No. 10 of 2023, brought into force 1 April 2024. These provisions substitute the corresponding sections of the 2002 Act and govern where the two differ.",
+      "chunks": [
+        {
+          "section_identifier": "Section 6 (as amended 2023)",
+          "title": "Application for intellectual property rights not to be made without approval of National Biodiversity Authority",
+          "verbatim_text": "6. Application for intellectual property rights not to be made without approval of National Biodiversity Authority.\n\n(1) Any person or entity covered under sub-section (2) of section 3 applying for an intellectual property right, by whatever name called, in or outside India, for any invention based on any research or information on a biological resource which is accessed from India, including those deposited in repositories outside India, or traditional knowledge associated thereto, shall obtain prior approval of the National Biodiversity Authority before grant of such intellectual property rights.\n\n(1A) Any person covered under section 7 applying for any intellectual property right, by whatever name called, in or outside India, for any invention based on any research or information on a biological resource which is accessed from India, including those deposited in repositories outside India, or traditional knowledge associated thereto, shall register with the National Biodiversity Authority before grant of such intellectual property rights.\n\n(1B) Any person covered under section 7 who has obtained intellectual property right, by whatever name called, in or outside India, for any invention based on any research or information on a biological resource which is accessed from India, including those deposited in repositories outside India, or traditional knowledge associated thereto, shall obtain prior approval of the National Biodiversity Authority at the time of commercialisation.\n\n(2) The National Biodiversity Authority may, while granting the approval under this section, impose benefit sharing fee or royalty or both or impose conditions including the sharing of financial benefits arising out of the commercial utilisation of such rights.\n\n(3) The provisions of this section shall not apply to any person making an application for any right under any law relating to protection of plant varieties.",
+          "extraction_note": "The operative change from the 2002 text: approval is required before GRANT of the intellectual property right, not before making the application. A separate registration route applies to persons covered by section 7.",
+          "retrieval_context": "NBA approval before grant of patent intellectual property Indian biological resource traditional knowledge registration benefit sharing commercialisation 2023 amendment timing"
+        },
+        {
+          "section_identifier": "Section 7 proviso (as amended 2023)",
+          "title": "Exemptions for codified traditional knowledge, cultivated medicinal plants and registered AYUSH practitioners",
+          "verbatim_text": "Provided that the provisions of this section shall not apply to the codified traditional knowledge, cultivated medicinal plants and its products, local people and communities of the area, including growers and cultivators of biodiversity and to vaids, hakims and registered AYUSH practitioners only who have been practicing indigenous medicines, including Indian systems of medicine as profession for sustenance and livelihood.\n\n(2) In the case of cultivated medicinal plants, the exemption under sub-section (1) shall be available only if a certificate of origin is obtained from the Biodiversity Management Committee in such manner as may be prescribed.\n\n(3) The Biodiversity Management Committee shall, on the basis of entries made in such books, maintained in such manner, issue the certificate of origin under sub-section (2) in such manner as may be prescribed.",
+          "extraction_note": "The proviso to section 7 as substituted in 2023, with sub-sections (2) and (3) that condition the exemption for cultivated medicinal plants on a certificate of origin. This is the provision that materially changes the compliance answer for AYUSH practitioners and cultivators.",
+          "retrieval_context": "exemption for registered AYUSH practitioners vaids hakims cultivated medicinal plants codified traditional knowledge certificate of origin Biodiversity Management Committee do ABS obligations apply to me ashwagandha grower"
+        }
+      ]
+    },
+    {
+      "title": "The Drugs and Cosmetics Act, 1940",
+      "short_title": "Drugs and Cosmetics Act, 1940",
+      "authority": "Ministry of Health and Family Welfare / CDSCO",
+      "document_type": "statute",
+      "jurisdiction": "india",
+      "category": "ayush",
+      "source_url": "https://www.indiacode.nic.in/bitstream/123456789/2409/1/a1940-23.pdf",
+      "source_file": "Drugs and Cosmetics Act, 1940.pdf",
+      "version_tag": "1940-consolidated-retrieved-2026-09-06",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "document_note": "The downloaded PDF runs to 635 pages and combines the Act with the Drugs and Cosmetics Rules, 1945. Only the provisions listed here are ingested; the Rules are not yet included.",
+      "chunks": [
+        {
+          "section_identifier": "Section 3(a)",
+          "title": "Definition of Ayurvedic, Siddha or Unani drug",
+          "verbatim_text": "3. Definitions.—In this Act, unless there is anything repugnant in the subject or context,\n\n(a) \"Ayurvedic, Siddha or Unani drug\" includes all medicines intended for internal or external use for or in the diagnosis, treatment, mitigation or prevention of disease or disorder in human beings or animals, and manufactured exclusively in accordance with the formulae described in, the authoritative books of Ayurvedic, Siddha and Unani Tibb systems of medicine, specified in the First Schedule;",
+          "extraction_note": "Footnote reference markers and amendment annotations present in the source PDF have been removed. The word \"exclusively\" is the operative test: both the formula and its source must come from a First Schedule book.",
+          "retrieval_context": "what is a classical Ayurvedic drug ASU Ayurvedic Siddha Unani drug definition manufactured exclusively per formulae in authoritative books First Schedule"
+        },
+        {
+          "section_identifier": "Section 3(h)",
+          "title": "Definition of patent or proprietary medicine",
+          "verbatim_text": "3. Definitions.—In this Act, unless there is anything repugnant in the subject or context,\n\n(h) \"patent or proprietary medicine\" means,—\n\n(i) in relation to Ayurvedic, Siddha or Unani Tibb systems of medicine all formulations containing only such ingredients mentioned in the formulae described in the authoritative books of Ayurveda, Siddha or Unani Tibb systems of medicine specified in the First Schedule, but does not include a medicine which is administered by parenteral route and also a formulation included in the authoritative books as specified in clause (a);\n\n(ii) in relation to any other systems of medicine, a drug which is a remedy or prescription presented in a form ready for internal or external administration of human beings or animals and which is not included in the edition of the Indian Pharmacopoeia for the time being or any other Pharmacopoeia authorised in this behalf by the Central Government after consultation with the Drugs Technical Advisory Board constituted under section 5;",
+          "extraction_note": "Footnote reference markers removed. This is the statutory boundary between a classical ASU drug under clause (a) and a patent or proprietary medicine: same ingredients, but a formulation not itself in the First Schedule books.",
+          "retrieval_context": "patent or proprietary medicine P or P definition difference between classical Ayurvedic drug and proprietary medicine new combination not in classical texts licensing"
+        },
+        {
+          "section_identifier": "First Schedule (Part A)",
+          "title": "Authoritative books of the Ayurvedic and Siddha systems",
+          "verbatim_text": "THE FIRST SCHEDULE [See section 3(a)]\n\nA.—AYURVEDIC AND SIDDHA SYSTEMS\n\nAyurveda\n\n1. Arogya Kalpadruma\n2. Arka Prakasha\n3. Arya Bhishak\n4. Ashtanga Hridaya\n5. Ashtanga Samgraha\n6. Ayurveda Kalpadruma\n7. Ayurveda Prakasha\n8. Ayurveda Samgraha\n9. Bhaishajya Ratnavali\n10. Brihat Bhaishajya Ratnakara\n11. Bhava Prakasha\n12. Brihat Nighantu Ratnakara\n13. Charaka Samihita\n14. Chakra Datta\n15. Gada Nigraha\n16. Kupi Pakva Rasayana\n17. Nighantu Ratnakara\n18. Rasa Chandanshu\n19. Rasa Raja Sundara\n20. Rasaratna Samuchaya\n21. Rasatantra Sara Va Siddha Prayoga Sangraha—Part I\n21(a). Rasatantra Sara Va Siddha Prayoga Sangraha—Part II (Edition 2006)\n22. Rasa Tarangini\n23. Rasa Yoga Sagara\n24. Rasa Yoga Ratnakara\n25. Rasa Yoga Samgraha\n26. Rasendra Sara Samgraha\n27. Rasa Pradipika\n28. Sahasrayoga\n29. Sarvaroga Chikitsa Ratnam\n30. Sarvayoga Chikitsa Ratnam\n31. Sharangadhara Samhita\n32. Siddha Bhaishajya Manimala\n33. Siddha Yoga Samgraha\n34. Sushruta Samhita\n35. Vaidya Chintamani\n36. Vaidyaka Shabda Sindu\n37. Vaidyaka Chikitsa Sara\n38. Vidya Jiwan\n39. Vasava Rajeeyam\n40. Yoga Ratnakara\n41. Yoga Tarangini\n42. Yoga Chintamani\n43. Kashyapasamhita\n44. Bhelasamhita\n45. Vishwanathachikitsa\n46. Vrindachikitsa\n47. Ayurvedachintamani\n48. Abhinavachintamani\n49. Ayurveda-Ratnakara\n50. Yogaratnasangraha\n51. Rasamrita\n52. Dravyagunanighantu\n53. Rasamanjari\n54. Bangasena\n54A. Ayurvedic Formulary of India and its Parts\n54B. Ayurveda Sara Samgraha\n54C. Ayurvedic Pharmacopoeia of India\n54D. Ayurvedic Pharmacopoeia of India and its Parts",
+          "extraction_note": "Entry 13 reads \"Charaka Samihita\" in the source PDF; the spelling is reproduced exactly as printed rather than corrected. Footnote markers and amendment annotations removed. Only the Ayurveda entries of Part A are listed here; the Siddha entries (55 onwards) and Part B (Unani) are not yet ingested. This Schedule is the entry point to the classification tree: a formulation is classical only if both it and its method come from a book on this list.",
+          "retrieval_context": "authoritative books list which classical texts count Charaka Samhita Sushruta Samhita Ashtanga Hridaya Bhava Prakasha Sharangadhara Ayurvedic Formulary of India first schedule books"
+        },
+        {
+          "section_identifier": "Rule 158-B",
+          "title": "Categories of Ayurvedic, Siddha and Unani drugs for licensing",
+          "verbatim_text": "158-B. The categories of Ayurvedic, Siddha and Unani drugs for the purpose of issue of licence are:\n\n(i) Ayurveda, Siddha and Unani drugs as referred in clause (a) of section 3, manufactured in accordance with the formulae described in the authoritative books of the First Schedule.\n\n(ii) Balya/Poshak/Muqawi/Unavuporutkal/positive health Promoter formulations having ingredients mentioned in books of First Schedule of the Drugs and Cosmetics Act and recommended for promotional and preventive health.\n\n(iii) Saundarya Prasadak (Husane afza)/Azhagh-sadhan formulation having ingredients mentioned in Books of First Schedule of the Drugs and Cosmetics Act and recommended for oral, skin, hair and body care.\n\n(iv) Aushadh Ghana (Medicinal plant extracts - dry/wet) extract obtained from plant mentioned in books of First Schedule of the Act including Aqueous or hydro-alcohol.\n\nFor issue of licence to the medicine with respect to Ayurvedic, Siddha and Unani, and for issue of licence with respect to Patent or Proprietary medicine, the conditions relating to safety study and the experience or evidence of effectiveness are specified in tables in the Rule.",
+          "extraction_note": "PARTIAL. The category list is transcribed verbatim. The safety-study and evidence-of-effectiveness TABLES in this Rule did not survive PDF text extraction in readable form (columns flatten into a single run), so they are summarised in one sentence rather than reproduced. Those tables need manual transcription before the system can state the evidence requirements for a specific category.",
+          "retrieval_context": "licence categories for Ayurvedic Siddha Unani drugs safety study evidence of effectiveness published literature proof licensing requirements classical versus proprietary medicine"
+        }
+      ]
+    },
+    {
+      "title": "Food Safety and Standards (Ayurveda Aahara) Regulations, 2022",
+      "short_title": "FSSAI Ayurveda Aahara Regulations, 2022",
+      "authority": "Food Safety and Standards Authority of India (FSSAI)",
+      "document_type": "regulation",
+      "jurisdiction": "india",
+      "category": "fssai",
+      "source_url": "https://www.fssai.gov.in/",
+      "source_file": "FSSAI (Ayurveda Aahara) Regulations, 2022.pdf",
+      "version_tag": "2022-as-published",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "chunks": [
+        {
+          "section_identifier": "Regulation 2(b)",
+          "title": "Definition of Ayurveda Aahara",
+          "verbatim_text": "2. Definitions.\n\n(b) \"Ayurveda Aahara\" means a food prepared in accordance with the recipes or ingredients or processes as per method described in the authoritative books of Ayurveda listed under 'Schedule A' of these regulations including products which have other botanical ingredients in accordance with the concept of Ayurveda Aahara but does not include Ayurvedic drugs or proprietary Ayurvedic medicines and medicinal products, cosmetics, narcotic or psychotropic substances, herbs listed under Schedule E-1 of Drug and Cosmetics Act, 1940 and the Drug and Cosmetics Rules, 1945, metals based Ayurvedic drugs or medicines, bhasma or pishti and any other ingredients notified by the Authority from time to time.",
+          "extraction_note": "This definition draws the line between the food regime and the drug regime: a product on this route cannot be an Ayurvedic drug or proprietary Ayurvedic medicine. Schedule A of these Regulations, which lists the authoritative books for the food route, is not yet ingested.",
+          "retrieval_context": "Ayurveda Aahara definition sell as food not a drug nutraceutical health supplement FSSAI food licence no therapeutic claim"
+        }
+      ]
+    },
+    {
+      "title": "The Trade Marks Act, 1999",
+      "short_title": "Trade Marks Act, 1999",
+      "authority": "Trade Marks Registry, Office of the CGPDTM",
+      "document_type": "statute",
+      "jurisdiction": "india",
+      "category": "trademarks",
+      "source_url": "https://www.indiacode.nic.in/bitstream/123456789/1993/1/a199947.pdf",
+      "source_file": "Trade Marks Act, 1999.pdf",
+      "version_tag": "1999-as-on-2026-06-01",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "document_note": "The title page of the downloaded PDF states \"As on the 1st June, 2026\".",
+      "chunks": [
+        {
+          "section_identifier": "Section 9",
+          "title": "Absolute grounds for refusal of registration",
+          "verbatim_text": "9. Absolute grounds for refusal of registration.—(1) The trade marks—\n\n(a) which are devoid of any distinctive character, that is to say, not capable of distinguishing the goods or services of one person from those of another person;\n\n(b) which consist exclusively of marks or indications which may serve in trade to designate the kind, quality, quantity, intended purpose, values, geographical origin or the time of production of the goods or rendering of the service or other characteristics of the goods or service;\n\n(c) which consist exclusively of marks or indications which have become customary in the current language or in the bona fide and established practices of the trade,\n\nshall not be registered:\n\nProvided that a trade mark shall not be refused registration if before the date of application for registration it has acquired a distinctive character as a result of the use made of it or is a well-known trade mark.\n\n(2) A mark shall not be registered as a trade mark if—\n\n(a) it is of such nature as to deceive the public or cause confusion;\n\n(b) it contains or comprises of any matter likely to hurt the religious susceptibilities of any class or section of the citizens of India;\n\n(c) it comprises or contains scandalous or obscene matter;\n\n(d) its use is prohibited under the Emblems and Names (Prevention of Improper Use) Act, 1950 (12 of 1950).\n\n(3) A mark shall not be registered as a trade mark if it consists exclusively of—\n\n(a) the shape of goods which results from the nature of the goods themselves; or\n\n(b) the shape of goods which is necessary to obtain a technical result; or\n\n(c) the shape which gives substantial value to the goods.",
+          "extraction_note": "Sub-section (1)(b) and (1)(c) are the provisions that most often defeat Ayurvedic product names: a mark consisting exclusively of a descriptive term, or of a name that has become customary in the trade, is not registrable unless it has acquired distinctiveness.",
+          "retrieval_context": "trademark absolute grounds refusal descriptive mark generic name customary in trade can I trademark my Ayurvedic product name brand distinctive character acquired distinctiveness"
+        }
+      ]
+    },
+    {
+      "title": "The Drugs and Magic Remedies (Objectionable Advertisements) Act, 1954",
+      "short_title": "Drugs and Magic Remedies Act, 1954",
+      "authority": "Ministry of Health and Family Welfare",
+      "document_type": "statute",
+      "jurisdiction": "india",
+      "category": "ayush",
+      "source_url": "https://www.indiacode.nic.in/bitstream/123456789/1412/1/195421.pdf",
+      "source_file": "Drugs and Magic Remedies (Objectionable Advertisements) Act, 1954.pdf",
+      "version_tag": "1954-retrieved-2026-09-06",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "document_note": "The downloaded PDF is an 8-page extract. Section 3 is complete, but the Schedule listing the specified diseases is truncated after the first two entries, so the Schedule is NOT ingested. A complete copy is needed before the system can answer which specific conditions are covered.",
+      "chunks": [
+        {
+          "section_identifier": "Section 3",
+          "title": "Prohibition of advertisement of certain drugs for treatment of certain diseases and disorders",
+          "verbatim_text": "3. Prohibition of Advertisement of Certain Drugs for Treatment of Certain Diseases and Disorders.—Subject to the provisions of this Act, no person shall take any part in the publication of any advertisement referring to any drug in terms which suggest or are calculated to lead to the use of that drug for—\n\n(a) the procurement of miscarriage in women or prevention of conception in women; or\n\n(b) the maintenance or improvement of the capacity of human beings for sexual pleasure; or\n\n(c) the correction of menstrual disorder in women; or\n\n(d) the diagnosis, cure, mitigation, treatment or prevention of any disease, disorder or condition specified in the Schedule, or any other disease, disorder or condition (by whatsoever name called) which may be specified in the rules made under this Act:\n\nProvided that no such rule shall be made except,—\n\n(i) in respect of any disease, disorder or condition which requires timely treatment in consultation with a registered medical practitioner or for which there are normally no accepted remedies, and\n\n(ii) after consultation with the Drugs Technical Advisory Board constituted under the Drugs and Cosmetics Act, 1940 (23 of 1940) and, if the Central Government considers necessary, with such other persons having special knowledge or practical experience in respect of Ayurvedic or Unani systems of medicines as that Government deems fit.",
+          "extraction_note": "The Schedule referred to in clause (d) is truncated in the source PDF and is not ingested. The system can therefore state that a scheduled-disease restriction exists, but cannot yet confirm whether a particular condition appears on that list.",
+          "retrieval_context": "advertising restrictions cannot advertise cure for diabetes prohibited disease claims magic remedies misleading advertisement marketing claims"
+        }
+      ]
+    },
+    {
+      "title": "The Geographical Indications of Goods (Registration and Protection) Act, 1999",
+      "short_title": "Geographical Indications of Goods Act, 1999",
+      "authority": "Geographical Indications Registry, Office of the CGPDTM",
+      "document_type": "statute",
+      "jurisdiction": "india",
+      "category": "gi",
+      "source_url": "https://www.indiacode.nic.in/bitstream/123456789/1981/1/a199948.pdf",
+      "source_file": "Geographical Indications of Goods Act, 1999.pdf",
+      "version_tag": "1999-as-published-gazette",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "chunks": [
+        {
+          "section_identifier": "Section 2(1)(e)",
+          "title": "Definition of geographical indication",
+          "verbatim_text": "2. Definitions and interpretation.\n\n(1) In this Act, unless the context otherwise requires,—\n\n(e) \"geographical indication\", in relation to goods, means an indication which identifies such goods as agricultural goods, natural goods or manufactured goods as originating, or manufactured in the territory of a country, or a region or locality in that territory, where a given quality, reputation or other characteristic of such goods is essentially attributable to its geographical origin and in case where such goods are manufactured goods one of the activities of either the production or of processing or preparation of the goods concerned takes place in such territory, region or locality, as the case may be.\n\nExplanation.—For the purposes of this clause, any name which is not the name of a country, region or locality of that country shall also be considered as the geographical indication if it relates to a specific geographical area and is used upon or in relation to particular goods originating from that country, region or locality, as the case may be.",
+          "retrieval_context": "geographical indication GI definition region specific product GI tag for Ayurvedic preparation origin quality reputation attributable to geographical origin"
+        }
+      ]
+    },
+    {
+      "title": "New Drugs and Clinical Trials Rules, 2019",
+      "short_title": "NDCT Rules, 2019",
+      "authority": "Central Drugs Standard Control Organisation (CDSCO)",
+      "document_type": "rule",
+      "jurisdiction": "india",
+      "category": "ayush",
+      "source_url": "https://cdsco.gov.in/",
+      "source_file": "New Drugs and Clinical Trials Rules, 2019.pdf",
+      "version_tag": "2019-retrieved-2026-09-06",
+      "retrieved_date": "2026-09-06",
+      "verification_status": "pending_human_check",
+      "chunks": [
+        {
+          "section_identifier": "Rule 2(aa)",
+          "title": "Definition of phytopharmaceutical drug",
+          "verbatim_text": "2. Definitions.\n\n(aa) \"phytopharmaceutical drug\" means a drug of purified and standardised fraction, assessed qualitatively and quantitatively with defined minimum four bio-active or phytochemical compounds of an extract of a medicinal plant or its part, for internal or external use on human beings or animals, for diagnosis, treatment, mitigation or prevention of any disease or disorder but does not include drug administered through parenteral route;",
+          "extraction_note": "This is the statutory test that separates a phytopharmaceutical from a whole-herb preparation: purified and standardised, with at least four defined bio-active or phytochemical markers.",
+          "retrieval_context": "phytopharmaceutical drug definition purified standardised fraction four bioactive phytochemical markers extract of medicinal plant what evidence do I need clinical"
+        }
+      ]
+    }
+  ]
+}

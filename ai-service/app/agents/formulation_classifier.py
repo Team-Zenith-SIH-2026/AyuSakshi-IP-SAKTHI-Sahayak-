@@ -26,20 +26,14 @@ class FormulationClassifier:
         t = text.lower()
         state = current_state or {}
         
-        # 0. Check for explicitly Out-of-Scope non-Ayurvedic / non-biological topics
-        out_of_scope_keywords = ["quantum", "semiconductor", "microprocessor", "computer chip", "cryptocurrency", "blockchain", "nuclear physics", "aerospace engine"]
-        if any(k in t for k in out_of_scope_keywords):
-            return {
-                "category": "Out of Scope / Non-Ayurvedic Subject Matter",
-                "confidence": 0.0,
-                "reasoning": "The query refers to non-biological or non-traditional subject matter outside the jurisdiction of AYUSH, herbal IP, and Biological Diversity regulatory regimes.",
-                "ip_posture": {},
-                "regulatory_pathway": "Out of Scope",
-                "abs_relevant": False,
-                "is_out_of_scope": True,
-                "clarifying_question_needed": False
-            }
-        
+        # Note: there is deliberately no out-of-scope keyword list here.
+        #
+        # A hardcoded list ("quantum", "semiconductor", ...) only refuses the
+        # queries somebody thought of in advance, and it made the golden dataset
+        # pass by construction rather than by capability. Scope is now decided
+        # downstream by retrieval evidence and the confidence abstention gate,
+        # which generalises to questions nobody anticipated.
+
         # 1. Check for Phytopharmaceutical (purified fraction, standardized markers, modern extraction)
         if any(k in t for k in ["fraction", "purified fraction", "standardized extract with marker", "phytopharmaceutical", "isolated bioactive"]):
             return {

@@ -1,0 +1,520 @@
+{
+  "run_at": "2026-09-06T13:19:54.183668+00:00",
+  "llm_provider": "groq",
+  "llm_model": "openai/gpt-oss-120b",
+  "abstain_threshold": 0.5,
+  "case_count": 25,
+  "metrics": {
+    "answer_grounding_pct": 93.8,
+    "citation_correctness_pct": 85.7,
+    "abstention_accuracy_pct": 84.0,
+    "false_answers": 2,
+    "false_refusals": 2,
+    "fabricated_authority_delivered": 0,
+    "fabricated_authority_detected_and_blocked": 3
+  },
+  "cases": [
+    {
+      "id": "brief_01",
+      "query": "Can a classical formulation from the Charaka Samhita be patented in India?",
+      "jurisdiction": "india",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 5,
+      "expected_statutes": [
+        "Section 3(p)"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.7919,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "brief_02",
+      "query": "My product combines three classical herbs in a new ratio. What protection can I get?",
+      "jurisdiction": "india",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": true,
+      "abstention_ok": false,
+      "false_refusal": true,
+      "false_answer": false,
+      "citations_found": 0,
+      "expected_statutes": [
+        "Section 3(e)"
+      ],
+      "missing_statutes": [
+        "Section 3(e)"
+      ],
+      "citation_ok": false,
+      "fabricated": [
+        "Section\u202f7"
+      ],
+      "confidence_score": 0.0,
+      "synthesis_path": "abstained"
+    },
+    {
+      "id": "brief_03",
+      "query": "Do I need National Biodiversity Authority approval before filing a patent using an Indian medicinal plant?",
+      "jurisdiction": "india",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 4,
+      "expected_statutes": [
+        "Section 6(1)"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.8787,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "brief_04",
+      "query": "I am a registered AYUSH practitioner using cultivated ashwagandha. Do ABS obligations apply to me?",
+      "jurisdiction": "india",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 1,
+      "expected_statutes": [
+        "Section 7"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.5787,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "brief_05",
+      "query": "What is the difference between a patent or proprietary medicine and a new drug for licensing purposes?",
+      "jurisdiction": "india",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 2,
+      "expected_statutes": [
+        "Rule 158-B"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.6515,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "brief_06",
+      "query": "Can I advertise my product as a cure for diabetes?",
+      "jurisdiction": "india",
+      "expected_abstain": true,
+      "abstain_reason": "corpus_gap",
+      "did_abstain": true,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 0,
+      "expected_statutes": [
+        "Section 3"
+      ],
+      "missing_statutes": [
+        "Section 3"
+      ],
+      "citation_ok": false,
+      "fabricated": [],
+      "confidence_score": 0.0,
+      "synthesis_path": "abstained"
+    },
+    {
+      "id": "brief_07",
+      "query": "Can I sell my formulation as a nutraceutical instead of a drug, and what changes if I do?",
+      "jurisdiction": "india",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 3,
+      "expected_statutes": [
+        "Regulation 3 & 4"
+      ],
+      "missing_statutes": [
+        "Regulation 3 & 4"
+      ],
+      "citation_ok": false,
+      "fabricated": [],
+      "confidence_score": 0.58,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "brief_08",
+      "query": "What is a phytopharmaceutical and what evidence do I need for one?",
+      "jurisdiction": "india",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 2,
+      "expected_statutes": [
+        "Phytopharmaceutical Regulations"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.5817,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "brief_09",
+      "query": "Can a region-specific Ayurvedic preparation get a Geographical Indication?",
+      "jurisdiction": "india",
+      "expected_abstain": true,
+      "abstain_reason": "corpus_gap",
+      "did_abstain": false,
+      "abstention_ok": false,
+      "false_refusal": false,
+      "false_answer": true,
+      "citations_found": 3,
+      "expected_statutes": [
+        "GI of Goods Act 1999"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.5286,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "brief_10",
+      "query": "What does the WIPO GRATK Treaty require me to disclose when filing abroad?",
+      "jurisdiction": "international",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 5,
+      "expected_statutes": [
+        "Article 3"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.5383,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "brief_11",
+      "query": "How do I stop a foreign company patenting a formulation from our tradition?",
+      "jurisdiction": "india",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 4,
+      "expected_statutes": [
+        "Section 3(p)"
+      ],
+      "missing_statutes": [
+        "Section 3(p)"
+      ],
+      "citation_ok": false,
+      "fabricated": [],
+      "confidence_score": 0.5482,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "brief_12",
+      "query": "What is the best treatment for my knee pain?",
+      "jurisdiction": "india",
+      "expected_abstain": true,
+      "abstain_reason": "out_of_scope",
+      "did_abstain": true,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 0,
+      "expected_statutes": [],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.0,
+      "synthesis_path": "abstained"
+    },
+    {
+      "id": "intl_01",
+      "query": "What are the compliance checkpoint obligations under the Nagoya Protocol?",
+      "jurisdiction": "international",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 4,
+      "expected_statutes": [
+        "Article 17"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.5487,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "intl_02",
+      "query": "Does TRIPS allow countries to exclude plants from patentability?",
+      "jurisdiction": "international",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 4,
+      "expected_statutes": [
+        "Article 27"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.5393,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "intl_03",
+      "query": "What protection does the Convention on Biological Diversity give to traditional knowledge of local communities?",
+      "jurisdiction": "international",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 5,
+      "expected_statutes": [
+        "Article 8(j)"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.9369,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "intl_04",
+      "query": "Is prior informed consent required to access genetic resources under the Nagoya Protocol?",
+      "jurisdiction": "international",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 5,
+      "expected_statutes": [
+        "Article 6"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.9551,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "intl_05",
+      "query": "What sanctions apply if a patent applicant fails to disclose genetic resource origin under the GRATK Treaty?",
+      "jurisdiction": "international",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 5,
+      "expected_statutes": [
+        "Article 5"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.8118,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "india_01",
+      "query": "Is prior intimation to the State Biodiversity Board required for an Indian company using turmeric commercially?",
+      "jurisdiction": "india",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": false,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 3,
+      "expected_statutes": [
+        "Section 7"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.8225,
+      "synthesis_path": "llm:groq"
+    },
+    {
+      "id": "india_02",
+      "query": "Do I have to disclose the geographical origin of biological material in my patent specification?",
+      "jurisdiction": "india",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": true,
+      "abstention_ok": false,
+      "false_refusal": true,
+      "false_answer": false,
+      "citations_found": 0,
+      "expected_statutes": [
+        "Section 10(4)"
+      ],
+      "missing_statutes": [
+        "Section 10(4)"
+      ],
+      "citation_ok": false,
+      "fabricated": [
+        "Section 3(p)"
+      ],
+      "confidence_score": 0.0,
+      "synthesis_path": "abstained"
+    },
+    {
+      "id": "oos_01",
+      "query": "How do I bake a chocolate cake for my sister's birthday?",
+      "jurisdiction": "india",
+      "expected_abstain": true,
+      "abstain_reason": "out_of_scope",
+      "did_abstain": true,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 0,
+      "expected_statutes": [],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.0,
+      "synthesis_path": "abstained"
+    },
+    {
+      "id": "oos_02",
+      "query": "What are Japan's import requirements for Ayurvedic products?",
+      "jurisdiction": "india",
+      "expected_abstain": true,
+      "abstain_reason": "out_of_scope",
+      "did_abstain": false,
+      "abstention_ok": false,
+      "false_refusal": false,
+      "false_answer": true,
+      "citations_found": 4,
+      "expected_statutes": [],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.5044,
+      "synthesis_path": "deterministic_template_fallback"
+    },
+    {
+      "id": "oos_03",
+      "query": "What dosage of ashwagandha should I take daily for stress?",
+      "jurisdiction": "india",
+      "expected_abstain": true,
+      "abstain_reason": "out_of_scope",
+      "did_abstain": true,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 0,
+      "expected_statutes": [],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [
+        "Section\u202f7"
+      ],
+      "confidence_score": 0.0,
+      "synthesis_path": "abstained"
+    },
+    {
+      "id": "oos_04",
+      "query": "Which yoga asana is best for lower back pain?",
+      "jurisdiction": "india",
+      "expected_abstain": true,
+      "abstain_reason": "out_of_scope",
+      "did_abstain": true,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 0,
+      "expected_statutes": [],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.0,
+      "synthesis_path": "abstained"
+    },
+    {
+      "id": "oos_05",
+      "query": "Write me a marketing email promoting my new ashwagandha supplement to retailers.",
+      "jurisdiction": "india",
+      "expected_abstain": true,
+      "abstain_reason": "out_of_scope",
+      "did_abstain": true,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 0,
+      "expected_statutes": [],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.0,
+      "synthesis_path": "abstained"
+    },
+    {
+      "id": "oos_06",
+      "query": "I synthesized an artificial quantum semiconductor computer chip in a cleanroom. Can I patent it under AYUSH rules?",
+      "jurisdiction": "india",
+      "expected_abstain": true,
+      "abstain_reason": "out_of_scope",
+      "did_abstain": true,
+      "abstention_ok": true,
+      "false_refusal": false,
+      "false_answer": false,
+      "citations_found": 0,
+      "expected_statutes": [],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.0,
+      "synthesis_path": "abstained"
+    }
+  ]
+}

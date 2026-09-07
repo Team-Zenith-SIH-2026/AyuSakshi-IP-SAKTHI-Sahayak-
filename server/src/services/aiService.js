@@ -51,6 +51,35 @@ const classifyFormulation = async (payload) => {
 };
 
 /**
+ * Fetch the rule-based classification decision tree
+ */
+const getWizardTree = async () => {
+  try {
+    const response = await aiClient.get('/api/formulation/wizard/tree');
+    return response.data;
+  } catch (error) {
+    console.error('[AI Service Error - Wizard Tree]:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+/**
+ * Walk the rule-based classification decision tree with the answers given so far
+ */
+const wizardClassify = async (payload) => {
+  try {
+    const response = await aiClient.post('/api/formulation/wizard/classify', {
+      answers: payload.answers || [],
+      conversation_id: payload.conversation_id,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('[AI Service Error - Wizard Classify]:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+/**
  * Ingest / Chunk / Embed Document via Python Service
  */
 const ingestDocument = async (payload) => {
@@ -105,6 +134,8 @@ const getHealth = async () => {
 module.exports = {
   queryRAG,
   classifyFormulation,
+  getWizardTree,
+  wizardClassify,
   ingestDocument,
   translateText,
   getHealth,

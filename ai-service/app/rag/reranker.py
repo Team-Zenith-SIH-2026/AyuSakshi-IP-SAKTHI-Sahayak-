@@ -10,8 +10,12 @@ def get_reranker():
             from sentence_transformers import CrossEncoder
             print(f"[Reranker] Loading Cross-Encoder: {settings.RERANKER_MODEL_NAME}...")
             _reranker_model = CrossEncoder(settings.RERANKER_MODEL_NAME)
+            print("[Reranker] REAL CROSS-ENCODER LOADED. Reranking is active.")
         except Exception as e:
-            print(f"[Reranker Warning] Could not load CrossEncoder ({e}). Using similarity-based reranker fallback.")
+            print("=" * 78)
+            print(f"[Reranker] *** CROSS-ENCODER UNAVAILABLE: {e}")
+            print("[Reranker] *** FALLING BACK TO RAW SIMILARITY ORDERING. Reranking is disabled.")
+            print("=" * 78)
             _reranker_model = "fallback"
     return _reranker_model
 
@@ -24,7 +28,15 @@ def rerank_documents(query: str, candidates: List[Dict[str, Any]], top_k: int = 
         
     model = get_reranker()
     if model != "fallback" and hasattr(model, "predict"):
-        pairs = [[query, f"{c.get('section_identifier', '')}: {c.get('content', '')}"] for c in candidates]
+        # The chunk title carries the plain-language retrieval aid, and the
+        # cross-encoder needs it for the same reason dense retrieval does:
+        # verbatim statute rarely contains the words people ask with. Scoring
+        # against content alone made the cross-encoder demote exactly the
+        # provisions dense retrieval had correctly ranked first.
+        pairs = [
+            [query, f"{c.get('section_identifier', '')}: {c.get('title', '')}. {c.get('content', '')}"]
+            for c in candidates
+        ]
         scores = model.predict(pairs)
         
         for c, s in zip(candidates, scores):
