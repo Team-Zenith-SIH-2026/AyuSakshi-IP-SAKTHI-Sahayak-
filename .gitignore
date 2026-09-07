@@ -44,6 +44,8 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+CLAUDE.md
+.claude/
 
 # Docker Volumes
 postgres_data/
