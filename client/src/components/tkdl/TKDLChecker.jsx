@@ -54,10 +54,52 @@ export const TKDLChecker = () => {
             </p>
           </div>
 
+          {/* Live prior-art lookup.
+              queryHerb previously had no input bound to it, so the panel could
+              only ever show the four fixed cards below. */}
+          <div className="space-y-2">
+            <label className="block text-[11px] font-bold uppercase text-slate-400 dark:text-slate-500">
+              Check a herb or formulation
+            </label>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const herb = queryHerb.trim();
+                if (!herb) return;
+                sendMessage(
+                  `Is ${herb} documented as traditional knowledge in classical Ayurvedic texts, ` +
+                  `and how does that affect whether a formulation based on it can be patented in India?`
+                );
+                setQueryHerb('');
+                setActiveModal(null);
+              }}
+              className="flex items-center space-x-2"
+            >
+              <input
+                type="text"
+                value={queryHerb}
+                onChange={(e) => setQueryHerb(e.target.value)}
+                placeholder="e.g. Ashwagandha, Triphala, Guduchi"
+                className="flex-1 rounded-xl bg-slate-50 dark:bg-darkbg-950 border border-slate-200 dark:border-darkbg-border p-2 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+              />
+              <button
+                type="submit"
+                disabled={!queryHerb.trim()}
+                className="p-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 disabled:hover:bg-cyan-600 text-white transition-all flex-shrink-0"
+                aria-label="Check prior art"
+              >
+                <Search className="w-4 h-4" />
+              </button>
+            </form>
+            <p className="text-[10.5px] text-slate-500 leading-relaxed">
+              The answer is retrieved from the statutory corpus with citations, not from this panel.
+            </p>
+          </div>
+
           {/* Cataloged Reference Cards */}
           <div className="space-y-2">
             <label className="block text-[11px] font-bold uppercase text-slate-400 dark:text-slate-500">
-              High-Frequency Classical Records in Authoritative Corpus
+              Landmark revocation precedents
             </label>
             {sampleHerbs.map((h, idx) => (
               <div

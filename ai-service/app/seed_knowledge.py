@@ -163,6 +163,7 @@ def seed_database():
     total_chunks = 0
     inserted_versions = 0
     skipped_versions = 0
+    restored_versions = 0
 
     for doc in corpus:
         doc_id = _document_id(doc)
@@ -208,10 +209,39 @@ def seed_database():
                     (doc_id, doc["title"], doc["authority"], doc["document_type"], doc["jurisdiction"], doc["category"], doc["source_url"])
                 )
 
-                # This exact text already ingested? Then there is nothing to do.
-                cur.execute("SELECT 1 FROM document_versions WHERE id = %s;", (version_id,))
-                if cur.fetchone():
-                    skipped_versions += 1
+                # This exact text already ingested? Then there is nothing to do,
+                # PROVIDED it is still the version retrieval will actually read.
+                #
+                # The check used to be "does this version row exist", which is
+                # not the same question. Bulk PDF ingestion writes a new version
+                # of the same document (same title, so same deterministic
+                # document id) and flips is_current to itself. The verbatim
+                # version row still existed, so re-seeding skipped it forever
+                # and never put it back. Retrieval filters on is_current, so the
+                # hand-transcribed corpus -- section labels, per-chunk source
+                # URLs, retrieval_context bridges and all -- was sitting in the
+                # database completely unreachable, while every query was served
+                # from auto-extracted PDF text instead.
+                cur.execute("SELECT is_current FROM document_versions WHERE id = %s;", (version_id,))
+                row = cur.fetchone()
+                if row:
+                    if row[0]:
+                        skipped_versions += 1
+                    else:
+                        cur.execute(
+                            "UPDATE document_versions SET is_current = FALSE WHERE document_id = %s AND id <> %s;",
+                            (doc_id, version_id)
+                        )
+                        cur.execute(
+                            "UPDATE document_versions SET is_current = TRUE WHERE id = %s;",
+                            (version_id,)
+                        )
+                        restored_versions += 1
+                        print(
+                            f"[Seed Knowledge] *** RESTORED verbatim version as current for "
+                            f"'{doc['title']}'. Something (most likely bulk PDF ingestion) had "
+                            f"superseded the hand-verified text, so retrieval was not using it."
+                        )
                     continue
 
                 # New text for this document. Retire the previous current version.
@@ -253,6 +283,7 @@ def seed_database():
         print(
             f"[Seed Knowledge] PostgreSQL corpus in sync: {len(corpus)} documents, "
             f"{inserted_versions} new version(s) ingested, {skipped_versions} already current, "
+            f"{restored_versions} restored to current, "
             f"{total_chunks} chunks registered in memory."
         )
     else:

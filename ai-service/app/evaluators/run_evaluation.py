@@ -33,11 +33,34 @@ from app.seed_knowledge import seed_database
 PACE_SECONDS = float(os.getenv("EVAL_PACE_SECONDS", "8"))
 
 
-def _citation_blob(citations):
-    return " | ".join(
-        f"{c.get('source_title', '')} {c.get('section_reference', '')}"
+def _citation_strings(citations):
+    """One string per citation. Deliberately not joined into a single blob:
+    joining let an expectation be satisfied by an Act named in one citation and
+    a section number appearing in a different one, which scores a pass the
+    system never earned."""
+    return [
+        f"{c.get('source_title', '')} {c.get('section_reference', '')}".lower()
         for c in citations
-    ).lower()
+    ]
+
+
+def _missing_expectations(expected, citations):
+    """
+    An expectation is written as "<act fragment> :: <provision>" and matches only
+    when a SINGLE citation satisfies both halves. This matters where the same
+    provision number exists in two instruments: the corpus holds both Nagoya
+    Article 5 and GRATK Article 5, and a bare "Article 5" cannot tell them apart.
+
+    Entries without "::" fall back to a plain substring test against each
+    individual citation.
+    """
+    strings = _citation_strings(citations)
+    missing = []
+    for e in expected:
+        parts = [p.strip().lower() for p in e.split("::") if p.strip()]
+        if not any(all(p in s for p in parts) for s in strings):
+            missing.append(e)
+    return missing
 
 
 async def run_benchmark():
@@ -68,11 +91,14 @@ async def run_benchmark():
         did_abstain = level == "abstained"
         should_abstain = bool(case["expected_abstain"])
 
-        blob = _citation_blob(citations)
-        missing = [
-            s for s in case.get("expected_statutes", [])
-            if s.lower() not in blob
-        ]
+        # Why it abstained, not just that it did. Without this every refusal
+        # looks identical at confidence 0.0, and "retrieval returned nothing"
+        # is indistinguishable from "retrieval worked but the verifier rejected
+        # every chunk" -- two different bugs with two different fixes.
+        actual_reason = response.get("abstention_reason") if did_abstain else None
+        evidence_count = response.get("evidence_count")
+
+        missing = _missing_expectations(case.get("expected_statutes", []), citations)
         cited_ok = not missing
 
         abstention_ok = did_abstain == should_abstain
@@ -96,6 +122,8 @@ async def run_benchmark():
             "fabricated": fabricated,
             "confidence_score": response.get("confidence_score", 0),
             "synthesis_path": path,
+            "actual_abstention_reason": actual_reason,
+            "evidence_count": evidence_count,
         })
 
         flag = "  " if abstention_ok else "!!"
@@ -104,7 +132,10 @@ async def run_benchmark():
         if false_answer:
             note = "  <- ANSWERED, SHOULD HAVE REFUSED"
         elif false_refusal:
-            note = f"  <- refused, expected an answer (missing: {', '.join(missing) or 'n/a'})"
+            note = (
+                f"  <- refused [{actual_reason or 'unknown'}, {evidence_count if evidence_count is not None else '?'} chunks retrieved], "
+                f"expected an answer (missing: {', '.join(missing) or 'n/a'})"
+            )
         elif not cited_ok and not did_abstain:
             note = f"  <- missing expected: {', '.join(missing)}"
         print(
@@ -143,6 +174,14 @@ async def run_benchmark():
         r for r in expected_refusal if r["abstain_reason"] == "corpus_gap"
     ]
 
+    # Group the wrong refusals by their actual cause, so the next fix is aimed
+    # at whichever gate is really firing rather than guessed at.
+    refusal_causes = {}
+    for r in results:
+        if r["false_refusal"]:
+            key = r["actual_abstention_reason"] or "unknown"
+            refusal_causes.setdefault(key, []).append(r["id"])
+
     print("=" * 78)
     print("  RESULTS")
     print("-" * 78)
@@ -151,6 +190,8 @@ async def run_benchmark():
     print(f"  Abstention accuracy   {abstention_acc:5.1f}%   {sum(r['abstention_ok'] for r in results)}/{total} correct refuse/answer decisions")
     print(f"    false answers          {false_answers:>3}     answered when it should have refused  (target 0)")
     print(f"    false refusals         {false_refusals:>3}     refused when it should have answered")
+    for cause, ids in sorted(refusal_causes.items(), key=lambda kv: -len(kv[1])):
+        print(f"      {cause:<22} {len(ids):>3}     {', '.join(ids)}")
     print(f"  Fabricated authority")
     print(f"    delivered to user      {fabricated_delivered:>3}     invented provisions in a returned answer (target 0)")
     print(f"    detected and blocked   {fabricated_detected:>3}     caught by citation validation before returning")
@@ -177,6 +218,7 @@ async def run_benchmark():
             "false_refusals": false_refusals,
             "fabricated_authority_delivered": fabricated_delivered,
             "fabricated_authority_detected_and_blocked": fabricated_detected,
+            "false_refusal_causes": {k: v for k, v in refusal_causes.items()},
         },
         "cases": results,
     }

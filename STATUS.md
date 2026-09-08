@@ -61,10 +61,18 @@ Seeded in `database/init.sql` (Default credential: `Ayurveda@2026`):
 | **Hallucination Prevention** | Active & Verified | Citation verification inspects referenced section numbers against the retrieved evidence pool, capping confidence and enforcing abstention if unauthorized sections appear. |
 | **Safe Abstention Gate** | Active & Verified | Intelligently abstains with clear reasoning on out-of-scope queries rather than fabricating legal answers. |
 | **Jurisdiction Isolation** | Active & Verified | Strict metadata separation between **India (National)** and **International** regulatory corpora. |
-| **Statute Versioning** | Active & Verified | Document updates automatically deprecate preceding revisions (`is_current=false`) while maintaining an immutable audit trail. |
+| **Statute Versioning** | Active & Verified | Document updates automatically deprecate preceding revisions (`is_current=false`) while maintaining an immutable audit trail. The seeder additionally re-asserts the curated verbatim version as current on every start, so a bulk PDF ingestion of the same statute cannot silently take over retrieval. |
 
-### 3.2 Statutory Corpus Composition (100% Verbatim Source Data)
-All corpus chunks are transcribed directly from official Gazette notifications and legal texts in `knowledge-base/source/`:
+### 3.2 Statutory Corpus Composition
+
+The retrievable corpus is **363 chunks** across 17 documents: the **38 curated
+verbatim chunks** listed below, plus **325 chunks** from four documents held only
+as bulk PDF extraction (Biological Diversity Rules 2024, Copyright Act, Designs
+Act, PPVFR Act). Only the 38 curated chunks carry hand-transcribed text,
+per-chunk source URLs and verified section labels. Quote 38 when the claim is
+"verbatim and citable", and 363 when the claim is "searchable".
+
+All curated chunks are transcribed directly from official Gazette notifications and legal texts in `knowledge-base/source/`:
 
 - **India Legal Regime (9 Instruments, 22 Chunks)**:
   - *Patents Act, 1970*: Sections 2(1)(j), 3(d), 3(e), 3(p), 10(4), 25(1)(j), 64(1)(p)
@@ -100,7 +108,7 @@ Key architectural upgrades implemented in the core platform:
 
 | Component | Technical Enhancement | Impact |
 |---|---|---|
-| **Retrieval Engine** | Hybrid Dense (`bge-small-en-v1.5`) + Sparse BM25 fused via Reciprocal Rank Fusion (RRF) | Eliminates semantic disconnect between natural language questions and formal legal phrasing. |
+| **Retrieval Engine** | Hybrid Dense (`paraphrase-multilingual-MiniLM-L12-v2`, 384-dim) + Sparse BM25 fused via Reciprocal Rank Fusion (RRF) | Eliminates semantic disconnect between natural language questions and formal legal phrasing. |
 | **Citation Verifier** | Structural regex pattern matching against cited provisions | Guarantees that only statutory provisions actually leveraged in the synthesis are presented as authoritative citations. |
 | **Abstention Logic** | Dynamic evidence-based abstention scoring | Replaced rigid keyword matching with semantic sufficiency thresholds. |
 | **Data Ingestion** | Full-document buffer stitching before section splitting | Prevents provisions from being fractured across arbitrary PDF page boundaries. |

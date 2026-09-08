@@ -1,3 +1,11 @@
+# Without this, Compose derives the project name from the directory name. This
+# checkout sits in a folder containing "--_", which produces adjacent separators
+# in the generated image reference and Docker rejects it outright:
+#   invalid reference format
+# Pinning the project name makes the stack start regardless of the folder it is
+# cloned into, which matters on a demo machine nobody wants to debug.
+name: ayusakshi
+
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -49,9 +57,18 @@ services:
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1:8b}
+      # These were absent, so editing them in .env silently had no effect inside
+      # the container and the config.py defaults were what actually ran. The
+      # embedding model in particular must be identical at seed time and query
+      # time or every stored vector is compared against a different space.
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+      - RERANKER_MODEL=${RERANKER_MODEL:-cross-encoder/ms-marco-MiniLM-L-6-v2}
+      - SIMILARITY_THRESHOLD=${SIMILARITY_THRESHOLD:-0.30}
+      - CONFIDENCE_ABSTAIN_THRESHOLD=${CONFIDENCE_ABSTAIN_THRESHOLD:-0.50}
       - BHASHINI_USER_ID=${BHASHINI_USER_ID}
       - BHASHINI_API_KEY=${BHASHINI_API_KEY}
       - BHASHINI_PIPELINE_ID=${BHASHINI_PIPELINE_ID}
+      - BHASHINI_ENABLED=${BHASHINI_ENABLED:-false}
     ports:
       - "8000:8000"
     depends_on:

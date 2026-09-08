@@ -61,10 +61,24 @@ class Settings(BaseSettings):
     BHASHINI_ENABLED: bool = os.getenv("BHASHINI_ENABLED", "false").lower() == "true"
     
     # RAG Retrieval Parameters
-    DENSE_TOP_K: int = 15
-    BM25_TOP_K: int = 15
-    RERANK_TOP_K: int = 5
-    SIMILARITY_THRESHOLD: float = 0.45
-    CONFIDENCE_ABSTAIN_THRESHOLD: float = 0.50
+    DENSE_TOP_K: int = int(os.getenv("DENSE_TOP_K", "15"))
+    BM25_TOP_K: int = int(os.getenv("BM25_TOP_K", "15"))
+    RERANK_TOP_K: int = int(os.getenv("RERANK_TOP_K", "5"))
+
+    # Semantic floor for keeping a retrieved chunk that has no lexical overlap
+    # with the query. Asymmetric pairs (a plain-language question against
+    # verbatim statute) score far lower than sentence-similarity pairs, so the
+    # old 0.45 would have rejected almost every legitimate semantic match. It
+    # never actually did, because nothing read this setting until the retrieval
+    # filter was fixed to use it.
+    SIMILARITY_THRESHOLD: float = float(os.getenv("SIMILARITY_THRESHOLD", "0.30"))
+
+    CONFIDENCE_ABSTAIN_THRESHOLD: float = float(os.getenv("CONFIDENCE_ABSTAIN_THRESHOLD", "0.50"))
+
+    # Squashed cross-encoder score below which a retrieved chunk is not eligible
+    # to be presented as a citation. 0.10 corresponds to a raw logit of about
+    # -2.2, which the reranker only assigns when a chunk plainly does not
+    # address the query.
+    CITATION_RELEVANCE_FLOOR: float = float(os.getenv("CITATION_RELEVANCE_FLOOR", "0.10"))
 
 settings = Settings()

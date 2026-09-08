@@ -89,6 +89,17 @@ def reciprocal_rank_fusion(dense_results: List[Dict[str, Any]], sparse_results: 
         doc_id = doc.get("id") or str(doc.get("chunk_index", rank)) + doc.get("section_identifier", "")
         if doc_id not in doc_map:
             doc_map[doc_id] = doc
+        else:
+            # A chunk found by both halves previously kept only the dense row,
+            # silently discarding its bm25_score. Downstream filtering and
+            # confidence scoring both read those fields, so the strongest
+            # evidence -- the chunk both retrievers agreed on -- was the one
+            # arriving with half its signal missing.
+            merged = doc_map[doc_id]
+            if merged.get("bm25_score") is None and doc.get("bm25_score") is not None:
+                merged["bm25_score"] = doc["bm25_score"]
+            if merged.get("similarity") is None and doc.get("similarity") is not None:
+                merged["similarity"] = doc["similarity"]
         scores[doc_id] = scores.get(doc_id, 0.0) + (1.0 / (k + rank + 1))
         
     # Sort by combined RRF score
@@ -131,8 +142,9 @@ def hybrid_retrieve(query: str, jurisdiction: str = "india", category: Optional[
                 if category:
                     dense_sql += " AND d.category = %s"
                     params.append(category)
-                dense_sql += " ORDER BY c.embedding <=> %s::vector ASC LIMIT 15;"
+                dense_sql += " ORDER BY c.embedding <=> %s::vector ASC LIMIT %s;"
                 params.append(str(query_vector))
+                params.append(settings.DENSE_TOP_K)
                 
                 cur.execute(dense_sql, params)
                 dense_results = [dict(r) for r in cur.fetchall()]
@@ -156,8 +168,9 @@ def hybrid_retrieve(query: str, jurisdiction: str = "india", category: Optional[
                 if category:
                     sparse_sql += " AND d.category = %s"
                     s_params.append(category)
-                sparse_sql += " ORDER BY bm25_score DESC LIMIT 15;"
-                
+                sparse_sql += " ORDER BY bm25_score DESC LIMIT %s;"
+                s_params.append(settings.BM25_TOP_K)
+
                 if ts_query:
                     cur.execute(sparse_sql, s_params)
                     sparse_results = [dict(r) for r in cur.fetchall()]
@@ -177,7 +190,7 @@ def hybrid_retrieve(query: str, jurisdiction: str = "india", category: Optional[
         if filtered_mem:
             # BM25 on in-memory
             bm25_retriever = BM25Retriever(filtered_mem)
-            sparse_results = bm25_retriever.search(query, top_k=15)
+            sparse_results = bm25_retriever.search(query, top_k=settings.BM25_TOP_K)
             
             # Simulated dense similarity
             for c in filtered_mem:
@@ -186,7 +199,7 @@ def hybrid_retrieve(query: str, jurisdiction: str = "india", category: Optional[
                 sim = float(np.dot(query_vector, c_vec) / (np.linalg.norm(query_vector) * np.linalg.norm(c_vec) + 1e-9))
                 c_copy["similarity"] = sim
                 dense_results.append(c_copy)
-            dense_results = sorted(dense_results, key=lambda x: x.get("similarity", 0), reverse=True)[:15]
+            dense_results = sorted(dense_results, key=lambda x: x.get("similarity", 0), reverse=True)[:settings.DENSE_TOP_K]
 
     # 3. Reciprocal Rank Fusion
     fused_candidates = reciprocal_rank_fusion(dense_results, sparse_results, k=60)
@@ -194,15 +207,41 @@ def hybrid_retrieve(query: str, jurisdiction: str = "india", category: Optional[
     # 4. Cross-Encoder Reranking
     reranked = rerank_documents(query, fused_candidates, top_k=top_k)
     
-    # Filter candidates: If query has zero lexical relevance with corpus, do not return false positive chunks
+    # Drop candidates with no demonstrable relationship to the query, so a
+    # question the corpus cannot speak to reaches the abstention gate with
+    # nothing rather than with five plausible-looking irrelevant statutes.
+    #
+    # Two earlier bugs here were quietly discarding good evidence:
+    #
+    #   1. The dense similarity score was read into a variable and then never
+    #      tested. Acceptance rested on lexical overlap alone, which throws away
+    #      exactly the semantically-retrieved chunks that dense search exists to
+    #      find. A query phrased in ordinary words ("classical formulation from
+    #      the Charaka Samhita") shares almost no vocabulary with the verbatim
+    #      provision that answers it.
+    #   2. Tokens came from a bare .split(), so trailing punctuation stayed
+    #      attached and "india?" could never match "india" in a statute.
+    tokens = {t for t in re.findall(r"[a-z0-9\-']+", query.lower()) if len(t) > 3}
+
     valid_evidence = []
     for c in reranked:
-        bm_score = c.get("bm25_score", 0)
-        sim_score = c.get("similarity", 0)
-        # Check if query keywords appear in doc
-        tokens = set(query.lower().split())
+        bm_score = c.get("bm25_score") or 0.0
+        sim_score = c.get("similarity") or 0.0
         doc_text = (c.get("content", "") + " " + c.get("title", "")).lower()
-        if bm_score > 0.05 or any(t in doc_text for t in tokens if len(t) > 3):
+        if (
+            bm_score > 0.05
+            or sim_score >= settings.SIMILARITY_THRESHOLD
+            or any(t in doc_text for t in tokens)
+        ):
             valid_evidence.append(c)
-            
+
+    if reranked and not valid_evidence:
+        print(
+            f"[Hybrid Retriever] All {len(reranked)} reranked candidates were filtered out for "
+            f"query={query[:70]!r} (jurisdiction={jurisdiction}). Best similarity="
+            f"{max((c.get('similarity') or 0.0) for c in reranked):.3f}, "
+            f"best bm25={max((c.get('bm25_score') or 0.0) for c in reranked):.3f}. "
+            f"The pipeline will abstain with no evidence."
+        )
+
     return valid_evidence

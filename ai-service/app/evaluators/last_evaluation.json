@@ -1,17 +1,30 @@
 {
-  "run_at": "2026-09-06T13:19:54.183668+00:00",
+  "run_at": "2026-09-07T19:38:34.769174+00:00",
   "llm_provider": "groq",
-  "llm_model": "openai/gpt-oss-120b",
+  "llm_model": "openai/gpt-oss-20b",
   "abstain_threshold": 0.5,
   "case_count": 25,
   "metrics": {
-    "answer_grounding_pct": 93.8,
-    "citation_correctness_pct": 85.7,
-    "abstention_accuracy_pct": 84.0,
-    "false_answers": 2,
-    "false_refusals": 2,
+    "answer_grounding_pct": 100.0,
+    "citation_correctness_pct": 92.3,
+    "abstention_accuracy_pct": 80.0,
+    "false_answers": 0,
+    "false_refusals": 5,
     "fabricated_authority_delivered": 0,
-    "fabricated_authority_detected_and_blocked": 3
+    "fabricated_authority_detected_and_blocked": 2,
+    "false_refusal_causes": {
+      "fabricated_citation": [
+        "brief_02"
+      ],
+      "llm_unavailable": [
+        "brief_07",
+        "india_01",
+        "india_02"
+      ],
+      "no_grounded_citations": [
+        "intl_01"
+      ]
+    }
   },
   "cases": [
     {
@@ -24,15 +37,17 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 5,
+      "citations_found": 2,
       "expected_statutes": [
-        "Section 3(p)"
+        "Patents Act, 1970 :: Section 3(p)"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.7919,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.721,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "brief_02",
@@ -46,17 +61,19 @@
       "false_answer": false,
       "citations_found": 0,
       "expected_statutes": [
-        "Section 3(e)"
+        "Patents Act, 1970 :: Section 3(e)"
       ],
       "missing_statutes": [
-        "Section 3(e)"
+        "Patents Act, 1970 :: Section 3(e)"
       ],
       "citation_ok": false,
       "fabricated": [
-        "Section\u202f7"
+        "Section 7"
       ],
       "confidence_score": 0.0,
-      "synthesis_path": "abstained"
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": "fabricated_citation",
+      "evidence_count": 5
     },
     {
       "id": "brief_03",
@@ -70,13 +87,15 @@
       "false_answer": false,
       "citations_found": 4,
       "expected_statutes": [
-        "Section 6(1)"
+        "Biological Diversity Act, 2002 :: Section 6"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.8787,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.986,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "brief_04",
@@ -90,13 +109,15 @@
       "false_answer": false,
       "citations_found": 1,
       "expected_statutes": [
-        "Section 7"
+        "Biological Diversity :: Section 7"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.5787,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.7945,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "brief_05",
@@ -110,39 +131,19 @@
       "false_answer": false,
       "citations_found": 2,
       "expected_statutes": [
-        "Rule 158-B"
+        "Drugs and Cosmetics Act, 1940 :: Rule 158-B"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.6515,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.8497,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "brief_06",
       "query": "Can I advertise my product as a cure for diabetes?",
-      "jurisdiction": "india",
-      "expected_abstain": true,
-      "abstain_reason": "corpus_gap",
-      "did_abstain": true,
-      "abstention_ok": true,
-      "false_refusal": false,
-      "false_answer": false,
-      "citations_found": 0,
-      "expected_statutes": [
-        "Section 3"
-      ],
-      "missing_statutes": [
-        "Section 3"
-      ],
-      "citation_ok": false,
-      "fabricated": [],
-      "confidence_score": 0.0,
-      "synthesis_path": "abstained"
-    },
-    {
-      "id": "brief_07",
-      "query": "Can I sell my formulation as a nutraceutical instead of a drug, and what changes if I do?",
       "jurisdiction": "india",
       "expected_abstain": false,
       "abstain_reason": null,
@@ -150,17 +151,41 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 3,
+      "citations_found": 1,
       "expected_statutes": [
-        "Regulation 3 & 4"
+        "Magic Remedies :: Section 3"
+      ],
+      "missing_statutes": [],
+      "citation_ok": true,
+      "fabricated": [],
+      "confidence_score": 0.7721,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
+    },
+    {
+      "id": "brief_07",
+      "query": "Can I sell my formulation as a nutraceutical instead of a drug, and what changes if I do?",
+      "jurisdiction": "india",
+      "expected_abstain": false,
+      "abstain_reason": null,
+      "did_abstain": true,
+      "abstention_ok": false,
+      "false_refusal": true,
+      "false_answer": false,
+      "citations_found": 0,
+      "expected_statutes": [
+        "Ayurveda Aahara :: Regulation 2(b)"
       ],
       "missing_statutes": [
-        "Regulation 3 & 4"
+        "Ayurveda Aahara :: Regulation 2(b)"
       ],
       "citation_ok": false,
       "fabricated": [],
-      "confidence_score": 0.58,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.0,
+      "synthesis_path": "deterministic_template_fallback",
+      "actual_abstention_reason": "llm_unavailable",
+      "evidence_count": 5
     },
     {
       "id": "brief_08",
@@ -172,35 +197,39 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 2,
+      "citations_found": 1,
       "expected_statutes": [
-        "Phytopharmaceutical Regulations"
+        "New Drugs and Clinical Trials Rules, 2019 :: Rule 2(aa)"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.5817,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.8647,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "brief_09",
       "query": "Can a region-specific Ayurvedic preparation get a Geographical Indication?",
       "jurisdiction": "india",
-      "expected_abstain": true,
-      "abstain_reason": "corpus_gap",
+      "expected_abstain": false,
+      "abstain_reason": null,
       "did_abstain": false,
-      "abstention_ok": false,
+      "abstention_ok": true,
       "false_refusal": false,
-      "false_answer": true,
-      "citations_found": 3,
+      "false_answer": false,
+      "citations_found": 1,
       "expected_statutes": [
-        "GI of Goods Act 1999"
+        "Geographical Indications :: Section 2(1)(e)"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.5286,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.8589,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "brief_10",
@@ -212,15 +241,17 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 5,
+      "citations_found": 2,
       "expected_statutes": [
-        "Article 3"
+        "Genetic Resources and Associated Traditional Knowledge :: Article 3"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.5383,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.8162,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "brief_11",
@@ -232,17 +263,19 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 4,
+      "citations_found": 1,
       "expected_statutes": [
-        "Section 3(p)"
+        "Patents Act, 1970 :: Section 3(p)"
       ],
       "missing_statutes": [
-        "Section 3(p)"
+        "Patents Act, 1970 :: Section 3(p)"
       ],
       "citation_ok": false,
       "fabricated": [],
-      "confidence_score": 0.5482,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.8354,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "brief_12",
@@ -260,7 +293,9 @@
       "citation_ok": true,
       "fabricated": [],
       "confidence_score": 0.0,
-      "synthesis_path": "abstained"
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": "no_grounded_citations",
+      "evidence_count": 5
     },
     {
       "id": "intl_01",
@@ -268,19 +303,23 @@
       "jurisdiction": "international",
       "expected_abstain": false,
       "abstain_reason": null,
-      "did_abstain": false,
-      "abstention_ok": true,
-      "false_refusal": false,
+      "did_abstain": true,
+      "abstention_ok": false,
+      "false_refusal": true,
       "false_answer": false,
-      "citations_found": 4,
+      "citations_found": 0,
       "expected_statutes": [
-        "Article 17"
+        "Nagoya Protocol :: Article 17"
       ],
-      "missing_statutes": [],
-      "citation_ok": true,
+      "missing_statutes": [
+        "Nagoya Protocol :: Article 17"
+      ],
+      "citation_ok": false,
       "fabricated": [],
-      "confidence_score": 0.5487,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.0,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": "no_grounded_citations",
+      "evidence_count": 5
     },
     {
       "id": "intl_02",
@@ -292,15 +331,17 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 4,
+      "citations_found": 1,
       "expected_statutes": [
-        "Article 27"
+        "TRIPS :: Article 27"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.5393,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.719,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "intl_03",
@@ -314,13 +355,15 @@
       "false_answer": false,
       "citations_found": 5,
       "expected_statutes": [
-        "Article 8(j)"
+        "Convention on Biological Diversity, 1992 :: Article 8(j)"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.9369,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.9249,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "intl_04",
@@ -332,15 +375,17 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 5,
+      "citations_found": 4,
       "expected_statutes": [
-        "Article 6"
+        "Nagoya Protocol :: Article 6"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.9551,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.9375,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "intl_05",
@@ -354,13 +399,15 @@
       "false_answer": false,
       "citations_found": 5,
       "expected_statutes": [
-        "Article 5"
+        "Genetic Resources and Associated Traditional Knowledge :: Article 5"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.8118,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.9094,
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": null,
+      "evidence_count": 5
     },
     {
       "id": "india_01",
@@ -368,19 +415,23 @@
       "jurisdiction": "india",
       "expected_abstain": false,
       "abstain_reason": null,
-      "did_abstain": false,
-      "abstention_ok": true,
-      "false_refusal": false,
+      "did_abstain": true,
+      "abstention_ok": false,
+      "false_refusal": true,
       "false_answer": false,
-      "citations_found": 3,
+      "citations_found": 0,
       "expected_statutes": [
-        "Section 7"
+        "Biological Diversity :: Section 7"
       ],
-      "missing_statutes": [],
-      "citation_ok": true,
+      "missing_statutes": [
+        "Biological Diversity :: Section 7"
+      ],
+      "citation_ok": false,
       "fabricated": [],
-      "confidence_score": 0.8225,
-      "synthesis_path": "llm:groq"
+      "confidence_score": 0.0,
+      "synthesis_path": "deterministic_template_fallback",
+      "actual_abstention_reason": "llm_unavailable",
+      "evidence_count": 5
     },
     {
       "id": "india_02",
@@ -394,17 +445,17 @@
       "false_answer": false,
       "citations_found": 0,
       "expected_statutes": [
-        "Section 10(4)"
+        "Patents Act, 1970 :: Section 10(4)"
       ],
       "missing_statutes": [
-        "Section 10(4)"
+        "Patents Act, 1970 :: Section 10(4)"
       ],
       "citation_ok": false,
-      "fabricated": [
-        "Section 3(p)"
-      ],
+      "fabricated": [],
       "confidence_score": 0.0,
-      "synthesis_path": "abstained"
+      "synthesis_path": "deterministic_template_fallback",
+      "actual_abstention_reason": "llm_unavailable",
+      "evidence_count": 5
     },
     {
       "id": "oos_01",
@@ -422,7 +473,9 @@
       "citation_ok": true,
       "fabricated": [],
       "confidence_score": 0.0,
-      "synthesis_path": "abstained"
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": "no_grounded_citations",
+      "evidence_count": 5
     },
     {
       "id": "oos_02",
@@ -430,17 +483,19 @@
       "jurisdiction": "india",
       "expected_abstain": true,
       "abstain_reason": "out_of_scope",
-      "did_abstain": false,
-      "abstention_ok": false,
+      "did_abstain": true,
+      "abstention_ok": true,
       "false_refusal": false,
-      "false_answer": true,
-      "citations_found": 4,
+      "false_answer": false,
+      "citations_found": 0,
       "expected_statutes": [],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.5044,
-      "synthesis_path": "deterministic_template_fallback"
+      "confidence_score": 0.0,
+      "synthesis_path": "deterministic_template_fallback",
+      "actual_abstention_reason": "llm_unavailable",
+      "evidence_count": 5
     },
     {
       "id": "oos_03",
@@ -456,11 +511,11 @@
       "expected_statutes": [],
       "missing_statutes": [],
       "citation_ok": true,
-      "fabricated": [
-        "Section\u202f7"
-      ],
+      "fabricated": [],
       "confidence_score": 0.0,
-      "synthesis_path": "abstained"
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": "no_grounded_citations",
+      "evidence_count": 5
     },
     {
       "id": "oos_04",
@@ -478,7 +533,9 @@
       "citation_ok": true,
       "fabricated": [],
       "confidence_score": 0.0,
-      "synthesis_path": "abstained"
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": "no_grounded_citations",
+      "evidence_count": 5
     },
     {
       "id": "oos_05",
@@ -494,9 +551,13 @@
       "expected_statutes": [],
       "missing_statutes": [],
       "citation_ok": true,
-      "fabricated": [],
+      "fabricated": [
+        "Section 7"
+      ],
       "confidence_score": 0.0,
-      "synthesis_path": "abstained"
+      "synthesis_path": "llm:groq",
+      "actual_abstention_reason": "fabricated_citation",
+      "evidence_count": 5
     },
     {
       "id": "oos_06",
@@ -514,7 +575,9 @@
       "citation_ok": true,
       "fabricated": [],
       "confidence_score": 0.0,
-      "synthesis_path": "abstained"
+      "synthesis_path": "deterministic_template_fallback",
+      "actual_abstention_reason": "llm_unavailable",
+      "evidence_count": 5
     }
   ]
 }
