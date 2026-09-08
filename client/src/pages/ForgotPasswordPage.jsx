@@ -47,16 +47,19 @@ export const ForgotPasswordPage = () => {
     setErrorMsg('');
     setInfoMsg('');
 
-    if (!email || !email.includes('@')) {
-      setErrorMsg('Please enter a valid registered email address.');
+    if (!email || !email.trim()) {
+      setErrorMsg('Please enter a valid registered email address or username.');
       return;
     }
 
     setLoading(true);
     try {
-      const res = await authAPI.forgotPassword({ email: email.trim().toLowerCase() });
+      const res = await authAPI.forgotPassword({ email: email.trim() });
       if (res.data?.success) {
-        setInfoMsg(res.data.message || 'If an account exists for this email, a 6-digit verification code has been sent.');
+        if (res.data.email) {
+          setEmail(res.data.email);
+        }
+        setInfoMsg(res.data.message || 'If an account exists for this user/email, a 6-digit verification code has been sent.');
         setStep(2);
       } else {
         setErrorMsg(res.data?.error || 'Failed to send verification code.');
@@ -231,21 +234,21 @@ export const ForgotPasswordPage = () => {
                   Forgot Password?
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Enter your registered email address. We will send a 6-digit verification code to reset your credentials.
+                  Enter your registered email address or username. We will send a 6-digit verification code to reset your credentials.
                 </p>
               </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
-                  Registered Email
+                  Email Address or Username
                 </label>
                 <div className="relative">
                   <input
-                    type="email"
+                    type="text"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@ayushstartup.in"
+                    placeholder="name@ayushstartup.in or username"
                     className="w-full bg-slate-50 dark:bg-darkbg-950 border border-slate-200 dark:border-darkbg-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-colors"
                   />
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />

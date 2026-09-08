@@ -148,6 +148,38 @@ class PasswordResetService {
   }
 
   /**
+   * Peek reset token and return associated email without consuming/deleting it
+   */
+  async peekResetToken(resetToken) {
+    if (!resetToken) return null;
+    const tokenHash = this.hashToken(resetToken.trim());
+    const tokenKey = `pwd_reset_token:${tokenHash}`;
+    let rawPayload = null;
+
+    if (redisClient && redisClient.status === 'ready') {
+      try {
+        rawPayload = await redisClient.get(tokenKey);
+      } catch (err) {
+        console.warn('[PasswordResetService] Redis token peek error:', err.message);
+      }
+    }
+
+    if (!rawPayload && memoryStore.has(tokenKey)) {
+      const entry = memoryStore.get(tokenKey);
+      if (entry.expiresAt > Date.now()) {
+        rawPayload = entry.payload;
+      }
+    }
+
+    if (!rawPayload) {
+      return null;
+    }
+
+    const data = JSON.parse(rawPayload);
+    return data.email;
+  }
+
+  /**
    * Consume single-use reset token and return associated email
    */
   async consumeResetToken(resetToken) {

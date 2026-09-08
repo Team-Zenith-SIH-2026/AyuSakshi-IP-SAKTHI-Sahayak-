@@ -3,8 +3,18 @@ require('dotenv').config();
 
 class EmailService {
   constructor() {
-    this.provider = process.env.EMAIL_PROVIDER || (process.env.SMTP_HOST ? 'smtp' : 'console');
-    this.from = process.env.SMTP_FROM || 'AyuSakshi Security <no-reply@ayusakshi.gov.in>';
+    const rawProvider = (process.env.EMAIL_PROVIDER || '').toLowerCase().trim();
+    const hasSmtpHost = !!(process.env.SMTP_HOST && process.env.SMTP_USER);
+
+    if (rawProvider === 'smtp' || (hasSmtpHost && rawProvider !== 'console')) {
+      this.provider = 'smtp';
+    } else {
+      this.provider = 'console';
+    }
+
+    const smtpUser = process.env.SMTP_USER || '';
+    const smtpPass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
+    this.from = process.env.SMTP_FROM || `AyuSakshi Security <${smtpUser || 'no-reply@ayusakshi.gov.in'}>`;
     this.transporter = null;
 
     if (this.provider === 'smtp' && process.env.SMTP_HOST) {
@@ -14,11 +24,11 @@ class EmailService {
           port: parseInt(process.env.SMTP_PORT || '587', 10),
           secure: process.env.SMTP_SECURE === 'true',
           auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
+            user: smtpUser,
+            pass: smtpPass,
           },
         });
-        console.log(`[EmailService] Configured with SMTP provider (${process.env.SMTP_HOST})`);
+        console.log(`[EmailService] Configured with SMTP provider (${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587}) for user ${smtpUser}`);
       } catch (err) {
         console.warn('[EmailService] Failed to initialize SMTP transporter:', err.message);
         this.provider = 'console';

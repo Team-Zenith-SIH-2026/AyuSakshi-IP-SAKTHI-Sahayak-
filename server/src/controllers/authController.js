@@ -64,24 +64,24 @@ const register = async (req, res) => {
   }
 };
 
-// Login with Email & Password
+// Login with Email or Username & Password
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ success: false, error: 'Email and password are required.' });
+      return res.status(400).json({ success: false, error: 'Email or Username and password are required.' });
     }
 
-    const emailNormalized = email.trim().toLowerCase();
+    const identifier = email.trim();
 
     const result = await query(
-      'SELECT id, name, email, password_hash, role, auth_provider, avatar_url FROM users WHERE email = $1',
-      [emailNormalized]
+      'SELECT id, name, email, password_hash, role, auth_provider, avatar_url FROM users WHERE LOWER(email) = LOWER($1) OR LOWER(name) = LOWER($1)',
+      [identifier]
     );
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ success: false, error: 'Invalid email or password.' });
+      return res.status(401).json({ success: false, error: 'Invalid email/username or password.' });
     }
 
     const user = result.rows[0];
@@ -222,6 +222,14 @@ const changePassword = async (req, res) => {
       });
     }
 
+    const isSamePassword = await bcrypt.compare(newPassword, user.password_hash);
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        error: 'New password cannot be the same as your current password.',
+      });
+    }
+
     // Hash new password
     const salt = await bcrypt.genSalt(10);
     const newPasswordHash = await bcrypt.hash(newPassword, salt);
@@ -252,46 +260,61 @@ const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email || !email.includes('@')) {
-      return res.status(400).json({ success: false, error: 'A valid email address is required.' });
+    if (!email || !email.trim()) {
+      return res.status(400).json({ success: false, error: 'Email or Username is required.' });
     }
 
-    const emailNormalized = email.trim().toLowerCase();
+    const identifier = email.trim();
     const passwordResetService = require('../services/passwordResetService');
     const emailService = require('../services/emailService');
 
-    // Check rate limit (max 5 requests per 15 min)
-    const allowed = await passwordResetService.checkRateLimit(emailNormalized);
+    // Check rate limit (max 10 requests per 15 min)
+    const allowed = await passwordResetService.checkRateLimit(identifier);
     if (!allowed) {
       return res.status(429).json({
         success: false,
-        error: 'Too many password reset requests for this email. Please try again after 15 minutes.',
+        error: 'Too many password reset requests. Please try again after 15 minutes.',
       });
     }
 
-    // Check if user exists in database
+    // Check if user exists in database by Email OR Username (Name)
     const result = await query(
-      'SELECT id, name, email, auth_provider, password_hash FROM users WHERE email = $1',
-      [emailNormalized]
+      'SELECT id, name, email, auth_provider, password_hash FROM users WHERE LOWER(email) = LOWER($1) OR LOWER(name) = LOWER($1)',
+      [identifier]
     );
 
-    // If user exists and is local (or has a password), dispatch OTP
+    let registeredEmail = identifier.toLowerCase();
+
     if (result.rows.length > 0) {
       const user = result.rows[0];
+      registeredEmail = user.email.toLowerCase();
       const code = passwordResetService.generateCode();
-      await passwordResetService.storeResetCode(emailNormalized, code);
+
+      // Store reset code for both user.email and typed identifier
+      await passwordResetService.storeResetCode(registeredEmail, code);
+      if (identifier.toLowerCase() !== registeredEmail) {
+        await passwordResetService.storeResetCode(identifier.toLowerCase(), code);
+      }
 
       await emailService.sendPasswordResetOTP({
-        to: emailNormalized,
+        to: registeredEmail,
         code,
         name: user.name,
       });
+    } else {
+      console.warn(`[Forgot Password] User identifier '${identifier}' not found in database.`);
+      if (process.env.NODE_ENV === 'development') {
+        return res.status(404).json({
+          success: false,
+          error: `No registered account found matching '${identifier}'. Please check your email or username.`,
+        });
+      }
     }
 
-    // Return generic message regardless of whether user exists to prevent email enumeration
     return res.json({
       success: true,
-      message: 'If an account exists for this email, a 6-digit verification code has been sent.',
+      email: registeredEmail,
+      message: 'If an account exists, a 6-digit verification code has been sent.',
     });
   } catch (error) {
     console.error('[Forgot Password Error]', error.message);
@@ -358,7 +381,7 @@ const resetPassword = async (req, res) => {
     }
 
     const passwordResetService = require('../services/passwordResetService');
-    const userEmail = await passwordResetService.consumeResetToken(resetToken);
+    const userEmail = await passwordResetService.peekResetToken(resetToken);
 
     if (!userEmail) {
       return res.status(400).json({
@@ -367,6 +390,31 @@ const resetPassword = async (req, res) => {
       });
     }
 
+    // Check user account and compare existing password
+    const userResult = await query(
+      'SELECT id, name, email, password_hash FROM users WHERE LOWER(email) = LOWER($1)',
+      [userEmail]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'User account not found.' });
+    }
+
+    const user = userResult.rows[0];
+
+    if (user.password_hash) {
+      const isSamePassword = await bcrypt.compare(newPassword, user.password_hash);
+      if (isSamePassword) {
+        return res.status(400).json({
+          success: false,
+          error: 'New password cannot be the same as your previous password. Please choose a different password.',
+        });
+      }
+    }
+
+    // Single-use token consumption
+    await passwordResetService.consumeResetToken(resetToken);
+
     // Hash new password
     const salt = await bcrypt.genSalt(10);
     const newPasswordHash = await bcrypt.hash(newPassword, salt);
@@ -374,18 +422,14 @@ const resetPassword = async (req, res) => {
     // Update in database
     const updateResult = await query(
       'UPDATE users SET password_hash = $1, auth_provider = \'local\', updated_at = NOW() WHERE email = $2 RETURNING id, name, email',
-      [newPasswordHash, userEmail]
+      [newPasswordHash, user.email]
     );
 
-    if (updateResult.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'User account not found.' });
-    }
-
-    const user = updateResult.rows[0];
+    const updatedUser = updateResult.rows[0] || user;
 
     // Send confirmation email
     const emailService = require('../services/emailService');
-    emailService.sendPasswordChangeConfirmation({ to: user.email, name: user.name }).catch((e) => {});
+    emailService.sendPasswordChangeConfirmation({ to: updatedUser.email, name: updatedUser.name }).catch((e) => {});
 
     return res.json({
       success: true,

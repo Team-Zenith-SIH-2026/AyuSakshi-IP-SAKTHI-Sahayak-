@@ -15,13 +15,14 @@ const chatLimiter = rateLimit({
 // Authentication rate limiter (brute force protection)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // 20 attempts
+  max: process.env.NODE_ENV === 'development' ? 500 : 30, // Relaxed limit for dev/testing
   message: {
     success: false,
     error: 'Too many authentication attempts. Please try again after 15 minutes.',
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'development',
 });
 
 // General API rate limiter

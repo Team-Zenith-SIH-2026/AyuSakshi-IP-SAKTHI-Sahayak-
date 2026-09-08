@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { X, Sparkles, Lock, Mail, User, ShieldAlert, ArrowRight } from 'lucide-react';
+import { X, Sparkles, Lock, Mail, User, ShieldAlert, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export const AuthModal = () => {
   const navigate = useNavigate();
-  const { isAuthModalOpen, setIsAuthModalOpen, login, register, socialLogin, loading } = useAuth();
+  const { isAuthModalOpen, setIsAuthModalOpen, login, register, loading } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState('user');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -29,12 +30,11 @@ export const AuthModal = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Mock Social Login or OAuth redirect
-    socialLogin('Google', `${email || 'user'}@gmail.com`, name || 'Google User', 'https://lh3.googleusercontent.com/a/default-user');
+    window.location.href = 'http://localhost:5000/api/auth/google';
   };
 
   const handleFacebookLogin = () => {
-    socialLogin('Facebook', `${email || 'user'}@facebook.com`, name || 'Facebook User', null);
+    window.location.href = 'http://localhost:5000/api/auth/facebook';
   };
 
   return (
@@ -106,7 +106,7 @@ export const AuthModal = () => {
 
         <div className="flex items-center my-4">
           <div className="flex-1 border-t border-slate-200 dark:border-darkbg-border"></div>
-          <span className="px-3 text-[10px] uppercase font-bold text-slate-400">or with email</span>
+          <span className="px-3 text-[10px] uppercase font-bold text-slate-400">or with email / username</span>
           <div className="flex-1 border-t border-slate-200 dark:border-darkbg-border"></div>
         </div>
 
@@ -130,14 +130,16 @@ export const AuthModal = () => {
           )}
 
           <div>
-            <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">Email Address</label>
+            <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">
+              {isRegister ? 'Email Address' : 'Email Address or Username'}
+            </label>
             <div className="relative">
               <input
-                type="email"
+                type={isRegister ? 'email' : 'text'}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@ayushstartup.in"
+                placeholder={isRegister ? 'name@ayushstartup.in' : 'name@ayushstartup.in or Username'}
                 className="w-full bg-slate-50 dark:bg-darkbg-950 border border-slate-200 dark:border-darkbg-border rounded-xl pl-9 pr-3 py-2 text-xs text-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               />
               <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -162,14 +164,22 @@ export const AuthModal = () => {
             </div>
             <div className="relative">
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-50 dark:bg-darkbg-950 border border-slate-200 dark:border-darkbg-border rounded-xl pl-9 pr-3 py-2 text-xs text-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                className="w-full bg-slate-50 dark:bg-darkbg-950 border border-slate-200 dark:border-darkbg-border rounded-xl pl-9 pr-10 py-2 text-xs text-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               />
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 absolute right-2.5 top-1.5 transition-colors"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
@@ -229,3 +239,4 @@ export const AuthModal = () => {
     </div>
   );
 };
+
