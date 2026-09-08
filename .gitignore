@@ -46,7 +46,8 @@ Thumbs.db
 *.swo
 
 # Local per-developer tool settings. Personal to one machine, not shared.
-.claude/settings.local.json
+*.local.json
+.local/
 
 # Docker Volumes
 postgres_data/

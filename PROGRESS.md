@@ -1,11 +1,9 @@
-# AyuSakshi (IP-SAKTI Sahayak) — Master Project Progress & Context Guide
+# AyuSakshi (IP-SAKTI Sahayak) — Master Project Progress & Architecture Guide
 
-> **Notice to Any AI Assistant or Developer Reading This File:**  
-> This document is the single source of truth for the AyuSakshi project. It records what the system is, its architecture, what has been completed and verified, what is currently remaining, and operational guidelines. Always read this file before making modifications.  
-> **Last Updated:** 7 September 2026  
+> **Project Reference Guide**  
+> This document records system architecture, verified capabilities, remaining tasks, and operational guidelines.  
 > **SIH 2026 Problem Statement:** SIH26045 — Ministry of Ayush & AIIA | **Team:** Team Zenith  
-> **Active Workspace:** `C:\Users\Anudeep Devineni\Desktop\AyuSakshi-IP-SAKTHI-Sahayak--_Merged-main`  
-> **Branch Maintainer:** `anudeepdevineni10`  
+> **Contributor:** `anudeepdevineni10`  
 
 ---
 
