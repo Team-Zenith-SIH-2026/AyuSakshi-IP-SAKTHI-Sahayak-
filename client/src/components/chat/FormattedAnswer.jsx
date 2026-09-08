@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 /**
- * Minimal Markdown renderer for answer text.
+ * Minimal Markdown renderer for answer text with word-by-word streaming animation.
  *
  * The model emits Markdown, but the answer was being printed raw, so readers saw
  * literal "**(A) Direct answer**" with the asterisks showing. This covers the
@@ -57,8 +57,56 @@ const renderInline = (text, keyPrefix) => {
   return parts;
 };
 
-export const FormattedAnswer = ({ content = '' }) => {
-  const lines = String(content).replace(/\r\n/g, '\n').split('\n');
+export const FormattedAnswer = ({ content = '', animate = false, onComplete }) => {
+  const [displayedText, setDisplayedText] = useState(animate ? '' : content);
+  const [isTyping, setIsTyping] = useState(animate);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!animate) {
+      setDisplayedText(content);
+      setIsTyping(false);
+      return;
+    }
+
+    // Tokenize by word / whitespace boundaries
+    const words = String(content).split(/(\s+)/);
+    let index = 0;
+    setIsTyping(true);
+
+    // Stream words progressively: 2 tokens every 18ms for crisp, natural typing cadence
+    const interval = setInterval(() => {
+      index += 2;
+      if (index >= words.length) {
+        setDisplayedText(content);
+        setIsTyping(false);
+        clearInterval(interval);
+        if (onComplete) onComplete();
+      } else {
+        setDisplayedText(words.slice(0, index).join(''));
+      }
+    }, 18);
+
+    return () => clearInterval(interval);
+  }, [content, animate]);
+
+  // Keep view scrolled to latest text as words appear
+  useEffect(() => {
+    if (isTyping && containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [displayedText, isTyping]);
+
+  // Allow user to click to immediately reveal full text
+  const handleSkip = () => {
+    if (isTyping) {
+      setDisplayedText(content);
+      setIsTyping(false);
+      if (onComplete) onComplete();
+    }
+  };
+
+  const lines = String(displayedText).replace(/\r\n/g, '\n').split('\n');
   const blocks = [];
   let list = null; // { ordered: bool, items: string[] }
 
@@ -141,7 +189,17 @@ export const FormattedAnswer = ({ content = '' }) => {
     );
   });
 
-  flushList();
-
-  return <div className="text-[14px] text-slate-700 dark:text-slate-300">{blocks}</div>;
+  return (
+    <div
+      ref={containerRef}
+      onClick={handleSkip}
+      className={`text-[14px] text-slate-700 dark:text-slate-300 ${isTyping ? 'cursor-pointer' : ''}`}
+      title={isTyping ? 'Click to show all' : undefined}
+    >
+      {blocks}
+      {isTyping && (
+        <span className="ml-1 inline-block h-3.5 w-1.5 animate-pulse rounded-sm bg-emerald-600 align-middle dark:bg-emerald-400" />
+      )}
+    </div>
+  );
 };

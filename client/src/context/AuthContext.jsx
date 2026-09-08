@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
@@ -96,6 +96,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const completeOAuthLogin = useCallback(async (jwtToken) => {
+    setLoading(true);
+    try {
+      localStorage.setItem('ayusakshi_token', jwtToken);
+      const res = await authAPI.getProfile();
+      const userData = res.data?.user;
+      if (!userData) throw new Error('No user was returned for this sign-in.');
+
+      setToken(jwtToken);
+      setUser(userData);
+      localStorage.setItem('ayusakshi_user', JSON.stringify(userData));
+      return { success: true };
+    } catch (err) {
+      localStorage.removeItem('ayusakshi_token');
+      localStorage.removeItem('ayusakshi_user');
+      return { success: false, error: err.response?.data?.error || err.message || 'Could not finish social sign-in.' };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -115,6 +136,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         socialLogin,
+        completeOAuthLogin,
         logout,
       }}
     >
