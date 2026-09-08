@@ -112,6 +112,12 @@ services:
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - FACEBOOK_APP_ID=${FACEBOOK_APP_ID}
       - FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET}
+      # These were absent. passport.js falls back to a hardcoded
+      # http://localhost:5000/... default, which happens to match .env today, so
+      # nothing looked wrong. On any real deployment the fallback would silently
+      # win over .env and every sign-in would fail with redirect_uri_mismatch.
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL:-http://localhost:5000/api/auth/google/callback}
+      - FACEBOOK_CALLBACK_URL=${FACEBOOK_CALLBACK_URL:-http://localhost:5000/api/auth/facebook/callback}
     ports:
       - "5000:5000"
     depends_on:

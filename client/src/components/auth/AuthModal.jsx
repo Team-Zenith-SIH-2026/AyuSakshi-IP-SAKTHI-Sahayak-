@@ -5,7 +5,7 @@ import { X, Sparkles, Lock, Mail, User, ShieldAlert, ArrowRight } from 'lucide-r
 
 export const AuthModal = () => {
   const navigate = useNavigate();
-  const { isAuthModalOpen, setIsAuthModalOpen, login, register, socialLogin, loading } = useAuth();
+  const { isAuthModalOpen, setIsAuthModalOpen, login, register, loading } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -28,14 +28,21 @@ export const AuthModal = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Mock Social Login or OAuth redirect
-    socialLogin('Google', `${email || 'user'}@gmail.com`, name || 'Google User', 'https://lh3.googleusercontent.com/a/default-user');
+  // Hand the browser to the backend, which redirects on to the provider. This
+  // has to be a top-level navigation: an XHR to accounts.google.com is blocked
+  // by CORS and fails silently, which is what the previous code effectively did.
+  //
+  // These buttons used to call socialLogin() with an address invented from the
+  // email field ("user@gmail.com"), so the real OAuth flow behind them was never
+  // reached. socialLogin's failure result was also discarded, leaving the modal
+  // sitting there with nothing shown.
+  const startOAuth = (provider) => {
+    window.location.href = `/api/auth/${provider}`;
   };
 
-  const handleFacebookLogin = () => {
-    socialLogin('Facebook', `${email || 'user'}@facebook.com`, name || 'Facebook User', null);
-  };
+  const handleGoogleLogin = () => startOAuth('google');
+
+  const handleFacebookLogin = () => startOAuth('facebook');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
