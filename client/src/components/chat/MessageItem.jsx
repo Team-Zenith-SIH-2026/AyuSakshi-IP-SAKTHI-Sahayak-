@@ -28,6 +28,8 @@ export const MessageItem = ({ message }) => {
   // denominator is; "well supported" says what it means for the reader.
   const confidenceLabel = confidenceScore >= 0.75 ? 'Well supported' : 'Partly supported';
 
+  const isConversational = message.synthesis_path?.startsWith('conversational_') || (citations.length === 0 && !isAbstained);
+
   return (
     <div className="animate-in fade-in flex w-full items-start gap-3">
       <span className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/10 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/15">
@@ -37,7 +39,12 @@ export const MessageItem = ({ message }) => {
       <div className="min-w-0 flex-1">
         {/* Status line */}
         <div className="mb-2 flex flex-wrap items-center gap-2">
-          {isAbstained ? (
+          {isConversational ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11.5px] font-medium text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              AYUSH Assistant
+            </span>
+          ) : isAbstained ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11.5px] font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
               Not enough evidence to answer
             </span>
@@ -51,7 +58,13 @@ export const MessageItem = ({ message }) => {
 
         <ThinkingTrace trace={thinkingTrace} />
 
-        <FormattedAnswer content={message.content} />
+        <FormattedAnswer
+          content={message.content}
+          animate={Boolean(message.isNew)}
+          onComplete={() => {
+            message.isNew = false;
+          }}
+        />
 
         {/* Biodiversity note */}
         {message.abs_summary && (

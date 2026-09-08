@@ -1,12 +1,58 @@
 import React, { useState } from 'react';
 import { useChat } from '../../context/ChatContext';
-import { Dna, X, ShieldCheck, FileCheck, Info, ArrowRight } from 'lucide-react';
+import { Dna, X, Info, ArrowRight } from 'lucide-react';
+
+/**
+ * Each scenario carries a plain-language description and the question that is
+ * put to the RAG pipeline. Neither names a provision: the statutory basis is
+ * whatever retrieval can evidence and citation verification can confirm.
+ */
+const SCENARIOS = {
+  'registered_vaidya': {
+    label: 'Exemption likely',
+    summary:
+      'A registered AYUSH practitioner or a local grower cultivating medicinal plants. The 2023 amendment created exemptions for this group, and the scope of that exemption is what needs establishing.',
+    question:
+      'I am a registered AYUSH practitioner and local cultivator of medicinal plants. Which access and benefit sharing obligations apply to me, and which exemptions can I rely on after the 2023 amendment?',
+  },
+  'filing_ip': {
+    label: 'Approval required',
+    summary:
+      'Applying for a patent or other intellectual property right based on an Indian biological resource. Approval from the National Biodiversity Authority is engaged here, and the timing of that approval relative to filing and grant matters.',
+    question:
+      'I am filing a patent based on an Indian biological resource. Do I need National Biodiversity Authority approval, and at what stage of the application must it be obtained?',
+  },
+  'foreign_entity': {
+    label: 'Approval required',
+    summary:
+      'A foreign entity, non-resident, or foreign-controlled company seeking access to an Indian biological resource. Prior approval obligations apply to this category and differ from those for Indian entities.',
+    question:
+      'I am a foreign company seeking to obtain Indian biological resources for commercial use. What prior approval must I obtain and from which authority?',
+  },
+  'indian_commercial': {
+    label: 'Prior intimation required',
+    summary:
+      'An Indian company or startup using an Indian biological resource commercially. Indian entities give prior intimation to the State Biodiversity Board rather than seeking central approval, and benefit sharing obligations follow.',
+    question:
+      'I am an Indian company using Indian biological resources commercially. Must I give prior intimation to the State Biodiversity Board, and what benefit sharing obligations apply?',
+  },
+};
 
 export const ABSNavigator = () => {
   const { activeModal, setActiveModal, sendMessage } = useChat();
   const [entityType, setEntityType] = useState('indian_commercial');
   const [activityType, setActivityType] = useState('commercial_utilization');
-  const [hasIndianBioResource, setHasIndianBioResource] = useState(true);
+
+  // Filing for IP is the controlling fact regardless of who is filing, so it
+  // takes precedence over entity type; otherwise entity type decides.
+  const scenarioKey =
+    entityType === 'registered_vaidya'
+      ? 'registered_vaidya'
+      : activityType === 'filing_ip'
+        ? 'filing_ip'
+        : entityType === 'foreign_entity'
+          ? 'foreign_entity'
+          : 'indian_commercial';
 
   if (activeModal !== 'abs') return null;
 
@@ -80,58 +126,39 @@ export const ABSNavigator = () => {
               <span className="text-xs font-bold text-teal-900 dark:text-teal-300">
                 Statutory Assessment Summary
               </span>
-              <span className="px-2 py-0.5 rounded bg-teal-500/20 text-teal-700 dark:text-teal-300 text-[10px] font-bold">
-                {entityType === 'registered_vaidya' ? 'EXEMPTION APPLICABLE' : 'MANDATORY COMPLIANCE'}
+              <span className="px-2 py-0.5 rounded bg-teal-500/20 text-teal-700 dark:text-teal-300 text-[10px] font-bold uppercase">
+                {SCENARIOS[scenarioKey].label}
               </span>
             </div>
 
-            {/* Matrix Logic */}
-            {entityType === 'registered_vaidya' ? (
-              <div className="space-y-2 text-[11.5px] text-slate-700 dark:text-slate-300 leading-relaxed">
-                <p>
-                  ✅ <strong>2023 Amendment Exemption:</strong> Under the Biological Diversity (Amendment) Act 2023, registered AYUSH practitioners (Vaidyas and Hakims) and local growers who cultivate medicinal plants are exempt from paying Access and Benefit Sharing (ABS) fees.
-                </p>
-                <p>
-                  • Must maintain local source records to prove non-commercial biopiracy origin.
-                </p>
+            {/* Scenario summary.
+                This panel deliberately names no section numbers. It used to
+                assert them directly in the markup, which meant the one part of
+                the product that shows statutory authority without passing
+                through retrieval and citation verification was the part nobody
+                could audit. The provisions now come back from the live pipeline
+                with verified citations attached. */}
+            <div className="space-y-2 text-[11.5px] text-slate-700 dark:text-slate-300 leading-relaxed">
+              <p>{SCENARIOS[scenarioKey].summary}</p>
+              <div className="flex items-start space-x-2 pt-1 text-slate-500 dark:text-slate-400">
+                <Info className="w-3.5 h-3.5 text-teal-500 flex-shrink-0 mt-0.5" />
+                <span className="text-[11px]">
+                  Run the assessment to retrieve the governing provisions from the
+                  statutory corpus, each with its verbatim text and source link.
+                </span>
               </div>
-            ) : activityType === 'filing_ip' ? (
-              <div className="space-y-2 text-[11.5px] text-slate-700 dark:text-slate-300 leading-relaxed">
-                <p>
-                  ⚠️ <strong>Section 6(1) Mandatory NBA Approval:</strong> You must obtain prior approval from the National Biodiversity Authority (NBA) before the grant of any patent or intellectual property right inside or outside India based on Indian biological resources.
-                </p>
-                <div className="flex items-center space-x-2 font-semibold text-teal-800 dark:text-teal-300">
-                  <FileCheck className="w-4 h-4 text-teal-500" />
-                  <span>Required Form: NBA Form III (Application for IP approval under BDA)</span>
-                </div>
-              </div>
-            ) : entityType === 'foreign_entity' ? (
-              <div className="space-y-2 text-[11.5px] text-slate-700 dark:text-slate-300 leading-relaxed">
-                <p>
-                  ⚠️ <strong>Section 3(1) NBA Clearance:</strong> Non-Indian entities, NRIs, and foreign-controlled firms require mandatory prior approval from NBA via <strong>Form I</strong> before obtaining any biological resource in India.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2 text-[11.5px] text-slate-700 dark:text-slate-300 leading-relaxed">
-                <p>
-                  📋 <strong>Section 7 Prior Intimation:</strong> Indian commercial manufacturers must file <strong>Form A</strong> with their respective State Biodiversity Board (SBB).
-                </p>
-                <p>
-                  • Benefit sharing levy: 0.1% to 0.5% of annual ex-factory gross sales or mutually agreed percentage.
-                </p>
-              </div>
-            )}
+            </div>
           </div>
 
           <button
             type="button"
             onClick={() => {
-              sendMessage(`What are the step-by-step ABS requirements for my entity (${entityType}) when ${activityType}?`);
+              sendMessage(SCENARIOS[scenarioKey].question);
               setActiveModal(null);
             }}
             className="w-full py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-md shadow-teal-600/20 transition-all flex items-center justify-center space-x-2"
           >
-            <span>Ask AyuSakshi in Conversation</span>
+            <span>Run Assessment with Cited Sources</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

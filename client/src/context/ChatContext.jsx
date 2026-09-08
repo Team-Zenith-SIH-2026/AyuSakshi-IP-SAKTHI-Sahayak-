@@ -143,10 +143,14 @@ export const ChatProvider = ({ children }) => {
 
       const { user_message, assistant_message } = res.data;
 
-      // Replace temp message with verified message from server
+      // Replace temp message with verified message from server; flag as isNew for streaming animation
+      const newAssistantMsg = assistant_message
+        ? { ...assistant_message, isNew: true }
+        : assistant_message;
+
       setMessages((prev) => {
         const filtered = prev.filter((m) => m.id !== tempUserMsg.id);
-        return [...filtered, user_message, assistant_message];
+        return [...filtered, user_message, newAssistantMsg];
       });
 
       // Update conversations list title if changed

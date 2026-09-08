@@ -29,13 +29,13 @@ export const AuthModal = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:5000/api/auth/google';
+  const startOAuth = (provider) => {
+    window.location.href = `/api/auth/${provider}`;
   };
 
-  const handleFacebookLogin = () => {
-    window.location.href = 'http://localhost:5000/api/auth/facebook';
-  };
+  const handleGoogleLogin = () => startOAuth('google');
+
+  const handleFacebookLogin = () => startOAuth('facebook');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">

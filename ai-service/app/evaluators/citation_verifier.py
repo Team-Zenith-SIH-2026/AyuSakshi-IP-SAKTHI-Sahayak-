@@ -1,5 +1,6 @@
 import math
 import re
+import unicodedata
 from typing import List, Dict, Any, Tuple
 from app.config import settings
 
@@ -56,6 +57,18 @@ def _is_grounded_ref(ref, evidence_refs) -> bool:
     return False
 
 
+def _normalise_title(text: str) -> str:
+    """
+    Reduce a document title (or a whole answer) to a comparable form: lowercase,
+    no leading article, punctuation collapsed to single spaces. Lets "The
+    Patents Act, 1970" match an answer that says "the Patents Act 1970".
+    """
+    t = unicodedata.normalize("NFKC", text or "").lower()
+    t = re.sub(r'[^a-z0-9]+', ' ', t).strip()
+    t = re.sub(r'^the\s+', '', t)
+    return t
+
+
 def _squash(score: float) -> float:
     """
     Map a relevance score into [0, 1].
@@ -98,7 +111,8 @@ class CitationVerifier:
         if not retrieved_evidence:
             return [], 0.0, "abstained", []
 
-        gen_lower = (generated_text or "").lower()
+        generated_text = unicodedata.normalize("NFKC", generated_text or "")
+        gen_lower = generated_text.lower()
 
         # Everything the model was actually shown, for fabrication checking.
         evidence_refs = set()
@@ -138,7 +152,6 @@ class CitationVerifier:
                 fabricated_refs.append(m.group(0).strip())
 
         verified_citations = []
-        grounded_overlap_total = 0.0
 
         for chunk in retrieved_evidence:
             sec_id = chunk.get("section_identifier", "") or ""
@@ -164,10 +177,21 @@ class CitationVerifier:
                     chunk_refs.add(p)
             if chunk_refs and any(_is_grounded_ref(r, chunk_refs) for r in cited_refs):
                 is_cited = True
-            if not is_cited and sec_id and sec_id.lower() in gen_lower:
+            # Only match a whole label that is specific enough to mean something.
+            # Some chunks are labelled just "4", and a bare "4" appears in almost
+            # any prose, so this test used to mark arbitrary chunks as cited.
+            if not is_cited and sec_id and len(sec_id) >= 6 and sec_id.lower() in gen_lower:
                 is_cited = True
-            if not is_cited and title and title.lower()[:40] in gen_lower:
-                is_cited = True
+            # Corpus titles are registered with a leading article ("The Patents
+            # Act, 1970") and an internal comma before the year. Models write
+            # "Patents Act 1970". Comparing the first 40 raw characters
+            # therefore almost never matched, so this test did nothing. Compare
+            # on a normalised form instead: drop the leading article and reduce
+            # punctuation and whitespace to single spaces on both sides.
+            if not is_cited and title:
+                norm_title = _normalise_title(title)
+                if norm_title and norm_title in _normalise_title(generated_text):
+                    is_cited = True
             if not is_cited and overlap >= 0.35:
                 is_cited = True
 
@@ -175,9 +199,19 @@ class CitationVerifier:
             if not is_cited:
                 continue
 
-            grounded_overlap_total += min(overlap * 2.0, 1.0)
+            # The cross-encoder exists to judge whether a chunk answers this
+            # query. When it says strongly no, that chunk is not evidence,
+            # however the text happened to brush against it. Without this floor
+            # a chunk scored -6.3 was being shown to the user as a supporting
+            # citation and was dragging the confidence average down with it.
+            chunk_rerank = _squash(chunk.get("rerank_score", chunk.get("similarity", 0.0)))
+            if chunk_rerank < settings.CITATION_RELEVANCE_FLOOR:
+                continue
 
             verified_citations.append({
+                "_overlap": min(overlap * 2.0, 1.0),
+                "_sim": _squash(chunk.get("similarity", 0.0)),
+                "_rerank": _squash(chunk.get("rerank_score", chunk.get("similarity", 0.0))),
                 "source_title": title,
                 "section_reference": sec_id or "General Provisions",
                 "authority": chunk.get("authority", "Official Regulatory Authority"),
@@ -205,16 +239,40 @@ class CitationVerifier:
             return [], 0.0, "abstained", fabricated_refs
 
         # Composite confidence, every input bounded to [0, 1].
-        sims = [_squash(c.get("similarity", 0.0)) for c in retrieved_evidence]
-        reranks = [_squash(c.get("rerank_score", c.get("similarity", 0.0))) for c in retrieved_evidence]
-        avg_retrieval_sim = sum(sims) / max(len(sims), 1)
+        #
+        # These averages are taken over the chunks the answer actually cited,
+        # not over everything retrieval returned. Retrieval deliberately fetches
+        # a wide candidate set, so averaging across all of it charged a
+        # perfectly grounded answer for the weak candidates it correctly ignored:
+        # one exact hit among four near-misses scored the same as five
+        # mediocre ones. That put well-grounded answers a hair under the
+        # abstention threshold and refused them.
+        # Dense and sparse retrieval return different chunks, so a chunk found
+        # only by BM25 carries no cosine similarity at all. Treating that
+        # absence as a similarity of 0.0 averaged real evidence down towards
+        # zero and was the single largest drag on confidence. Only chunks that
+        # actually have a dense score contribute to the dense term.
+        reranks = [c["_rerank"] for c in deduped_citations]
+        overlaps = [c["_overlap"] for c in deduped_citations]
+        sims = [c["_sim"] for c in deduped_citations if c["_sim"] > 0.0]
+
         avg_rerank = sum(reranks) / max(len(reranks), 1)
-        avg_overlap = grounded_overlap_total / max(len(deduped_citations), 1)
+        avg_overlap = sum(overlaps) / max(len(overlaps), 1)
+        # No dense hit among the citations means the dense term has nothing to
+        # say, so fall back to the reranker rather than asserting zero.
+        avg_retrieval_sim = (sum(sims) / len(sims)) if sims else avg_rerank
+
+        # An answer resting on one squarely on-point provision is well grounded.
+        # A mean alone cannot express that, so the best cited chunk carries most
+        # of the retrieval-quality weight and the mean tempers it.
+        best_rerank = max(reranks) if reranks else 0.0
+        retrieval_quality = 0.65 * best_rerank + 0.35 * avg_rerank
+
         citation_factor = min(len(deduped_citations) / 3.0, 1.0)
 
         confidence_score = (
             0.30 * min(avg_retrieval_sim * 1.5, 1.0) +
-            0.30 * min(avg_rerank * 1.5, 1.0) +
+            0.30 * min(retrieval_quality, 1.0) +
             0.20 * min(avg_overlap, 1.0) +
             0.20 * citation_factor
         )
@@ -232,6 +290,12 @@ class CitationVerifier:
             confidence_level = "medium"
         else:
             confidence_level = "low"
+
+        # Scratch fields used only for scoring; not part of the API surface.
+        for c in deduped_citations:
+            c.pop("_overlap", None)
+            c.pop("_sim", None)
+            c.pop("_rerank", None)
 
         return deduped_citations[:5], confidence_score, confidence_level, fabricated_refs
 
