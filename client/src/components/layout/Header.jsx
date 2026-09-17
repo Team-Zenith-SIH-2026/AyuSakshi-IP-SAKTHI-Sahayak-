@@ -5,7 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useChat } from '../../context/ChatContext';
 import { LeafMark } from './LeafMark';
-import { Sun, Moon, User, LogOut, Menu, ChevronDown, Scale, PanelLeft } from 'lucide-react';
+import { Sun, Moon, User, LogOut, Menu, ChevronDown, Scale, PanelLeft, Globe } from 'lucide-react';
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -64,7 +64,7 @@ export const Header = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-emerald-900/[0.06] dark:border-white/[0.06] bg-white/70 dark:bg-[#060d10]/70 backdrop-blur-xl transition-colors">
+    <header className="sticky top-0 z-30 w-full border-b border-emerald-900/[0.08] dark:border-emerald-700/20 bg-white/90 dark:bg-[#0a2019]/90 backdrop-blur-md transition-colors">
       <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         {/* Left: menu + wordmark */}
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -73,7 +73,7 @@ export const Header = () => {
             onClick={toggleMobileSidebar}
             aria-label="Toggle navigation menu"
             aria-expanded={isMobileSidebarOpen}
-            className="-ml-1 rounded-lg p-2 text-slate-500 transition-colors hover:bg-emerald-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white lg:hidden"
+            className="-ml-1 rounded-lg p-2 text-slate-600 transition-colors hover:bg-emerald-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white lg:hidden"
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -82,75 +82,101 @@ export const Header = () => {
             type="button"
             onClick={toggleDesktopSidebar}
             aria-label="Toggle sidebar"
-            className="hidden rounded-lg p-2 text-slate-400 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-white/5 dark:hover:text-emerald-300 lg:block"
+            className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-white/5 dark:hover:text-emerald-300 lg:block"
           >
             <PanelLeft className="h-4 w-4" />
           </button>
 
           <button
             onClick={() => navigate('/')}
-            className="flex min-w-0 select-none items-center gap-2.5 text-left"
+            className="flex min-w-0 select-none items-center gap-2.5 text-left group"
           >
-            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/10 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/15">
-              <LeafMark className="h-5 w-5" />
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/15 transition-transform group-hover:scale-105 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-400/20">
+              <LeafMark className="h-6 w-6" />
             </span>
             <span className="min-w-0">
-              <span className="block truncate text-[17px] font-medium leading-tight tracking-tight text-slate-900 dark:text-white">
-                AyuSakshi
+              <span className="block truncate text-[17px] font-bold leading-tight tracking-tight text-slate-900 dark:text-white">
+                IP-SAKTI <span className="font-semibold text-emerald-800 dark:text-emerald-400">Sahayak</span>
               </span>
-              <span className="hidden truncate text-[11px] font-normal leading-tight text-slate-400 dark:text-slate-500 sm:block">
-                Ayurveda · IP · Compliance
+              <span className="hidden truncate text-[11px] font-medium leading-tight text-slate-500 dark:text-slate-400 sm:block">
+                Ayurveda • IPR • Compliance
               </span>
             </span>
           </button>
         </div>
 
-        {/* Centre: where the question applies */}
-        <div className="flex flex-shrink-0 items-center rounded-full bg-slate-100/80 p-0.5 dark:bg-white/[0.06]">
+        {/* Centre: India / International Regime pill */}
+        <div className="flex flex-shrink-0 items-center rounded-full bg-slate-100/90 dark:bg-[#071813] p-1 border border-slate-200/80 dark:border-emerald-800/40 shadow-inner">
           <button
             onClick={setIndia}
-            className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all sm:px-4 ${
+            className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all sm:px-4 ${
               isIndia
-                ? 'bg-white text-emerald-800 shadow-sm dark:bg-emerald-500/15 dark:text-emerald-200'
-                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                ? 'bg-[#2b906a] text-white shadow-sm font-semibold'
+                : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            India
+            <span className="text-sm">🇮🇳</span>
+            <span>India</span>
           </button>
           <button
             onClick={setInternational}
-            className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all sm:px-4 ${
+            className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all sm:px-4 ${
               !isIndia
-                ? 'bg-white text-teal-800 shadow-sm dark:bg-teal-500/15 dark:text-teal-200'
-                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                ? 'bg-[#2b906a] text-white shadow-sm font-semibold'
+                : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            International
+            <Globe className="h-3.5 w-3.5" />
+            <span>International</span>
           </button>
         </div>
 
         {/* Right: language, theme, account */}
-        <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
-          <select
-            value={selectedLang}
-            onChange={(e) => setSelectedLang(e.target.value)}
-            aria-label="Language"
-            className="hidden cursor-pointer appearance-none rounded-lg bg-transparent px-2 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400 dark:text-slate-300 dark:hover:bg-white/5 md:block"
-          >
-            {languages.map((l) => (
-              <option key={l.code} value={l.code} className="bg-white text-slate-800 dark:bg-[#0e181e] dark:text-slate-200">
-                {l.label}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
+          {/* Language selector */}
+          <div className="relative hidden md:block">
+            <select
+              value={selectedLang}
+              onChange={(e) => setSelectedLang(e.target.value)}
+              aria-label="Language"
+              className="cursor-pointer appearance-none rounded-lg border border-slate-200/80 bg-white/70 py-1.5 pl-3 pr-7 text-[13px] font-medium text-slate-700 transition-colors hover:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-emerald-800/40 dark:bg-[#0e2720] dark:text-slate-200"
+            >
+              {languages.map((l) => (
+                <option key={l.code} value={l.code} className="bg-white text-slate-800 dark:bg-[#0e2720] dark:text-slate-200">
+                  {l.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+          </div>
 
-          <button
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/5 dark:hover:text-slate-200"
-          >
-            {isDark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
-          </button>
+          {/* Theme toggles (Sun and Moon) */}
+          <div className="flex items-center rounded-lg p-0.5 text-slate-500 dark:text-slate-400">
+            <button
+              onClick={() => { if (isDark) toggleTheme(); }}
+              aria-label="Switch to light mode"
+              title="Light Mode"
+              className={`rounded-md p-1.5 transition-colors ${
+                !isDark
+                  ? 'text-amber-600 bg-amber-50 dark:text-amber-400'
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/5'
+              }`}
+            >
+              <Sun className="h-[18px] w-[18px]" />
+            </button>
+            <button
+              onClick={() => { if (!isDark) toggleTheme(); }}
+              aria-label="Switch to dark mode"
+              title="Dark Mode"
+              className={`rounded-md p-1.5 transition-colors ${
+                isDark
+                  ? 'text-emerald-300 bg-emerald-950/60'
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <Moon className="h-[18px] w-[18px]" />
+            </button>
+          </div>
 
           {isAuthenticated ? (
             <div className="relative">

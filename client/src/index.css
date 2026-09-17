@@ -10,30 +10,25 @@
   }
 
   body {
-    @apply font-sans antialiased;
-    /* Slightly open tracking reads calmer at small sizes and is a large part of
-       why the interface feels less dense than it did. */
-    letter-spacing: -0.005em;
+    @apply font-sans antialiased text-slate-800 dark:text-slate-100;
+    letter-spacing: -0.01em;
   }
 
-  /* Headings carry weight through size and space, not through boldness.
-     font-extrabold everywhere was the main reason the old UI felt shouty. */
   h1,
   h2,
-  h3 {
-    @apply font-normal tracking-tight;
+  h3,
+  h4 {
+    @apply tracking-tight;
   }
 }
 
-/* Panels sit on the botanical backdrop, so they are translucent rather than
-   opaque: the leaves stay faintly visible through them, which is what keeps the
-   whole thing feeling like one surface. */
+/* Crisp, professional card and panel surfaces */
 .glass-panel {
-  @apply border border-emerald-900/[0.07] bg-white/70 backdrop-blur-xl dark:border-white/[0.07] dark:bg-white/[0.03];
+  @apply border border-emerald-900/[0.08] bg-white/90 shadow-sm backdrop-blur-md dark:border-emerald-700/25 dark:bg-[#0d261e]/90;
 }
 
 .glass-card {
-  @apply border border-emerald-900/[0.07] bg-white/70 backdrop-blur-xl dark:border-white/[0.07] dark:bg-white/[0.025];
+  @apply border border-emerald-900/[0.08] bg-white/95 shadow-sm backdrop-blur-md dark:border-emerald-700/25 dark:bg-[#102d24]/95;
 }
 
 /* Scrollbars: present when needed, invisible otherwise. */
