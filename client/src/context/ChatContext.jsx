@@ -101,7 +101,11 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  const sendMessage = async (content, language = 'en') => {
+  // options.newConversation starts a fresh conversation for this message, seeded
+  // with options.formulationState, instead of appending to the one on screen.
+  // options.situation carries the situation picker's selection with the
+  // sentence it composed, so the service does not have to guess from the words.
+  const sendMessage = async (content, language = 'en', options = {}) => {
     if (!content.trim()) return;
 
     // Closes the race that let a double-click or Enter+click send the same
@@ -112,9 +116,9 @@ export const ChatProvider = ({ children }) => {
     isSendingRef.current = true;
     setIsLoading(true);
 
-    let convId = activeConversationId;
+    let convId = options.newConversation ? null : activeConversationId;
     if (!convId) {
-      const newConv = await startNewConversation(content.slice(0, 40));
+      const newConv = await startNewConversation(content.slice(0, 40), options.formulationState || {});
       if (!newConv) {
         isSendingRef.current = false;
         setIsLoading(false);
@@ -139,6 +143,7 @@ export const ChatProvider = ({ children }) => {
         content: content.trim(),
         language,
         jurisdiction,
+        ...(options.situation ? { situation: options.situation } : {}),
       });
 
       const { user_message, assistant_message } = res.data;
@@ -148,8 +153,13 @@ export const ChatProvider = ({ children }) => {
         ? { ...assistant_message, isNew: true }
         : assistant_message;
 
+      // Starting a new conversation changes activeConversationId, which reloads
+      // its messages from the server while this request is still running. That
+      // reload can already contain the user's message, so drop any copy of the
+      // returned messages before appending them, or the question shows twice.
+      const returnedIds = new Set([user_message?.id, assistant_message?.id].filter(Boolean));
       setMessages((prev) => {
-        const filtered = prev.filter((m) => m.id !== tempUserMsg.id);
+        const filtered = prev.filter((m) => m.id !== tempUserMsg.id && !returnedIds.has(m.id));
         return [...filtered, user_message, newAssistantMsg];
       });
 

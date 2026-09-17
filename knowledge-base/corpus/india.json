@@ -1,6 +1,6 @@
 {
   "corpus_id": "india",
-  "corpus_version": "2026-09-06.1",
+  "corpus_version": "2026-09-11.1",
   "retrieved_date": "2026-09-06",
   "collection_rules": "Official sources only. Verbatim statutory text transcribed from the PDFs in knowledge-base/source/, which were downloaded from India Code and the eGazette. No paraphrase and no commentary. Footnote reference markers and amendment annotations present in the source PDFs have been removed so the operative words read cleanly; nothing else is altered. Section numbers require human spot-check against knowledge-base/VERIFICATION_SHEET.md before demo.",
   "documents": [
@@ -19,7 +19,7 @@
       "document_note": "Consolidation date is not stated on the title page of the downloaded PDF. The version tag therefore records the retrieval date rather than an as-on date.",
       "chunks": [
         {
-          "section_identifier": "Section 2(1)(j)",
+          "section_identifier": "Section 2(1)(j) & 2(1)(ja)",
           "title": "Definition of invention",
           "verbatim_text": "2. Definitions and interpretation.\n\n(1) In this Act, unless the context otherwise requires,—\n\n(j) \"invention\" means a new product or process involving an inventive step and capable of industrial application;\n\n(ja) \"inventive step\" means a feature of an invention that involves technical advance as compared to the existing knowledge or having economic significance or both and that makes the invention not obvious to a person skilled in the art;",
           "retrieval_context": "definition of invention novelty inventive step industrial application what counts as an invention patentable"
@@ -53,17 +53,17 @@
           "retrieval_context": "patent specification disclose source and geographical origin of biological material Indian plant used in invention disclosure requirement"
         },
         {
-          "section_identifier": "Section 25(1)(j)",
-          "title": "Opposition to the patent - non-disclosure of source of biological material",
+          "section_identifier": "Section 25(1)(j) & 25(1)(k)",
+          "title": "Opposition to the patent - non-disclosure of source of biological material; anticipation by local or indigenous community knowledge",
           "verbatim_text": "25. Opposition to the patent.\n\n(1) Where an application for a patent has been published but a patent has not been granted, any person may, in writing, represent by way of opposition to the Controller against the grant of patent on the ground—\n\n(j) that the complete specification does not disclose or wrongly mentions the source or geographical origin of biological material used for the invention;\n\n(k) that the invention so far as claimed in any claim of the complete specification is anticipated having regard to the knowledge, oral or otherwise, available within any local or indigenous community in India or elsewhere,\n\nbut on no other ground.",
-          "extraction_note": "Grounds (j) and (k) only, with the opening words of section 25(1) reproduced for context. Grounds (a) to (i) are not ingested.",
+          "extraction_note": "Grounds (j) and (k) only, with the opening words of section 25(1) reproduced for context. Grounds (a) to (i) are not ingested. The label names both grounds so that citation verification recognises a citation of either one; labelled with (j) alone, a correct citation of 25(1)(k) was rejected as fabricated.",
           "retrieval_context": "pre-grant opposition oppose a patent application non-disclosure of biological source anticipation by local or indigenous community knowledge stop a patent"
         },
         {
-          "section_identifier": "Section 64(1)(p)",
-          "title": "Revocation of patents - non-disclosure of source of biological material",
+          "section_identifier": "Section 64(1)(p) & 64(1)(q)",
+          "title": "Revocation of patents - non-disclosure of source of biological material; anticipation by local or indigenous community knowledge",
           "verbatim_text": "64. Revocation of patents.\n\n(1) Subject to the provisions contained in this Act, a patent, whether granted before or after the commencement of this Act, may, on the petition of any person interested or of the Central Government or on a counter-claim in a suit for infringement of the patent, be revoked by the High Court on any of the following grounds, that is to say—\n\n(p) that the complete specification does not disclose or wrongly mentions the source or geographical origin of biological material used for the invention;\n\n(q) that the invention so far as claimed in any claim of the complete specification was anticipated having regard to the knowledge, oral or otherwise, available within any local or indigenous community in India or elsewhere.",
-          "extraction_note": "Grounds (p) and (q) only, with the opening words of section 64(1) reproduced for context. Grounds (a) to (o) are not ingested.",
+          "extraction_note": "Grounds (p) and (q) only, with the opening words of section 64(1) reproduced for context. Grounds (a) to (o) are not ingested. The label names both grounds so that citation verification recognises a citation of either one; labelled with (p) alone, a correct citation of 64(1)(q) was rejected as fabricated.",
           "retrieval_context": "revoke a patent post-grant revocation High Court stop a foreign company patenting a formulation from our tradition biopiracy indigenous knowledge"
         }
       ]

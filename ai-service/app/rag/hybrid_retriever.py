@@ -112,6 +112,43 @@ def reciprocal_rank_fusion(dense_results: List[Dict[str, Any]], sparse_results: 
         
     return fused_results
 
+def fetch_chunks_by_ids(ids: List[str]) -> List[Dict[str, Any]]:
+    """
+    Current chunks by id, in the order given, with the same fields retrieval
+    returns. Used to answer a follow-up from the sources of the answer it
+    follows. A chunk superseded since then is not returned.
+    """
+    ids = [str(i) for i in ids if i]
+    if not ids:
+        return []
+    conn = get_db_connection()
+    if conn is None:
+        return []
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT c.id, c.chunk_index, c.section_identifier, c.title, c.content, c.metadata,
+                       d.title as doc_title, d.authority, d.jurisdiction, d.category, d.document_type, d.source_url,
+                       v.version_tag
+                FROM document_chunks c
+                JOIN document_versions v ON c.document_version_id = v.id
+                JOIN documents d ON v.document_id = d.id
+                WHERE c.id = ANY(%s::uuid[])
+                  AND v.is_current = TRUE
+                  AND d.status = 'active'
+                """,
+                (ids,),
+            )
+            rows = {str(r["id"]): dict(r) for r in cur.fetchall()}
+        return [rows[i] for i in ids if i in rows]
+    except Exception as e:
+        print(f"[Hybrid Retriever Error - fetch by id]: {e}")
+        return []
+    finally:
+        conn.close()
+
+
 def hybrid_retrieve(query: str, jurisdiction: str = "india", category: Optional[str] = None, top_k: int = 5) -> List[Dict[str, Any]]:
     """
     Execute Hybrid Retrieval (Dense Vector + BM25 Full-Text) filtered strictly by Jurisdiction.

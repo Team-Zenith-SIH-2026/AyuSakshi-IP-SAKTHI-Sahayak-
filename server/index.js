@@ -1,7 +1,10 @@
 const app = require('./src/app');
+const { ensureSchema } = require('./src/config/schema');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 5000;
+
+ensureSchema();
 
 const server = app.listen(PORT, () => {
   console.log(`=======================================================`);

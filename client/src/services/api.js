@@ -51,7 +51,8 @@ export const chatAPI = {
   listConversations: (jurisdiction) => api.get('/chat/conversations', { params: { jurisdiction } }),
   createConversation: (data) => api.post('/chat/conversations', data),
   getMessages: (id) => api.get(`/chat/conversations/${id}`),
-  sendMessage: (id, data) => api.post(`/chat/conversations/${id}/messages`, data),
+  // An answer from the local fallback model can take a few minutes on a laptop.
+  sendMessage: (id, data) => api.post(`/chat/conversations/${id}/messages`, data, { timeout: 310000 }),
   deleteConversation: (id) => api.delete(`/chat/conversations/${id}`),
 };
 

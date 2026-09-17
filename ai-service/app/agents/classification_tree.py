@@ -35,6 +35,13 @@ from typing import Any, Dict, List, Optional, Tuple
 # Terminal categories
 # --------------------------------------------------------------------------
 
+# retrieval_queries are the topics a category raises, each phrased the way the
+# corpus's retrieval_context is written so that one search finds one provision.
+# A wizard conversation searches them one by one (see
+# RAGOrchestrator._routed_evidence): a single search over the whole hand-off
+# question retrieved the licensing rules and missed Section 3(p) for a
+# classical medicine. They steer retrieval only; citations still come solely
+# from verified evidence.
 CATEGORY_PROFILES: Dict[str, Dict[str, Any]] = {
     "classical": {
         "category": "Classical / Generic Medicine",
@@ -68,6 +75,11 @@ CATEGORY_PROFILES: Dict[str, Dict[str, Any]] = {
             "refuse claims over Indian traditional knowledge."
         ),
         "retrieval_hints": ["Section 3(p)", "Section 3(e)", "First Schedule", "Schedule T"],
+        "retrieval_queries": [
+            "traditional knowledge cannot be patented classical Ayurvedic formulation Charaka Samhita classical texts",
+            "classical Ayurvedic drug definition manufactured exclusively per formulae in authoritative books First Schedule",
+            "exemption for codified traditional knowledge registered AYUSH practitioners cultivated medicinal plants",
+        ],
     },
     "proprietary": {
         "category": "Patent or Proprietary Medicine (P or P)",
@@ -97,6 +109,11 @@ CATEGORY_PROFILES: Dict[str, Dict[str, Any]] = {
             "application is likely to be refused and the filing cost wasted."
         ),
         "retrieval_hints": ["Section 3(e)", "Section 3(p)", "proprietary medicine licence"],
+        "retrieval_queries": [
+            "patent mere admixture combining herbs new ratio of classical herbs synergistic efficacy",
+            "patent or proprietary medicine definition difference between classical Ayurvedic drug and proprietary medicine",
+            "licence categories for Ayurvedic drugs safety study evidence of effectiveness proprietary medicine",
+        ],
     },
     "new_drug": {
         "category": "New / Non-Classical Drug",
@@ -123,6 +140,11 @@ CATEGORY_PROFILES: Dict[str, Dict[str, Any]] = {
         ),
         "defensive_route": "Freedom-to-operate and prior art search before committing to trial spend.",
         "retrieval_hints": ["new drug", "clinical trial", "Section 6", "Section 10(4)"],
+        "retrieval_queries": [
+            "definition of invention novelty inventive step industrial application",
+            "patent new form of a known substance enhanced efficacy",
+            "NBA approval before grant of patent intellectual property Indian biological resource",
+        ],
     },
     "phytopharmaceutical": {
         "category": "Phytopharmaceutical",
@@ -148,6 +170,11 @@ CATEGORY_PROFILES: Dict[str, Dict[str, Any]] = {
         ),
         "defensive_route": "Document the extraction process and marker data from the start.",
         "retrieval_hints": ["phytopharmaceutical", "purified fraction", "marker", "Section 6"],
+        "retrieval_queries": [
+            "phytopharmaceutical drug definition purified standardised fraction four bioactive phytochemical markers",
+            "patent new form of a known substance enhanced efficacy derivatives",
+            "NBA approval before grant of patent intellectual property Indian biological resource",
+        ],
     },
     "ayurveda_aahar": {
         "category": "Ayurveda-Aahar / Nutraceutical",
@@ -167,6 +194,11 @@ CATEGORY_PROFILES: Dict[str, Dict[str, Any]] = {
         "abs_posture": "Depends on the biological resource used and the status of the applicant.",
         "defensive_route": "Keep marketing copy audited. Claim drift is the most common enforcement trigger.",
         "retrieval_hints": ["Ayurveda Aahara", "FSSAI", "food", "claim restriction"],
+        "retrieval_queries": [
+            "Ayurveda Aahara definition sell as food not a drug FSSAI no therapeutic claim",
+            "trademark absolute grounds refusal descriptive mark generic name customary in trade",
+            "Indian company prior intimation to State Biodiversity Board commercial utilisation",
+        ],
     },
     "cosmetic": {
         "category": "Cosmetic",
@@ -186,6 +218,11 @@ CATEGORY_PROFILES: Dict[str, Dict[str, Any]] = {
         "abs_posture": "Applies where Indian biological resources are used.",
         "defensive_route": "Design registration on container and packaging shape.",
         "retrieval_hints": ["cosmetic", "external application", "Cosmetics Rules 2020"],
+        "retrieval_queries": [
+            "trademark absolute grounds refusal descriptive mark generic name customary in trade",
+            "definition of invention novelty inventive step industrial application",
+            "Indian company prior intimation to State Biodiversity Board commercial utilisation",
+        ],
     },
 }
 
@@ -419,6 +456,7 @@ def classify(answers: List[Dict[str, str]]) -> Dict[str, Any]:
         "abs_posture": profile["abs_posture"],
         "defensive_route": profile["defensive_route"],
         "retrieval_hints": profile["retrieval_hints"],
+        "retrieval_queries": profile["retrieval_queries"],
         "decision_path": path,
         "questions_answered": len(path),
         "caveats": caveats,

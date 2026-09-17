@@ -19,24 +19,50 @@ class Settings(BaseSettings):
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")
     
     # LLM & Embedding Settings
-    # Provider order of preference: groq (fast, free) -> openai -> ollama (offline).
+    # Provider order: each Groq model in turn (every key tried per model) ->
+    # local Ollama model -> OpenAI (only with a real key). See app/llm/providers.py.
     LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "groq")
 
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+    # Further keys, tried when the one before is rejected or rate limited.
+    #
+    # Worth knowing before relying on them: Groq counts free-tier quota per
+    # organization and per model, not per key. Four keys cut from one account
+    # share a single allowance. Measured by sending one request per key and
+    # watching x-ratelimit-remaining-requests fall 999, 998, 997, 996 across
+    # four different keys. Extra keys therefore only add capacity when they
+    # belong to a different account; what does add capacity is GROQ_MODEL_FALLBACKS.
+    GROQ_API_KEY_2: str = os.getenv("GROQ_API_KEY_2", "")
+    GROQ_API_KEY_3: str = os.getenv("GROQ_API_KEY_3", "")
+    GROQ_API_KEY_4: str = os.getenv("GROQ_API_KEY_4", "")
+    # 20b, not 120b. On the demo questions 120b repeatedly named provisions it
+    # was never shown (Section 64(1)(q), Section 25(1)(k)); the citation verifier
+    # correctly blocked them, so 120b refused questions 20b answers from evidence.
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+
+    # Tried in order when GROQ_MODEL is out of quota. Each model carries its own
+    # per-day token budget, so this is what multiplies a free-tier day: roughly
+    # 200k tokens per model rather than 200k in total.
+    #
+    # Deliberately absent: openai/gpt-oss-120b, which names provisions it was
+    # never shown (see GROQ_MODEL above), and groq/compound, which can reach the
+    # web mid-answer and so cannot be held to the retrieved evidence.
+    GROQ_MODEL_FALLBACKS: str = os.getenv(
+        "GROQ_MODEL_FALLBACKS", "qwen/qwen3.8-27b,qwen/qwen3.6-27b"
+    )
 
     # Default 0. In a legal domain there is no value in sampling variety, and a
     # non-zero temperature made the benchmark move by a case or two between runs,
     # which makes measured results hard to quote honestly.
     LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0"))
 
-    # Total time one LLM call may spend, including rate-limit backoff. Must stay
-    # comfortably under the Node backend and browser timeouts (both 45s), so that
-    # a rate-limited request abstains honestly instead of surfacing as a
-    # connection timeout with no explanation.
+    # Total time the Groq keys may spend together, including rate-limit backoff.
+    # Kept short so a rate-limited request moves on to the local model quickly.
+    # The chat path's Node, nginx and browser timeouts (about five minutes) are
+    # sized for the slow local fallback on top of this budget.
     LLM_TOTAL_BUDGET_SECONDS: float = float(os.getenv("LLM_TOTAL_BUDGET_SECONDS", "28"))
 
     # Must be set explicitly. Rate limiters bill the *reserved* completion length,
@@ -48,7 +74,18 @@ class Settings(BaseSettings):
 
     # Ollama gives the on-premise story: nothing leaves the machine.
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "deepseek-nothink:latest")
+    # A 7B model on a laptop CPU is far slower than a hosted one (measured about
+    # 168s cold for one answer), so it gets its own timeout and a shorter
+    # maximum answer: every output token costs time.
+    OLLAMA_TIMEOUT_SECONDS: float = float(os.getenv("OLLAMA_TIMEOUT_SECONDS", "240"))
+    OLLAMA_MAX_TOKENS: int = int(os.getenv("OLLAMA_MAX_TOKENS", "450"))
+    # Ollama otherwise sizes the context window from free memory, which for this
+    # 7B model meant 9.3 GB on a 16 GB laptop. 4096 comfortably fits the lean prompt.
+    OLLAMA_NUM_CTX: int = int(os.getenv("OLLAMA_NUM_CTX", "4096"))
+    # What the local model is shown: the top sources only, each trimmed.
+    LOCAL_EVIDENCE_TOP_K: int = int(os.getenv("LOCAL_EVIDENCE_TOP_K", "3"))
+    LOCAL_EVIDENCE_CHAR_CAP: int = int(os.getenv("LOCAL_EVIDENCE_CHAR_CAP", "1500"))
     
     EMBEDDING_MODEL_NAME: str = os.getenv("EMBEDDING_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
     RERANKER_MODEL_NAME: str = os.getenv("RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")

@@ -88,14 +88,19 @@ async def run_benchmark():
         fabricated = response.get("fabricated_citations") or []
         level = response.get("confidence_level", "")
         path = response.get("synthesis_path") or "abstained"
-        did_abstain = level == "abstained"
+        # What the benchmark tests is whether a legal answer was delivered. A
+        # refusal, a follow-up question, and a conversational reply ("I can't
+        # advise on doses, but I can help with...") all deliver none; the chat
+        # reply has had every legal statement removed (legal_claim_guard).
+        kind = response.get("answer_kind") or ("refusal" if level == "abstained" else "legal")
+        did_abstain = kind != "legal"
         should_abstain = bool(case["expected_abstain"])
 
         # Why it abstained, not just that it did. Without this every refusal
         # looks identical at confidence 0.0, and "retrieval returned nothing"
         # is indistinguishable from "retrieval worked but the verifier rejected
         # every chunk" -- two different bugs with two different fixes.
-        actual_reason = response.get("abstention_reason") if did_abstain else None
+        actual_reason = (response.get("abstention_reason") or kind) if did_abstain else None
         evidence_count = response.get("evidence_count")
 
         missing = _missing_expectations(case.get("expected_statutes", []), citations)

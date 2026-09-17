@@ -50,6 +50,9 @@ class RAGQueryRequest(BaseModel):
     language: Optional[str] = "en"
     history: Optional[List[Dict[str, Any]]] = []
     formulation_state: Optional[Dict[str, Any]] = {}
+    # The situation picker's selection, {"goal", "who", "uses"}, when the
+    # question was built with it rather than typed.
+    situation: Optional[Dict[str, Any]] = None
 
 class FormulationClassifyRequest(BaseModel):
     text: str
@@ -114,7 +117,8 @@ async def execute_rag_query(request: RAGQueryRequest):
             jurisdiction=request.jurisdiction or "india",
             language=request.language or "en",
             history=request.history or [],
-            formulation_state=request.formulation_state or {}
+            formulation_state=request.formulation_state or {},
+            situation=request.situation,
         )
         return response
     except Exception as e:

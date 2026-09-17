@@ -87,3 +87,61 @@ def test_reranker_logits_do_not_produce_negative_confidence():
         generated_text, evidence, "india"
     )
     assert 0.0 <= score <= 1.0
+
+
+def test_second_provision_in_a_multi_provision_label_is_grounded():
+    """
+    The Patents Act revocation chunk holds grounds (p) and (q). Labelled with (p)
+    alone, a correct citation of Section 64(1)(q) was blocked as fabricated and
+    the Charaka Samhita demo question was refused.
+    """
+    evidence = [
+        dict(EVIDENCE[0]),
+        {
+            "section_identifier": "Section 64(1)(p) & 64(1)(q)",
+            "doc_title": "The Patents Act, 1970",
+            "jurisdiction": "india",
+            "content": (
+                "(q) that the invention so far as claimed in any claim of the complete specification was "
+                "anticipated having regard to the knowledge, oral or otherwise, available within any local "
+                "or indigenous community in India or elsewhere."
+            ),
+            "similarity": 0.6,
+            "rerank_score": 2.0,
+        },
+    ]
+    generated_text = (
+        "Under Section 3(p) of the Patents Act, 1970 traditional knowledge is not an invention, and a patent "
+        "anticipated by indigenous community knowledge can be revoked under Section 64(1)(q)."
+    )
+    citations, score, level, fabricated = CitationVerifier.verify_and_extract_citations(
+        generated_text, evidence, "india"
+    )
+    assert fabricated == []
+    assert CitationVerifier.should_abstain(evidence, score) is False
+
+
+def test_descriptive_label_suffix_does_not_hide_subsections():
+    """
+    "Section 6 (as amended 2023)" labels the whole section. Its descriptive suffix
+    must not be parsed as sub-clauses, or a citation of Section 6(1A) looks invented.
+    """
+    evidence = [{
+        "section_identifier": "Section 6 (as amended 2023)",
+        "doc_title": "The Biological Diversity (Amendment) Act, 2023",
+        "jurisdiction": "india",
+        "content": (
+            "(1A) Any person covered under section 7 applying for any intellectual property right shall "
+            "register with the National Biodiversity Authority before grant of such intellectual property rights."
+        ),
+        "similarity": 0.7,
+        "rerank_score": 3.0,
+    }]
+    generated_text = (
+        "Under Section 6(1A) of the Biological Diversity (Amendment) Act, 2023 you must register with the "
+        "National Biodiversity Authority before grant of the intellectual property right."
+    )
+    citations, score, level, fabricated = CitationVerifier.verify_and_extract_citations(
+        generated_text, evidence, "india"
+    )
+    assert fabricated == []

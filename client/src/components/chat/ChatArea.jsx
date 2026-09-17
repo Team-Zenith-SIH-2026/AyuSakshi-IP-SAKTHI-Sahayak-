@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { useJurisdiction } from '../../context/JurisdictionContext';
 import { MessageItem } from './MessageItem';
+import { SituationBuilder } from './SituationBuilder';
 import { LeafMark } from '../layout/LeafMark';
 import { Sprout, Scale, Leaf, FileSearch, Globe2, ArrowUpRight } from 'lucide-react';
 
@@ -115,11 +116,27 @@ export const ChatArea = () => {
                 );
               })}
             </div>
+
+            {/* For someone who does not know how to put the question. India only:
+                the situations it maps to are Indian law. */}
+            {isIndia && (
+              <div className="mt-8 space-y-3">
+                <div className="px-1">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Or describe your situation
+                  </p>
+                  <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
+                    Not sure what to ask? Tap what fits you and we will write the question.
+                  </p>
+                </div>
+                <SituationBuilder />
+              </div>
+            )}
           </div>
         ) : (
           <div className="w-full space-y-5">
             {messages.map((msg, index) => (
-              <MessageItem key={msg.id || index} message={msg} />
+              <MessageItem key={msg.id || index} message={msg} isLatest={index === messages.length - 1} />
             ))}
 
             {isLoading && (
