@@ -99,15 +99,34 @@ export const ClassificationWizard = () => {
     setError(null);
   };
 
+  // Hand the result to chat as a focused question, in a fresh conversation that
+  // carries the wizard's category.
+  //
+  // This used to paste the whole question-and-answer trail into whichever
+  // conversation was open. Retrieval matched the wording of the questions
+  // ("purified extract", "marker compounds") rather than the product, the chat
+  // classifier read that wording as a phytopharmaceutical, and the open
+  // conversation's earlier product was appended as context, so the answer was
+  // refused. The category summary states what the product is in the statute's
+  // own terms, and the pipeline uses the carried category instead of guessing.
   const askInChat = () => {
     if (!result) return;
-    const trail = result.decision_path
-      .map((s) => `${s.question} ${s.answer_label}`)
-      .join(' ');
     sendMessage(
-      `My product has been classified as: ${result.category}. ` +
-        `The classification came from these answers: ${trail} ` +
-        `What are my intellectual property options and what compliance obligations apply?`
+      `My product is classified as ${result.category}. ${result.summary} ` +
+        `Can it be patented, what other intellectual property protection can I get, ` +
+        `and what licensing and biodiversity obligations apply?`,
+      'en',
+      {
+        newConversation: true,
+        formulationState: {
+          category: result.category,
+          wizard_classification: {
+            category_key: result.category_key,
+            category: result.category,
+            summary: result.summary,
+          },
+        },
+      }
     );
     close();
   };

@@ -3,6 +3,7 @@ import { useChat } from '../../context/ChatContext';
 import { useJurisdiction } from '../../context/JurisdictionContext';
 import { MessageItem } from './MessageItem';
 import { QuickActionBar } from './QuickActionBar';
+import { SituationBuilder } from './SituationBuilder';
 import { LeafMark } from '../layout/LeafMark';
 import {
   FlaskConical,
@@ -14,7 +15,7 @@ import {
 
 export const ChatArea = () => {
   const { messages, isLoading, sendMessage, setActiveModal } = useChat();
-  const { setInternational } = useJurisdiction();
+  const { setInternational, isIndia } = useJurisdiction();
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -155,6 +156,22 @@ export const ChatArea = () => {
               ))}
             </div>
 
+            {/* For someone who does not know how to put the question. India only:
+                the situations it maps to are Indian law. */}
+            {isIndia && (
+              <div className="w-full my-4 space-y-3 text-left">
+                <div className="px-1">
+                  <p className="text-[12.5px] font-semibold text-slate-500 dark:text-slate-400">
+                    Or describe your situation
+                  </p>
+                  <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
+                    Not sure what to ask? Tap what fits you and we will write the question.
+                  </p>
+                </div>
+                <SituationBuilder />
+              </div>
+            )}
+
             {/* "Explore Key Services" Section */}
             <div className="w-full mt-6 text-left">
               <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 mb-3.5">
@@ -199,7 +216,7 @@ export const ChatArea = () => {
              ======================================================= */
           <div className="w-full space-y-5">
             {messages.map((msg, index) => (
-              <MessageItem key={msg.id || index} message={msg} />
+              <MessageItem key={msg.id || index} message={msg} isLatest={index === messages.length - 1} />
             ))}
 
             {isLoading && (

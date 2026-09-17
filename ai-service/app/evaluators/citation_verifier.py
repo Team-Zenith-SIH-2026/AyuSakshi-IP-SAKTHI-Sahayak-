@@ -36,6 +36,24 @@ def _parse_ref(raw: str):
     return (number, subparts)
 
 
+def _parse_label_ref(part: str):
+    """
+    Parse one provision out of an evidence chunk's label.
+
+    Labels can carry a descriptive suffix, e.g. "Section 6 (as amended 2023)" or
+    "Section 7 proviso (as amended 2023)". Parsed whole, the words became
+    subparts ('as', 'amended', '2023'), so a correct citation of "Section 6(1A)"
+    against that chunk was reported as fabricated. Only the leading provision
+    token says what the chunk contains.
+    """
+    part = re.sub(
+        r'^\s*(?:Section|Sec\.?|Rule|Article|Art\.?|Regulation|Reg\.?)\s*',
+        '', part or '', flags=re.IGNORECASE
+    )
+    head = part.strip().split()
+    return _parse_ref(head[0]) if head else None
+
+
 def _is_grounded_ref(ref, evidence_refs) -> bool:
     """
     True if a reference in the answer corresponds to something in the evidence.
@@ -125,11 +143,7 @@ class CitationVerifier:
             # second provision look invented, so each component is registered
             # separately.
             for part in re.split(r'\s*(?:&|,|\band\b)\s*', sec):
-                part = re.sub(
-                    r'^\s*(?:Section|Sec\.?|Rule|Article|Art\.?|Regulation|Reg\.?)\s*',
-                    '', part, flags=re.IGNORECASE
-                )
-                parsed = _parse_ref(part)
+                parsed = _parse_label_ref(part)
                 if parsed:
                     evidence_refs.add(parsed)
             for m in CITATION_PATTERN.finditer(sec + " " + content):
@@ -168,11 +182,7 @@ class CitationVerifier:
             is_cited = False
             chunk_refs = set()
             for part in re.split(r'\s*(?:&|,|\band\b)\s*', sec_id or ""):
-                part = re.sub(
-                    r'^\s*(?:Section|Sec\.?|Rule|Article|Art\.?|Regulation|Reg\.?)\s*',
-                    '', part, flags=re.IGNORECASE
-                )
-                p = _parse_ref(part)
+                p = _parse_label_ref(part)
                 if p:
                     chunk_refs.add(p)
             if chunk_refs and any(_is_grounded_ref(r, chunk_refs) for r in cited_refs):

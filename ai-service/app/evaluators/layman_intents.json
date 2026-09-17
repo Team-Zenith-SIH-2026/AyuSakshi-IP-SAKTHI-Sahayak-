@@ -1,0 +1,67 @@
+{
+  "description": "Held-out phrasings for recognising a practitioner's situation from their own words. None of these appear in agents/intent_catalogue.py. Levels: 'expert' uses statutory terms, 'plain' is ordinary but specific, 'minimal' is the least a user might type. The 'mentor' items are the questions put to the system at the mentor review on 2026-09-17. Items were drafted with an AI model; teammates should add phrasings of their own, written without looking at the catalogue, so the score is not measured only on the model's style.",
+  "cases": [
+    {"id": "pib_m1", "level": "minimal", "source": "mentor", "text": "I use Indian plants for my company, any rule?", "intent": "plants_in_business"},
+    {"id": "pib_m2", "level": "plain", "source": "mentor", "text": "I take Indian plants for my business. Do I need permission?", "intent": "plants_in_business"},
+    {"id": "pib_m3", "level": "minimal", "source": "mentor", "text": "I am using Indian plants, any rule to commercialize?", "intent": "plants_in_business"},
+    {"id": "pib_1", "level": "minimal", "text": "herbs business rules", "intent": "plants_in_business"},
+    {"id": "pib_2", "level": "minimal", "text": "plants for selling, permission?", "intent": "plants_in_business"},
+    {"id": "pib_3", "level": "plain", "text": "We make herbal soaps using neem leaves from local suppliers. Is any government permission needed for the leaves?", "intent": "plants_in_business", "slots": {}},
+    {"id": "pib_4", "level": "plain", "text": "I am a farmer and I sell the tulsi I grow to companies. Do I need to register anywhere?", "intent": "plants_in_business", "slots": {"who": "grower"}},
+    {"id": "pib_5", "level": "plain", "text": "our company is from Germany and wants to buy turmeric from India for capsules, what permission", "intent": "plants_in_business", "slots": {"who": "foreign"}},
+    {"id": "pib_6", "level": "plain", "text": "I am a vaid and prepare medicines from jungle herbs for my patients, do biodiversity laws apply to me", "intent": "plants_in_business", "slots": {"who": "practitioner"}},
+    {"id": "pib_7", "level": "expert", "text": "Must an Indian private limited company give prior intimation to the SBB before procuring medicinal plants for commercial utilisation?", "intent": "plants_in_business", "slots": {"who": "indian_business"}},
+    {"id": "pib_8", "level": "minimal", "text": "mera herbal business hai, plants use karta hoon, koi rule?", "intent": "plants_in_business"},
+
+    {"id": "pat_m1", "level": "plain", "source": "mentor", "text": "I want to file a patent for the commercial product for Ayurvedic discovery.", "intent": "patent_my_product"},
+    {"id": "pat_m2", "level": "minimal", "source": "mentor", "text": "I discovered an ayurvedic medicine, can I file patent?", "intent": "patent_my_product"},
+    {"id": "pat_1", "level": "minimal", "text": "patent my herbal product", "intent": "patent_my_product"},
+    {"id": "pat_2", "level": "plain", "text": "I mixed five herbs in my own proportion and it works well for acidity. Can I patent it?", "intent": "patent_my_product", "slots": {"basis": "combination"}},
+    {"id": "pat_3", "level": "plain", "text": "Can I own the rights to an old recipe from Sushruta's text that I improved?", "intent": "patent_my_product", "slots": {"basis": "classical"}},
+    {"id": "pat_4", "level": "plain", "text": "we developed a standardised extract of giloy, is it patentable", "intent": "patent_my_product", "slots": {"basis": "extract"}},
+    {"id": "pat_5", "level": "minimal", "text": "how to stop others copying my ayurvedic formula legally", "intent": "patent_my_product"},
+
+    {"id": "pip_1", "level": "plain", "text": "I am filing a patent on a medicine from Indian moringa. Is there an extra permission for the plant?", "intent": "patent_using_indian_plant"},
+    {"id": "pip_2", "level": "minimal", "text": "patent herbal invention government approval first?", "intent": "patent_using_indian_plant"},
+    {"id": "pip_3", "level": "expert", "text": "When must an applicant approach the NBA for an IPR based on a biological resource accessed from India?", "intent": "patent_using_indian_plant"},
+    {"id": "pip_4", "level": "plain", "text": "do I have to say in my patent where the herb was collected", "intent": "patent_using_indian_plant"},
+
+    {"id": "lic_1", "level": "minimal", "text": "ayurvedic medicine licence", "intent": "medicine_licence"},
+    {"id": "lic_2", "level": "plain", "text": "I want to manufacture and sell triphala churna, which license do I apply for?", "intent": "medicine_licence"},
+    {"id": "lic_3", "level": "plain", "text": "My own herbal capsule is not from any old book. What approval to sell it as medicine?", "intent": "medicine_licence", "slots": {"formula": "own_formula"}},
+    {"id": "lic_4", "level": "minimal", "text": "permission to make ayurvedic dawai", "intent": "medicine_licence"},
+
+    {"id": "food_1", "level": "minimal", "text": "sell herbal drink as food?", "intent": "sell_as_food"},
+    {"id": "food_2", "level": "plain", "text": "Instead of registering as a medicine can my ashwagandha mix be sold as a health food?", "intent": "sell_as_food"},
+    {"id": "food_3", "level": "plain", "text": "what rules for an ayurvedic energy bar", "intent": "sell_as_food"},
+
+    {"id": "tm_1", "level": "minimal", "text": "protect my brand name", "intent": "brand_name"},
+    {"id": "tm_2", "level": "plain", "text": "Can I stop other sellers from using the name I gave my hair oil?", "intent": "brand_name"},
+    {"id": "tm_3", "level": "plain", "text": "can I register the word Triphala as my company's trademark", "intent": "brand_name"},
+
+    {"id": "ad_1", "level": "minimal", "text": "can I say cures diabetes on packet", "intent": "advertising_claims"},
+    {"id": "ad_2", "level": "plain", "text": "Is it legal to advertise that my capsules treat cancer?", "intent": "advertising_claims"},
+    {"id": "ad_3", "level": "plain", "text": "what claims am I not allowed to make in my youtube ads for herbal medicine", "intent": "advertising_claims"},
+
+    {"id": "gi_1", "level": "minimal", "text": "GI tag for our district's herbal product", "intent": "gi_tag"},
+    {"id": "gi_2", "level": "plain", "text": "our region's traditional medicinal oil is well known, can we protect the region's name for it", "intent": "gi_tag"},
+
+    {"id": "stop_1", "level": "plain", "text": "A US company got a patent on turmeric healing which our villages always knew. How to challenge it?", "intent": "stop_others_patent"},
+    {"id": "stop_2", "level": "minimal", "text": "fight patent on our traditional remedy", "intent": "stop_others_patent"},
+
+    {"id": "phy_1", "level": "plain", "text": "We isolated compounds from a plant extract and standardised it. Which drug category is that?", "intent": "phytopharmaceutical"},
+    {"id": "phy_2", "level": "minimal", "text": "plant extract drug approval", "intent": "phytopharmaceutical"},
+
+    {"id": "res_1", "level": "plain", "text": "A university in the UK wants my data on Indian medicinal plants. Can I give it to them?", "intent": "research_abroad"},
+    {"id": "res_2", "level": "minimal", "text": "share herb research with foreign company", "intent": "research_abroad"},
+
+    {"id": "oos_a", "level": "plain", "text": "how many drops of neem oil for dandruff", "intent": null},
+    {"id": "oos_b", "level": "plain", "text": "which ayurvedic medicine is best for diabetes", "intent": null},
+    {"id": "oos_c", "level": "plain", "text": "what documents are needed to export herbal tea to Canada", "intent": null},
+    {"id": "oos_d", "level": "plain", "text": "write a tagline for my ayurvedic shampoo", "intent": null},
+    {"id": "oos_e", "level": "plain", "text": "can I patent a new drone design", "intent": null},
+    {"id": "oos_f", "level": "minimal", "text": "ashwagandha benefits", "intent": null},
+    {"id": "oos_g", "level": "plain", "text": "how to open a bank account for my business", "intent": null},
+    {"id": "oos_h", "level": "minimal", "text": "what is GST rate on ayurvedic medicines", "intent": null}
+  ]
+}

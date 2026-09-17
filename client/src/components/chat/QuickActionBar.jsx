@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { useChat } from '../../context/ChatContext';
-import { Send, Mic, MicOff, Paperclip } from 'lucide-react';
+import { useJurisdiction } from '../../context/JurisdictionContext';
+import { SituationBuilder } from './SituationBuilder';
+import { Send, Mic, MicOff, Paperclip, SlidersHorizontal, X } from 'lucide-react';
 
 export const QuickActionBar = ({ className = '' }) => {
-  const { sendMessage, isLoading, setActiveModal } = useChat();
+  const { sendMessage, isLoading, setActiveModal, messages } = useChat();
+  const { isIndia } = useJurisdiction();
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
+  // The landing screen shows the situation picker already; once a conversation
+  // has started it is opened from here.
+  const [showBuilder, setShowBuilder] = useState(false);
+  const builderAvailable = isIndia && messages.length > 0;
 
   const handleSubmit = (e) => {
     e?.preventDefault();
@@ -48,6 +55,22 @@ export const QuickActionBar = ({ className = '' }) => {
 
   return (
     <div className={`w-full ${className}`}>
+      {builderAvailable && showBuilder && (
+        <div className="mb-2.5 max-h-[55vh] overflow-y-auto rounded-2xl border border-emerald-900/[0.12] bg-white/95 p-3.5 shadow-md backdrop-blur-md dark:border-emerald-700/30 dark:bg-[#0c241c]/95">
+          <div className="mb-2.5 flex items-center justify-between px-0.5">
+            <p className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Describe your situation</p>
+            <button
+              type="button"
+              onClick={() => setShowBuilder(false)}
+              aria-label="Close"
+              className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/5 dark:hover:text-slate-300"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <SituationBuilder compact onSent={() => setShowBuilder(false)} />
+        </div>
+      )}
       <form
         onSubmit={handleSubmit}
         className="relative flex flex-col rounded-2xl border border-emerald-900/[0.12] bg-white/95 p-3 shadow-md shadow-emerald-950/[0.04] backdrop-blur-md transition-colors focus-within:border-emerald-600/40 dark:border-emerald-700/30 dark:bg-[#0c241c]/95 dark:shadow-black/20 dark:focus-within:border-emerald-400/40"
@@ -73,6 +96,23 @@ export const QuickActionBar = ({ className = '' }) => {
             >
               <Paperclip className="h-4 w-4" />
             </button>
+
+            {builderAvailable && (
+              <button
+                type="button"
+                onClick={() => setShowBuilder((open) => !open)}
+                title="Describe your situation instead of typing"
+                aria-label="Describe your situation"
+                aria-expanded={showBuilder}
+                className={`rounded-full p-2 transition-colors ${
+                  showBuilder
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'
+                    : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200'
+                }`}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+              </button>
+            )}
 
             <button
               type="button"

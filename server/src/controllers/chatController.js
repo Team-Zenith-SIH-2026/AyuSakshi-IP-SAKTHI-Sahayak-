@@ -75,7 +75,7 @@ const getConversationMessages = async (req, res) => {
     const messagesResult = await query(
       `SELECT id, conversation_id, sender, content, language, thinking_trace,
               confidence_score, confidence_level, citations, ip_domains,
-              classification, abs_summary, tkdl_summary, created_at
+              classification, abs_summary, tkdl_summary, clarification, created_at
        FROM messages
        WHERE conversation_id = $1
        ORDER BY created_at ASC`,
@@ -97,7 +97,9 @@ const getConversationMessages = async (req, res) => {
 const sendMessage = async (req, res) => {
   try {
     const { id } = req.params;
-    const { content, language, jurisdiction: overrideJurisdiction } = req.body;
+    // situation: the picker's selection ({ goal, who, uses }) when the question
+    // was built with it. Passed through as-is; the AI service validates it.
+    const { content, language, jurisdiction: overrideJurisdiction, situation } = req.body;
 
     if (!content || !content.trim()) {
       return res.status(400).json({ success: false, error: 'Message content cannot be empty.' });
@@ -149,6 +151,7 @@ const sendMessage = async (req, res) => {
         language: lang,
         history,
         formulation_state: conversation.formulation_state || {},
+        situation: situation && typeof situation === 'object' ? situation : null,
       });
     } catch (aiErr) {
       // The retrieval engine is unreachable, so nothing can be grounded. Abstain.
@@ -198,12 +201,12 @@ const sendMessage = async (req, res) => {
       `INSERT INTO messages (
         conversation_id, sender, content, language,
         thinking_trace, confidence_score, confidence_level,
-        citations, ip_domains, classification, abs_summary, tkdl_summary
+        citations, ip_domains, classification, abs_summary, tkdl_summary, clarification
        )
-       VALUES ($1, 'assistant', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       VALUES ($1, 'assistant', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING id, conversation_id, sender, content, language, thinking_trace,
                  confidence_score, confidence_level, citations, ip_domains,
-                 classification, abs_summary, tkdl_summary, created_at`,
+                 classification, abs_summary, tkdl_summary, clarification, created_at`,
       [
         id,
         ragResponse.answer,
@@ -219,6 +222,7 @@ const sendMessage = async (req, res) => {
         ragResponse.classification ? JSON.stringify(ragResponse.classification) : null,
         ragResponse.abs_summary ? JSON.stringify(ragResponse.abs_summary) : null,
         ragResponse.tkdl_summary ? JSON.stringify(ragResponse.tkdl_summary) : null,
+        ragResponse.clarification ? JSON.stringify(ragResponse.clarification) : null,
       ]
     );
 

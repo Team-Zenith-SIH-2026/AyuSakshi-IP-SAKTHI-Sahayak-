@@ -56,12 +56,17 @@ CREATE TABLE IF NOT EXISTS messages (
     language VARCHAR(10) DEFAULT 'en',
     thinking_trace JSONB DEFAULT '[]'::jsonb,
     confidence_score NUMERIC(5, 4) DEFAULT 0.0000,
-    confidence_level VARCHAR(20) DEFAULT 'high' CHECK (confidence_level IN ('high', 'medium', 'low', 'abstained')),
+    -- 'clarifying' marks a follow-up question and 'conversation' a chat reply with no
+    -- legal content. Neither is an answer or a refusal, so neither has a confidence.
+    confidence_level VARCHAR(20) DEFAULT 'high' CHECK (confidence_level IN ('high', 'medium', 'low', 'abstained', 'clarifying', 'conversation')),
     citations JSONB DEFAULT '[]'::jsonb,
     ip_domains TEXT[] DEFAULT ARRAY[]::TEXT[],
     classification JSONB DEFAULT NULL,
     abs_summary JSONB DEFAULT NULL,
     tkdl_summary JSONB DEFAULT NULL,
+    -- The follow-up question asked and the options offered with it.
+    -- Existing databases get this column from server/src/config/schema.js.
+    clarification JSONB DEFAULT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

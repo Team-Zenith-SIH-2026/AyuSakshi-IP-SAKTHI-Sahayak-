@@ -6,7 +6,8 @@ const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET || 'ayusakshi_internal_a
 
 const aiClient = axios.create({
   baseURL: AI_SERVICE_URL,
-  timeout: 45000,
+  // Long enough for Groq's budget plus the slow local fallback model.
+  timeout: Number(process.env.AI_REQUEST_TIMEOUT_MS) || 300000,
   headers: {
     'Content-Type': 'application/json',
     'x-ai-service-token': AI_SERVICE_SECRET,
@@ -25,6 +26,7 @@ const queryRAG = async (payload) => {
       language: payload.language || 'en',
       history: payload.history || [],
       formulation_state: payload.formulation_state || {},
+      situation: payload.situation || null,
     });
     return response.data;
   } catch (error) {
