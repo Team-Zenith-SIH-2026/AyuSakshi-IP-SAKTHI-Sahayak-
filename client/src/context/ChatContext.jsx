@@ -1,13 +1,28 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { chatAPI } from '../services/api';
 import { useJurisdiction } from './JurisdictionContext';
+import { useLanguage } from './LanguageContext';
 
 const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
   const { jurisdiction } = useJurisdiction();
+  const { language: activeLanguage } = useLanguage();
   const [conversations, setConversations] = useState([]);
-  const [activeConversationId, setActiveConversationId] = useState(null);
+  const [activeConvByJurisdiction, setActiveConvByJurisdiction] = useState({
+    india: null,
+    international: null,
+  });
+
+  const activeConversationId = activeConvByJurisdiction[jurisdiction] || null;
+
+  const setActiveConversationId = (id) => {
+    setActiveConvByJurisdiction((prev) => ({
+      ...prev,
+      [jurisdiction]: id,
+    }));
+  };
+
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   // React state updates are not synchronous, so `isLoading` alone cannot stop a
@@ -105,8 +120,10 @@ export const ChatProvider = ({ children }) => {
   // with options.formulationState, instead of appending to the one on screen.
   // options.situation carries the situation picker's selection with the
   // sentence it composed, so the service does not have to guess from the words.
-  const sendMessage = async (content, language = 'en', options = {}) => {
+  const sendMessage = async (content, language = null, options = {}) => {
     if (!content.trim()) return;
+
+    const targetLang = language || activeLanguage || 'en';
 
     // Closes the race that let a double-click or Enter+click send the same
     // question twice: React had not yet re-rendered with isLoading=true while
@@ -133,7 +150,7 @@ export const ChatProvider = ({ children }) => {
       conversation_id: convId,
       sender: 'user',
       content: content.trim(),
-      language,
+      language: targetLang,
       created_at: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, tempUserMsg]);
@@ -141,7 +158,7 @@ export const ChatProvider = ({ children }) => {
     try {
       const res = await chatAPI.sendMessage(convId, {
         content: content.trim(),
-        language,
+        language: targetLang,
         jurisdiction,
         ...(options.situation ? { situation: options.situation } : {}),
       });

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useChat } from '../../context/ChatContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { LeafMark } from './LeafMark';
 import {
   ShieldCheck,
@@ -12,10 +13,11 @@ import {
 
 export const RightPanel = () => {
   const { sendMessage, setActiveModal } = useChat();
+  const { t } = useLanguage();
 
   const quickAccessItems = [
     {
-      title: 'IP Rights Overview',
+      title: t('rightpanel.ipOverview'),
       icon: ShieldCheck,
       action: () =>
         sendMessage(
@@ -23,7 +25,7 @@ export const RightPanel = () => {
         ),
     },
     {
-      title: 'Regulatory Framework',
+      title: t('rightpanel.regFramework'),
       icon: FileText,
       action: () =>
         sendMessage(
@@ -31,7 +33,7 @@ export const RightPanel = () => {
         ),
     },
     {
-      title: 'Recent Updates',
+      title: t('rightpanel.recentUpdates'),
       icon: Clock,
       action: () =>
         sendMessage(
@@ -39,7 +41,7 @@ export const RightPanel = () => {
         ),
     },
     {
-      title: 'Useful Links',
+      title: t('rightpanel.usefulLinks'),
       icon: Link2,
       action: () => setActiveModal('admin'),
     },
@@ -57,10 +59,10 @@ export const RightPanel = () => {
         </div>
         <div className="min-w-0">
           <h4 className="text-[13px] font-bold leading-tight text-emerald-950 dark:text-emerald-100">
-            Traditional Knowledge
+            {t('rightpanel.tk.title')}
           </h4>
           <p className="mt-0.5 text-[11px] font-medium text-emerald-800/80 dark:text-emerald-300/80">
-            Protected. Innovation Empowered.
+            {t('rightpanel.tk.subtitle')}
           </p>
         </div>
       </div>
@@ -68,7 +70,7 @@ export const RightPanel = () => {
       {/* Quick Access Card */}
       <div className="rounded-2xl border border-emerald-900/[0.07] bg-white/85 p-4 shadow-sm backdrop-blur-md transition-colors dark:border-emerald-700/20 dark:bg-[#0c241c]/85">
         <h3 className="mb-3 text-[13.5px] font-bold text-slate-800 dark:text-slate-100">
-          Quick Access
+          {t('rightpanel.quickAccess')}
         </h3>
         <div className="space-y-1">
           {quickAccessItems.map((item, idx) => {
@@ -98,7 +100,7 @@ export const RightPanel = () => {
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <h3 className="text-[13.5px] font-bold text-slate-800 dark:text-slate-100">
-              Latest Updates
+              {t('rightpanel.latestUpdates')}
             </h3>
           </div>
           <button
@@ -109,7 +111,7 @@ export const RightPanel = () => {
             }
             className="text-[11.5px] font-semibold text-emerald-700 transition-colors hover:underline dark:text-emerald-400"
           >
-            View All
+            {t('rightpanel.viewAll')}
           </button>
         </div>
 
@@ -126,10 +128,10 @@ export const RightPanel = () => {
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-semibold text-slate-800 group-hover:text-emerald-800 dark:text-slate-200 dark:group-hover:text-emerald-300">
-              Patent Rules, 2024
+              {t('rightpanel.patentRules2024')}
             </p>
             <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-              Updated on 12 Aug 2024
+              {t('rightpanel.patentRulesDate')}
             </p>
           </div>
         </button>

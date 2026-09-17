@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
 import { JurisdictionProvider } from './context/JurisdictionContext';
 import { ChatProvider } from './context/ChatContext';
@@ -74,19 +75,21 @@ export default function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
-        <AuthProvider>
-          <JurisdictionProvider>
-            <ChatProvider>
-              <Routes>
-                <Route path="/" element={<AssistantLayout />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/auth/callback" element={<OAuthCallbackPage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </ChatProvider>
-          </JurisdictionProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <JurisdictionProvider>
+              <ChatProvider>
+                <Routes>
+                  <Route path="/" element={<AssistantLayout />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </ChatProvider>
+            </JurisdictionProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </BrowserRouter>
   );

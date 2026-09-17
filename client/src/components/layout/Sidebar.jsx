@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { useJurisdiction } from '../../context/JurisdictionContext';
+import { useLanguage } from '../../context/LanguageContext';
 import {
   Home,
   MessageSquare,
@@ -33,6 +34,7 @@ export const Sidebar = () => {
   } = useChat();
 
   const { jurisdiction } = useJurisdiction();
+  const { t } = useLanguage();
   const [showHistoryList, setShowHistoryList] = React.useState(true);
 
   const hoverOpenTimerRef = useRef(null);
@@ -107,7 +109,7 @@ export const Sidebar = () => {
             }`}
           >
             <Home className="h-4 w-4 flex-shrink-0 text-emerald-700 dark:text-emerald-400" />
-            <span>Home</span>
+            <span>{t('sidebar.home')}</span>
           </button>
 
           {/* Ask an IPR Question */}
@@ -120,7 +122,7 @@ export const Sidebar = () => {
             }`}
           >
             <MessageSquare className="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span className="truncate">Ask an IPR Question</span>
+            <span className="truncate">{t('sidebar.askQuestion')}</span>
           </button>
 
           {/* Analyze My Product */}
@@ -129,7 +131,7 @@ export const Sidebar = () => {
             className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium text-slate-700 transition-colors hover:bg-slate-100/70 dark:text-slate-300 dark:hover:bg-white/5"
           >
             <FlaskConical className="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span className="truncate">Analyze My Product</span>
+            <span className="truncate">{t('sidebar.analyzeProduct')}</span>
           </button>
 
           {/* ABS Compliance Helper */}
@@ -138,7 +140,7 @@ export const Sidebar = () => {
             className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium text-slate-700 transition-colors hover:bg-slate-100/70 dark:text-slate-300 dark:hover:bg-white/5"
           >
             <Leaf className="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span className="truncate">ABS Compliance Helper</span>
+            <span className="truncate">{t('sidebar.absHelper')}</span>
           </button>
 
           {/* TK / Prior Art Check */}
@@ -147,7 +149,7 @@ export const Sidebar = () => {
             className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium text-slate-700 transition-colors hover:bg-slate-100/70 dark:text-slate-300 dark:hover:bg-white/5"
           >
             <FileSearch className="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span className="truncate">TK / Prior Art Check</span>
+            <span className="truncate">{t('sidebar.tkCheck')}</span>
           </button>
 
           {/* Knowledge Hub */}
@@ -156,7 +158,7 @@ export const Sidebar = () => {
             className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium text-slate-700 transition-colors hover:bg-slate-100/70 dark:text-slate-300 dark:hover:bg-white/5"
           >
             <BookOpen className="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span className="truncate">Knowledge Hub</span>
+            <span className="truncate">{t('sidebar.knowledgeHub')}</span>
           </button>
 
           {/* My History toggle */}
@@ -166,7 +168,7 @@ export const Sidebar = () => {
           >
             <div className="flex items-center gap-3 min-w-0">
               <Clock className="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className="truncate">My History</span>
+              <span className="truncate">{t('sidebar.myHistory')}</span>
             </div>
             {conversations.length > 0 && (
               <span className="rounded-full bg-slate-200/70 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-white/10 dark:text-slate-400">
@@ -212,7 +214,7 @@ export const Sidebar = () => {
         {/* Tools & Features Section */}
         <div className="pt-2 border-t border-slate-200/60 dark:border-emerald-900/40">
           <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-            Tools & Features
+            {t('sidebar.toolsFeatures')}
           </p>
           <div className="space-y-0.5">
             <button
@@ -224,7 +226,7 @@ export const Sidebar = () => {
               className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-[13px] text-slate-600 transition-colors hover:bg-slate-100/70 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
             >
               <Languages className="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className="truncate">Multilingual</span>
+              <span className="truncate">{t('sidebar.multilingual')}</span>
             </button>
 
             <button
@@ -236,7 +238,7 @@ export const Sidebar = () => {
               className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-[13px] text-slate-600 transition-colors hover:bg-slate-100/70 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
             >
               <Mic className="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className="truncate">Voice Assistant</span>
+              <span className="truncate">{t('sidebar.voiceAssistant')}</span>
             </button>
 
             <button
@@ -244,7 +246,7 @@ export const Sidebar = () => {
               className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-[13px] text-slate-600 transition-colors hover:bg-slate-100/70 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
             >
               <UserRound className="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className="truncate">Talk to Expert</span>
+              <span className="truncate">{t('sidebar.talkToExpert')}</span>
             </button>
           </div>
         </div>
@@ -253,11 +255,10 @@ export const Sidebar = () => {
       {/* Quiet footer: what regime is active, nothing more */}
       <div className="px-5 py-4">
         <p className="text-[11.5px] leading-relaxed text-slate-400 dark:text-slate-600">
-          Answering under{' '}
+          {t('sidebar.answeringUnder')}{' '}
           <span className="font-medium text-emerald-700/80 dark:text-emerald-400/80">
-            {jurisdiction === 'india' ? 'Indian' : 'international'}
-          </span>{' '}
-          law.
+            {jurisdiction === 'india' ? t('sidebar.indianLaw') : t('sidebar.intlLaw')}
+          </span>
         </p>
       </div>
     </div>

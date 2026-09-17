@@ -67,9 +67,12 @@ class RAGOrchestrator:
 
         # 1. Language Detection & Query Translation
         detected_lang = BhashiniService.detect_language(query)
+        target_lang = language if (language and language != "en" and language in BhashiniService.SUPPORTED_LANGUAGES) else (
+            detected_lang if detected_lang in BhashiniService.SUPPORTED_LANGUAGES else "en"
+        )
         thinking_trace.append({
             "step": "Language Understanding",
-            "detail": f"Detected language: {BhashiniService.SUPPORTED_LANGUAGES.get(detected_lang, detected_lang)}. Active jurisdiction: {jurisdiction.upper()}."
+            "detail": f"Input: {BhashiniService.SUPPORTED_LANGUAGES.get(detected_lang, detected_lang)} | Target: {BhashiniService.SUPPORTED_LANGUAGES.get(target_lang, target_lang)}. Active jurisdiction: {jurisdiction.upper()}."
         })
 
         search_query = query
@@ -132,13 +135,13 @@ class RAGOrchestrator:
         if plan.kind == "about_question" and pending_intent:
             reasked = IntentMapper.reask(pending_intent)
             if reasked is not None:
-                return cls._clarification_response(reasked, thinking_trace, formulation_state)
+                return await cls._clarification_response(reasked, thinking_trace, formulation_state, target_lang=target_lang)
 
         if plan.kind in ("chat", "about_question", "out_of_scope"):
             # A chatty aside while one of our questions is open keeps that
             # question open, with its options, rather than losing the thread.
             keep = pending_intent if plan.kind != "out_of_scope" else None
-            return await cls._conversation_response(plan, thinking_trace, formulation_state, detected_lang, keep)
+            return await cls._conversation_response(plan, thinking_trace, formulation_state, target_lang, keep)
 
         if not answers_our_question:
             pending_intent = None  # a new message, not an answer to our question
@@ -172,7 +175,7 @@ class RAGOrchestrator:
             if intent_outcome.trace:
                 thinking_trace.append({"step": "Question Understanding", "detail": intent_outcome.trace})
             if intent_outcome.action in ("ask", "decline"):
-                return cls._clarification_response(intent_outcome, thinking_trace, formulation_state, chat_prefix)
+                return await cls._clarification_response(intent_outcome, thinking_trace, formulation_state, chat_prefix, target_lang=target_lang)
             if intent_outcome.action == "mapped":
                 # A question already in the statute's terms keeps its own words:
                 # only the topic routing is taken from the situation. Replacing it
@@ -398,7 +401,7 @@ class RAGOrchestrator:
             abstain_resp["fabricated_citations"] = fabricated
             abstain_resp["synthesis_path"] = synthesis_path
             abstain_resp["evidence_count"] = len(retrieved_evidence)
-            return cls._refusal(abstain_resp, intent_outcome, formulation_state, chat_prefix, offer_situations)
+            return await cls._refusal(abstain_resp, intent_outcome, formulation_state, chat_prefix, offer_situations, target_lang=target_lang)
 
         # If the classifier could not pin the product down, ask for the missing
         # detail alongside the grounded answer rather than instead of it. Never
@@ -424,14 +427,14 @@ class RAGOrchestrator:
         if chat_prefix:
             raw_answer = f"{chat_prefix}\n\n{raw_answer}"
 
-        # 11. Final Multilingual Translation (if original user language was non-English)
+        # 11. Final Multilingual Translation (if target language was non-English)
         final_answer = raw_answer
-        if detected_lang != "en" and detected_lang in BhashiniService.SUPPORTED_LANGUAGES:
-            trans_res = await BhashiniService.translate(raw_answer, source_lang="en", target_lang=detected_lang)
+        if target_lang != "en" and target_lang in BhashiniService.SUPPORTED_LANGUAGES:
+            trans_res = await BhashiniService.translate(raw_answer, source_lang="en", target_lang=target_lang)
             final_answer = trans_res.get("translated_text", raw_answer)
             thinking_trace.append({
                 "step": "Response Localisation",
-                "detail": f"Answer returned in {BhashiniService.SUPPORTED_LANGUAGES.get(detected_lang)} via {trans_res.get('provider')}. Statutory citations preserved in official English form."
+                "detail": f"Answer returned in {BhashiniService.SUPPORTED_LANGUAGES.get(target_lang)} via {trans_res.get('provider')}. Statutory citations preserved in official English form."
             })
 
         # 12. Update formulation memory state
@@ -489,7 +492,7 @@ class RAGOrchestrator:
         plan: TurnPlan,
         thinking_trace: List[Dict[str, Any]],
         formulation_state: Dict[str, Any],
-        detected_lang: str,
+        target_lang: str = "en",
         keep_pending: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
@@ -500,8 +503,8 @@ class RAGOrchestrator:
         rather than borrowing a confidence label.
         """
         reply = plan.reply
-        if detected_lang != "en" and detected_lang in BhashiniService.SUPPORTED_LANGUAGES:
-            tr = await BhashiniService.translate(reply, source_lang="en", target_lang=detected_lang)
+        if target_lang != "en" and target_lang in BhashiniService.SUPPORTED_LANGUAGES:
+            tr = await BhashiniService.translate(reply, source_lang="en", target_lang=target_lang)
             reply = tr.get("translated_text", reply)
         state = dict(formulation_state)
         clarification = None
@@ -527,11 +530,12 @@ class RAGOrchestrator:
         }
 
     @staticmethod
-    def _clarification_response(
+    async def _clarification_response(
         outcome: IntentOutcome,
         thinking_trace: List[Dict[str, Any]],
         formulation_state: Dict[str, Any],
         chat_prefix: str = "",
+        target_lang: str = "en",
     ) -> Dict[str, Any]:
         """
         A follow-up question instead of an answer. Nothing is retrieved and no
@@ -543,6 +547,9 @@ class RAGOrchestrator:
             state["pending_intent"] = outcome.pending
         kind = outcome.clarification["kind"] if outcome.clarification else "declined"
         text = f"{chat_prefix}\n\n{outcome.answer_text}" if chat_prefix else outcome.answer_text
+        if target_lang != "en" and target_lang in BhashiniService.SUPPORTED_LANGUAGES:
+            tr = await BhashiniService.translate(text, source_lang="en", target_lang=target_lang)
+            text = tr.get("translated_text", text)
         return {
             "answer": text,
             "answer_kind": "clarification",
@@ -562,12 +569,13 @@ class RAGOrchestrator:
         }
 
     @staticmethod
-    def _refusal(
+    async def _refusal(
         abstain_resp: Dict[str, Any],
         outcome: Optional[IntentOutcome],
         formulation_state: Dict[str, Any],
         chat_prefix: str = "",
         offer_situations: bool = True,
+        target_lang: str = "en",
     ) -> Dict[str, Any]:
         """
         Declining to answer a legal question, said the way a person would say it.
@@ -600,7 +608,11 @@ class RAGOrchestrator:
                     " It may help to tell me a bit more, for example what your product is and what you want to "
                     "do with it. You can also ask a human expert to review your question."
                 )
-        abstain_resp["answer"] = f"{chat_prefix}\n\n{text}" if chat_prefix else text
+        full_text = f"{chat_prefix}\n\n{text}" if chat_prefix else text
+        if target_lang != "en" and target_lang in BhashiniService.SUPPORTED_LANGUAGES:
+            tr = await BhashiniService.translate(full_text, source_lang="en", target_lang=target_lang)
+            full_text = tr.get("translated_text", full_text)
+        abstain_resp["answer"] = full_text
         abstain_resp["answer_kind"] = "refusal"
         abstain_resp["updated_formulation_state"] = state
         return abstain_resp

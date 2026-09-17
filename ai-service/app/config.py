@@ -94,7 +94,11 @@ class Settings(BaseSettings):
     # Bhashini Configuration
     BHASHINI_USER_ID: str = os.getenv("BHASHINI_USER_ID", "")
     BHASHINI_API_KEY: str = os.getenv("BHASHINI_API_KEY", "")
-    BHASHINI_PIPELINE_ID: str = os.getenv("BHASHINI_PIPELINE_ID", "")
+    _raw_pipeline_id: str = os.getenv("BHASHINI_PIPELINE_ID", "")
+    BHASHINI_PIPELINE_ID: str = (
+        _raw_pipeline_id.strip() if _raw_pipeline_id and _raw_pipeline_id.strip() != "demo_pipeline_id"
+        else "64392f96daac500b55c543cd"
+    )
     BHASHINI_ENABLED: bool = os.getenv("BHASHINI_ENABLED", "false").lower() == "true"
     
     # RAG Retrieval Parameters

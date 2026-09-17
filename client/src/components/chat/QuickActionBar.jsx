@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { useJurisdiction } from '../../context/JurisdictionContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { SituationBuilder } from './SituationBuilder';
 import { Send, Mic, MicOff, Paperclip, SlidersHorizontal, X } from 'lucide-react';
 
 export const QuickActionBar = ({ className = '' }) => {
   const { sendMessage, isLoading, setActiveModal, messages } = useChat();
   const { isIndia } = useJurisdiction();
+  const { language, currentLanguage, t } = useLanguage();
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
   // The landing screen shows the situation picker already; once a conversation
@@ -17,7 +19,7 @@ export const QuickActionBar = ({ className = '' }) => {
   const handleSubmit = (e) => {
     e?.preventDefault();
     if (!input.trim() || isLoading) return;
-    sendMessage(input.trim());
+    sendMessage(input.trim(), language);
     setInput('');
   };
 
@@ -34,7 +36,7 @@ export const QuickActionBar = ({ className = '' }) => {
       if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
-        recognition.lang = 'en-IN';
+        recognition.lang = currentLanguage?.bcp47 || 'en-IN';
         recognition.onresult = (event) => {
           const transcript = event.results[0][0].transcript;
           setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
@@ -79,7 +81,7 @@ export const QuickActionBar = ({ className = '' }) => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask your question about IPR, Ayurveda, ABS, TK or regulations..."
+          placeholder={isIndia ? (t('chat.placeholder_india') || t('chat.placeholder')) : (t('chat.placeholder_intl') || t('chat.placeholder'))}
           rows={2}
           className="w-full resize-none bg-transparent px-1 py-1 text-[14.5px] leading-relaxed text-slate-800 placeholder-slate-400 focus:outline-none dark:text-slate-100 dark:placeholder-slate-500"
         />

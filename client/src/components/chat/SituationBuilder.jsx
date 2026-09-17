@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useChat } from '../../context/ChatContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { ArrowUp } from 'lucide-react';
 
 // For someone who does not know what to ask, or how the law words it. They tap
@@ -55,6 +56,7 @@ export const composeQuestion = (picked) => {
 
 export const SituationBuilder = ({ onSent, compact = false }) => {
   const { sendMessage, isLoading } = useChat();
+  const { t, language } = useLanguage();
   const [picked, setPicked] = useState({});
 
   const toggle = (group, key) =>
@@ -66,7 +68,7 @@ export const SituationBuilder = ({ onSent, compact = false }) => {
   const ask = () => {
     if (!canAsk) return;
     const situation = Object.fromEntries(Object.entries(picked).filter(([, v]) => v));
-    sendMessage(question, 'en', { situation });
+    sendMessage(question, language, { situation });
     setPicked({});
     onSent?.();
   };
@@ -76,8 +78,8 @@ export const SituationBuilder = ({ onSent, compact = false }) => {
       {GROUPS.map((group) => (
         <div key={group.key}>
           <p className="mb-1.5 px-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
-            {group.label}
-            {group.key === 'goal' ? '' : ' (optional)'}
+            {group.key === 'who' ? t('situation.iam') : group.key === 'uses' ? t('situation.iuse') : t('situation.iwant')}
+            {group.key === 'goal' ? '' : ` ${t('situation.optional')}`}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {group.options.map((option) => {
@@ -110,7 +112,7 @@ export const SituationBuilder = ({ onSent, compact = false }) => {
               <span className="text-slate-700 dark:text-slate-200">{question}</span>
             </>
           ) : (
-            'Choose what you want to do, and anything else that describes you.'
+            t('situation.choose_prompt')
           )}
         </p>
         <button

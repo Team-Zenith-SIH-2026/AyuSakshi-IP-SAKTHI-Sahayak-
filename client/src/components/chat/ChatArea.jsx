@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { useJurisdiction } from '../../context/JurisdictionContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { MessageItem } from './MessageItem';
 import { QuickActionBar } from './QuickActionBar';
 import { SituationBuilder } from './SituationBuilder';
@@ -16,35 +17,38 @@ import {
 export const ChatArea = () => {
   const { messages, isLoading, sendMessage, setActiveModal } = useChat();
   const { setInternational, isIndia } = useJurisdiction();
+  const { t } = useLanguage();
   const scrollRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages && messages.length > 0) {
+      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      if (containerRef.current) {
+        containerRef.current.scrollTop = 0;
+      }
+    }
   }, [messages, isLoading]);
 
-  const tryAskingPills = [
-    {
-      label: 'Can I patent my Ayurvedic formulation?',
-      query: 'Can I patent my Ayurvedic formulation under Indian Patent law? What are the Section 3(p) restrictions?',
-    },
-    {
-      label: 'What is ABS?',
-      query: 'What is Access and Benefit Sharing (ABS) under the Biological Diversity Act, and when is NBA approval required?',
-    },
-    {
-      label: 'Check TK prior art',
-      query: 'How does Traditional Knowledge Digital Library (TKDL) prior art impact Ayurvedic patent applications?',
-    },
-    {
-      label: 'GI for herbal products',
-      query: 'What is Geographical Indication (GI) protection for herbal and Ayurvedic products, and how is it obtained?',
-    },
-  ];
+  const tryAskingPills = isIndia
+    ? [
+        { label: t('pills.patentability'), query: t('pills.patentability') },
+        { label: t('pills.abs'), query: t('pills.abs') },
+        { label: t('pills.trademark'), query: t('pills.trademark') },
+        { label: t('pills.advertisement'), query: t('pills.advertisement') },
+      ]
+    : [
+        { label: t('pills.intl_pct'), query: t('pills.intl_pct') },
+        { label: t('pills.intl_s39'), query: t('pills.intl_s39') },
+        { label: t('pills.intl_nagoya'), query: t('pills.intl_nagoya') },
+        { label: t('pills.intl_uspto_epo'), query: t('pills.intl_uspto_epo') },
+      ];
 
   const serviceCards = [
     {
-      title: 'Product Classification',
-      desc: 'Know your formulation type and IP path',
+      title: t('services.classify.title'),
+      desc: t('services.classify.desc'),
       icon: FlaskConical,
       color: 'green',
       action: () => setActiveModal('classify'),
@@ -54,8 +58,8 @@ export const ChatArea = () => {
       iconBgDark: 'dark:bg-emerald-500/20 dark:text-emerald-300',
     },
     {
-      title: 'IPR Guidance',
-      desc: 'Patents, Trademarks, GI, Copyright & more',
+      title: t('services.ipr.title'),
+      desc: t('services.ipr.desc'),
       icon: Shield,
       color: 'purple',
       action: () =>
@@ -68,8 +72,8 @@ export const ChatArea = () => {
       iconBgDark: 'dark:bg-purple-500/20 dark:text-purple-300',
     },
     {
-      title: 'ABS & Biodiversity',
-      desc: 'Check compliance with bioresource laws',
+      title: t('services.abs.title'),
+      desc: t('services.abs.desc'),
       icon: Leaf,
       color: 'amber',
       action: () => setActiveModal('abs'),
@@ -79,8 +83,8 @@ export const ChatArea = () => {
       iconBgDark: 'dark:bg-amber-500/20 dark:text-amber-300',
     },
     {
-      title: 'TK / Prior Art',
-      desc: 'Avoid misappropriation and prior art risks',
+      title: t('services.tkdl.title'),
+      desc: t('services.tkdl.desc'),
       icon: Database,
       color: 'blue',
       action: () => setActiveModal('tkdl'),
@@ -90,8 +94,8 @@ export const ChatArea = () => {
       iconBgDark: 'dark:bg-sky-500/20 dark:text-sky-300',
     },
     {
-      title: 'International',
-      desc: 'Global IP and market access guidance',
+      title: t('services.intl.title'),
+      desc: t('services.intl.desc'),
       icon: Globe,
       color: 'pink',
       action: () => {
@@ -108,7 +112,7 @@ export const ChatArea = () => {
   ];
 
   return (
-    <div className="w-full flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
+    <div ref={containerRef} className="w-full flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
       <div className="mx-auto w-full max-w-4xl">
         {messages.length === 0 ? (
           /* =======================================================
@@ -122,15 +126,25 @@ export const ChatArea = () => {
                 <LeafMark className="h-10 w-10 sm:h-12 sm:w-12" />
               </div>
               <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-1.5">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11.5px] font-semibold tracking-wide shadow-xs ${
+                    isIndia
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-700/40'
+                      : 'bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300 border border-sky-300/60 dark:border-sky-700/40'
+                  }`}>
+                    {isIndia ? '🇮🇳 ' + (t('chat.regime_india') || 'Indian Law Regime') : '🌐 ' + (t('chat.regime_intl') || 'International Law Regime')}
+                  </span>
+                </div>
                 <p className="text-sm sm:text-base font-semibold text-slate-600 dark:text-slate-300">
-                  Welcome to
+                  {t('chat.welcome')}
                 </p>
                 <h1 className="mt-0.5 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#0d3f32] dark:text-[#3dbb8f]">
-                  IP-SAKTI Sahayak
+                  {t('app.title')}
                 </h1>
                 <p className="mt-2 text-[13.5px] sm:text-[15px] leading-relaxed text-slate-600 dark:text-slate-300 max-w-2xl">
-                  Your multilingual, RAG-based AI assistant for Intellectual Property and regulatory
-                  guidance in Ayurveda.
+                  {isIndia
+                    ? (t('chat.hero_desc_india') || t('chat.hero_desc'))
+                    : (t('chat.hero_desc_intl') || t('chat.hero_desc'))}
                 </p>
               </div>
             </div>
@@ -143,7 +157,7 @@ export const ChatArea = () => {
             {/* "Try asking:" Section */}
             <div className="w-full my-4 flex flex-wrap items-center gap-2">
               <span className="text-[12.5px] font-semibold text-slate-500 dark:text-slate-400 mr-1">
-                Try asking:
+                {t('chat.quickPillsTitle')}
               </span>
               {tryAskingPills.map((pill, idx) => (
                 <button
@@ -162,10 +176,10 @@ export const ChatArea = () => {
               <div className="w-full my-4 space-y-3 text-left">
                 <div className="px-1">
                   <p className="text-[12.5px] font-semibold text-slate-500 dark:text-slate-400">
-                    Or describe your situation
+                    {t('situation.title')}
                   </p>
                   <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
-                    Not sure what to ask? Tap what fits you and we will write the question.
+                    {t('situation.subtitle')}
                   </p>
                 </div>
                 <SituationBuilder />
@@ -175,7 +189,7 @@ export const ChatArea = () => {
             {/* "Explore Key Services" Section */}
             <div className="w-full mt-6 text-left">
               <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 mb-3.5">
-                Explore Key Services
+                {t('services.title')}
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -215,6 +229,24 @@ export const ChatArea = () => {
              Chat area expands and displays full conversation.
              ======================================================= */
           <div className="w-full space-y-5">
+            <div className="flex items-center justify-between pb-2 mb-1 border-b border-slate-200/60 dark:border-emerald-900/30 text-xs">
+              <span className="flex items-center gap-1.5 font-medium">
+                {isIndia ? (
+                  <>
+                    <span className="text-sm">🇮🇳</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{t('chat.regime_india') || 'Indian Law Regime'}</span>
+                    <span className="hidden sm:inline text-slate-400 dark:text-slate-500">• {t('chat.regime_india_sub')}</span>
+                  </>
+                ) : (
+                  <>
+                    <Globe className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+                    <span className="text-sky-700 dark:text-sky-400 font-semibold">{t('chat.regime_intl') || 'International Law Regime'}</span>
+                    <span className="hidden sm:inline text-slate-400 dark:text-slate-500">• {t('chat.regime_intl_sub')}</span>
+                  </>
+                )}
+              </span>
+            </div>
+
             {messages.map((msg, index) => (
               <MessageItem key={msg.id || index} message={msg} isLatest={index === messages.length - 1} />
             ))}

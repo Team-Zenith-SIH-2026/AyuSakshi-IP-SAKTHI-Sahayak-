@@ -1,5 +1,7 @@
 import os
 import re
+import time
+import hashlib
 import httpx
 from typing import Dict, Any, Optional
 from app.config import settings
@@ -9,11 +11,18 @@ class BhashiniService:
     """
     Bhashini / ULCA Neural Machine Translation client for Indian Languages.
     Preserves exact statutory citations (e.g., 'Section 3(p)', 'Rule 157', 'Form A') during translation.
+    Features:
+      - 2-step ULCA Pipeline Discovery & Inference with auto Pipeline ID (64392f96daac500b55c543cd)
+      - In-memory config caching to minimize API calls (at most 1 config call per language pair)
+      - Translation response cache to prevent redundant quota usage
+      - Circuit breaker / cooldown if quota limit (429/401/403) is encountered, seamlessly falling back to LLM translation
     """
     
-    BHASHINI_BASE_URL = "https://dhruva-api.bhashini.gov.in/services/inference/pipeline"
+    BHASHINI_CONFIG_URL = "https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline"
+    BHASHINI_DEFAULT_INFERENCE_URL = "https://dhruva-api.bhashini.gov.in/services/inference/pipeline"
+    DEFAULT_PIPELINE_ID = "64392f96daac500b55c543cd"
     
-    # Supported Indian Languages
+    # Supported Indian Languages (18 verified languages)
     SUPPORTED_LANGUAGES = {
         "en": "English",
         "hi": "Hindi",
@@ -21,12 +30,46 @@ class BhashiniService:
         "ta": "Tamil",
         "te": "Telugu",
         "kn": "Kannada",
+        "ml": "Malayalam",
         "mr": "Marathi",
         "bn": "Bengali",
         "gu": "Gujarati",
-        "ml": "Malayalam",
-        "pa": "Punjabi"
+        "pa": "Punjabi",
+        "or": "Odia",
+        "as": "Assamese",
+        "ur": "Urdu",
+        "mai": "Maithili",
+        "ne": "Nepali",
+        "sd": "Sindhi",
+        "kok": "Konkani",
     }
+
+    # Precise script guidance for AI neural translation
+    LANGUAGE_SCRIPTS = {
+        "as": "Assamese (using authentic Eastern Nagari / Assamese script: অসমীয়া)",
+        "ne": "Nepali (using Devanagari script: नेपाली)",
+        "kok": "Konkani (using Goan Konkani Devanagari script: कोंकणी)",
+        "sd": "Sindhi (using authentic Perso-Arabic Sindhi script: سنڌي)",
+        "mai": "Maithili (using Devanagari script: मैथिली)",
+        "ml": "Malayalam (using Malayalam script: മലയാളം)",
+        "bn": "Bengali (using Bengali script: বাংলা)",
+        "ta": "Tamil (using Tamil script: தமிழ்)",
+        "te": "Telugu (using Telugu script: తెలుగు)",
+        "kn": "Kannada (using Kannada script: ಕನ್ನಡ)",
+        "mr": "Marathi (using Marathi Devanagari script: मराठी)",
+        "gu": "Gujarati (using Gujarati script: ગુજરાતી)",
+        "pa": "Punjabi (using Gurmukhi script: ਪੰਜਾਬੀ)",
+        "or": "Odia (using Odia script: ଓଡ଼ିଆ)",
+        "sa": "Sanskrit (using Devanagari script: संस्कृतम्)",
+        "ur": "Urdu (using Urdu Nastaliq / Perso-Arabic script: اردو)",
+        "hi": "Hindi (using Hindi Devanagari script: हिन्दी)",
+        "en": "English",
+    }
+
+    # In-memory caches to minimize Bhashini API calls (strict quota preservation)
+    _pipeline_cache: Dict[str, Dict[str, Any]] = {}
+    _translation_cache: Dict[str, str] = {}
+    _throttle_until: float = 0.0
     
     @staticmethod
     def detect_language(text: str) -> str:
@@ -43,6 +86,8 @@ class BhashiniService:
         kannada_count = len(re.findall(r'[\u0C80-\u0CFF]', text))
         bengali_count = len(re.findall(r'[\u0980-\u09FF]', text))
         gujarati_count = len(re.findall(r'[\u0A80-\u0AFF]', text))
+        malayalam_count = len(re.findall(r'[\u0D00-\u0D7F]', text))
+        punjabi_count = len(re.findall(r'[\u0A00-\u0A7F]', text))
         
         counts = {
             "hi": devanagari_count,
@@ -51,6 +96,8 @@ class BhashiniService:
             "kn": kannada_count,
             "bn": bengali_count,
             "gu": gujarati_count,
+            "ml": malayalam_count,
+            "pa": punjabi_count,
         }
         
         max_lang = max(counts, key=counts.get)
@@ -60,61 +107,191 @@ class BhashiniService:
         return "en"
 
     @classmethod
-    async def translate(cls, text: str, source_lang: str, target_lang: str) -> Dict[str, Any]:
+    async def _get_pipeline_config(cls, client: httpx.AsyncClient, source_lang: str, target_lang: str) -> Optional[Dict[str, Any]]:
         """
-        Translates text between Indian languages and English using Bhashini NMT API or high-fidelity fallback.
+        Retrieves and caches pipeline configuration from Bhashini ULCA config endpoint.
+        Uses in-memory cache so only ONE config call is ever made per (source, target) pair.
         """
-        if not text or source_lang == target_lang:
-            return {"translated_text": text, "source_language": source_lang, "target_language": target_lang, "provider": "passthrough"}
-            
-        if not settings.BHASHINI_ENABLED or not settings.BHASHINI_API_KEY:
-            # Bhashini is the preferred provider for Indian languages, but it needs
-            # ULCA credentials. Without them, translate with the configured LLM
-            # rather than returning the source text dressed up as a translation.
-            return await cls._fallback_translate(text, source_lang, target_lang)
-            
-        try:
-            headers = {
-                "User-Agent": "AyuSakshi-SIH26045",
-                "Content-Type": "application/json",
-                "userID": settings.BHASHINI_USER_ID,
-                "ulcaApiKey": settings.BHASHINI_API_KEY,
-                "Authorization": settings.BHASHINI_API_KEY
-            }
-            
-            payload = {
-                "pipelineTasks": [
-                    {
-                        "taskType": "translation",
-                        "config": {
-                            "language": {
-                                "sourceLanguage": source_lang,
-                                "targetLanguage": target_lang
-                            }
+        pair_key = f"{source_lang}_{target_lang}"
+        cached = cls._pipeline_cache.get(pair_key)
+        now = time.time()
+        if cached and cached.get("expires_at", 0) > now:
+            return cached
+
+        pipeline_id = settings.BHASHINI_PIPELINE_ID or cls.DEFAULT_PIPELINE_ID
+        if not pipeline_id or pipeline_id == "demo_pipeline_id":
+            pipeline_id = cls.DEFAULT_PIPELINE_ID
+
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "AyuSakshi-SIH26045",
+            "userID": settings.BHASHINI_USER_ID,
+            "ulcaApiKey": settings.BHASHINI_API_KEY
+        }
+
+        payload = {
+            "pipelineTasks": [
+                {
+                    "taskType": "translation",
+                    "config": {
+                        "language": {
+                            "sourceLanguage": source_lang,
+                            "targetLanguage": target_lang
                         }
                     }
-                ],
-                "inputData": {
-                    "input": [{"source": text}]
                 }
+            ],
+            "pipelineRequestConfig": {
+                "pipelineId": pipeline_id
             }
-            
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                res = await client.post(cls.BHASHINI_BASE_URL, headers=headers, json=payload)
+        }
+
+        try:
+            res = await client.post(cls.BHASHINI_CONFIG_URL, headers=headers, json=payload, timeout=10.0)
+            if res.status_code == 200:
+                data = res.json()
+                pipeline_endpoint = data.get("pipelineInferenceAPIEndPoint", {})
+                callback_url = pipeline_endpoint.get("callbackUrl") or cls.BHASHINI_DEFAULT_INFERENCE_URL
+                inf_api_key = pipeline_endpoint.get("inferenceApiKey", {})
+                auth_header_name = inf_api_key.get("name", "Authorization")
+                auth_header_value = inf_api_key.get("value") or settings.BHASHINI_API_KEY
+
+                service_id = None
+                for task in data.get("pipelineResponseConfig", []):
+                    if task.get("taskType") == "translation":
+                        configs = task.get("config", [])
+                        if configs:
+                            service_id = configs[0].get("serviceId")
+                            break
+
+                config_entry = {
+                    "callback_url": callback_url,
+                    "auth_header_name": auth_header_name,
+                    "auth_header_value": auth_header_value,
+                    "service_id": service_id,
+                    "expires_at": now + 86400  # 24 hours TTL cache
+                }
+                cls._pipeline_cache[pair_key] = config_entry
+                print(f"[Bhashini Service] Pipeline configured for {source_lang}->{target_lang} (serviceId: {service_id})")
+                return config_entry
+            elif res.status_code in (400, 401, 403, 429):
+                print(f"[Bhashini Service] Config endpoint returned status {res.status_code}: {res.text[:200]}")
+                cls._throttle_until = now + 300  # Cooldown 5 minutes to avoid burning quota or spamming errors
+                return None
+            else:
+                print(f"[Bhashini Service] Config endpoint warning ({res.status_code}): {res.text[:200]}")
+                return None
+        except Exception as e:
+            print(f"[Bhashini Service] Failed to reach Bhashini config endpoint: {e}")
+            return None
+
+    @classmethod
+    async def translate(cls, text: str, source_lang: str, target_lang: str) -> Dict[str, Any]:
+        """
+        Translates text between Indian languages and English.
+        Prioritizes Bhashini NMT with aggressive quota-preservation caching,
+        and seamlessly falls back to high-fidelity LLM translation.
+        """
+        if not text or not text.strip() or source_lang == target_lang:
+            return {
+                "translated_text": text,
+                "source_language": source_lang,
+                "target_language": target_lang,
+                "provider": "passthrough"
+            }
+
+        # Check local translation cache (prevents redundant API calls)
+        cache_key = f"{source_lang}_{target_lang}_{hashlib.md5(text.strip().encode('utf-8')).hexdigest()}"
+        if cache_key in cls._translation_cache:
+            return {
+                "translated_text": cls._translation_cache[cache_key],
+                "source_language": source_lang,
+                "target_language": target_lang,
+                "provider": "cache"
+            }
+
+        now = time.time()
+        # If Bhashini is not enabled or currently in cooldown due to rate limit/quota, use LLM fallback
+        if not settings.BHASHINI_ENABLED or not settings.BHASHINI_API_KEY or not settings.BHASHINI_USER_ID or now < cls._throttle_until:
+            fallback_res = await cls._fallback_translate(text, source_lang, target_lang)
+            if fallback_res.get("translated_text"):
+                if len(cls._translation_cache) > 500:
+                    cls._translation_cache.clear()
+                cls._translation_cache[cache_key] = fallback_res["translated_text"]
+            return fallback_res
+
+        try:
+            async with httpx.AsyncClient(timeout=12.0) as client:
+                config = await cls._get_pipeline_config(client, source_lang, target_lang)
+                if not config:
+                    # Config couldn't be fetched, use fallback translation
+                    fallback_res = await cls._fallback_translate(text, source_lang, target_lang)
+                    if fallback_res.get("translated_text"):
+                        if len(cls._translation_cache) > 500:
+                            cls._translation_cache.clear()
+                        cls._translation_cache[cache_key] = fallback_res["translated_text"]
+                    return fallback_res
+
+                headers = {
+                    "User-Agent": "AyuSakshi-SIH26045",
+                    "Content-Type": "application/json",
+                    config["auth_header_name"]: config["auth_header_value"]
+                }
+
+                task_config = {
+                    "language": {
+                        "sourceLanguage": source_lang,
+                        "targetLanguage": target_lang
+                    }
+                }
+                if config.get("service_id"):
+                    task_config["serviceId"] = config["service_id"]
+
+                payload = {
+                    "pipelineTasks": [
+                        {
+                            "taskType": "translation",
+                            "config": task_config
+                        }
+                    ],
+                    "inputData": {
+                        "input": [{"source": text}]
+                    }
+                }
+
+                res = await client.post(config["callback_url"], headers=headers, json=payload)
                 if res.status_code == 200:
                     data = res.json()
-                    translated = data["pipelineResponse"][0]["output"][0]["target"]
-                    return {
-                        "translated_text": translated,
-                        "source_language": source_lang,
-                        "target_language": target_lang,
-                        "provider": "bhashini_live"
-                    }
+                    pipeline_res = data.get("pipelineResponse", [])
+                    if pipeline_res and "output" in pipeline_res[0]:
+                        outputs = pipeline_res[0]["output"]
+                        if outputs and "target" in outputs[0]:
+                            translated = outputs[0]["target"]
+                            # Cache translation in memory (capped at 500 entries)
+                            if len(cls._translation_cache) > 500:
+                                cls._translation_cache.clear()
+                            cls._translation_cache[cache_key] = translated
+                            return {
+                                "translated_text": translated,
+                                "source_language": source_lang,
+                                "target_language": target_lang,
+                                "provider": "bhashini_live"
+                            }
+                elif res.status_code in (400, 401, 403, 429):
+                    print(f"[Bhashini Service] Inference returned {res.status_code} (Quota or Auth). Cooling down 5m.")
+                    cls._throttle_until = now + 300
+                else:
+                    print(f"[Bhashini Service] Inference response status {res.status_code}: {res.text[:200]}")
         except Exception as e:
             print(f"[Bhashini Translation Warning]: {e}")
 
-        # Bhashini unreachable. Fall through to the neural fallback below.
-        return await cls._fallback_translate(text, source_lang, target_lang)
+        # Seamlessly fall through to neural LLM translation
+        fallback_res = await cls._fallback_translate(text, source_lang, target_lang)
+        if fallback_res.get("translated_text"):
+            if len(cls._translation_cache) > 500:
+                cls._translation_cache.clear()
+            cls._translation_cache[cache_key] = fallback_res["translated_text"]
+        return fallback_res
 
     @classmethod
     async def _fallback_translate(cls, text: str, source_lang: str, target_lang: str) -> Dict[str, Any]:
@@ -128,11 +305,12 @@ class BhashiniService:
         """
         src = cls.SUPPORTED_LANGUAGES.get(source_lang, source_lang)
         tgt = cls.SUPPORTED_LANGUAGES.get(target_lang, target_lang)
+        tgt_spec = cls.LANGUAGE_SCRIPTS.get(target_lang, tgt)
 
         system_prompt = (
             f"You are a legal translator working between {src} and {tgt}.\n"
             "RULES:\n"
-            f"1. Translate the user's text from {src} into {tgt}. Output ONLY the translation.\n"
+            f"1. Translate the user's text from {src} into {tgt_spec}. Output ONLY the translation in {tgt_spec}.\n"
             "2. Do not add a preamble, a note, or a comment of your own.\n"
             "3. Keep every statutory citation EXACTLY as written, in English and in Latin script: act and "
             "treaty names, section, rule, article and regulation numbers, form numbers, and authority names "

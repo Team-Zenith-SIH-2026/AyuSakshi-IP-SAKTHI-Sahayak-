@@ -4,8 +4,9 @@ import { useJurisdiction } from '../../context/JurisdictionContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useChat } from '../../context/ChatContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { LeafMark } from './LeafMark';
-import { Sun, Moon, User, LogOut, Menu, ChevronDown, Scale, PanelLeft, Globe } from 'lucide-react';
+import { Sun, Moon, User, LogOut, Menu, ChevronDown, Scale, PanelLeft, Globe, Languages } from 'lucide-react';
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -15,8 +16,8 @@ export const Header = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, setIsAuthModalOpen, logout } = useAuth();
   const { setActiveModal, toggleMobileSidebar, toggleDesktopSidebar, isMobileSidebarOpen } = useChat();
+  const { language, setLanguage, languages, t } = useLanguage();
 
-  const [selectedLang, setSelectedLang] = useState('en');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const menuRef = useRef(null);
@@ -54,15 +55,6 @@ export const Header = () => {
     setIsUserMenuOpen(false);
   }, [location.pathname]);
 
-  const languages = [
-    { code: 'en', label: 'English' },
-    { code: 'hi', label: 'हिन्दी' },
-    { code: 'sa', label: 'संस्कृतम्' },
-    { code: 'ta', label: 'தமிழ்' },
-    { code: 'te', label: 'తెలుగు' },
-    { code: 'mr', label: 'मराठी' },
-  ];
-
   return (
     <header className="sticky top-0 z-30 w-full border-b border-emerald-900/[0.08] dark:border-emerald-700/20 bg-white/90 dark:bg-[#0a2019]/90 backdrop-blur-md transition-colors">
       <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
@@ -99,7 +91,7 @@ export const Header = () => {
                 IP-SAKTI <span className="font-semibold text-emerald-800 dark:text-emerald-400">Sahayak</span>
               </span>
               <span className="hidden truncate text-[11px] font-medium leading-tight text-slate-500 dark:text-slate-400 sm:block">
-                Ayurveda • IPR • Compliance
+                {t('app.subtitle')}
               </span>
             </span>
           </button>
@@ -116,7 +108,7 @@ export const Header = () => {
             }`}
           >
             <span className="text-sm">🇮🇳</span>
-            <span>India</span>
+            <span>{t('header.india')}</span>
           </button>
           <button
             onClick={setInternational}
@@ -127,23 +119,25 @@ export const Header = () => {
             }`}
           >
             <Globe className="h-3.5 w-3.5" />
-            <span>International</span>
+            <span>{t('header.international')}</span>
           </button>
         </div>
 
         {/* Right: language, theme, account */}
         <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
-          {/* Language selector */}
-          <div className="relative hidden md:block">
+          {/* Language selector (All 22 Scheduled Indian Languages via Bhashini) */}
+          <div className="relative flex items-center">
+            <Languages className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             <select
-              value={selectedLang}
-              onChange={(e) => setSelectedLang(e.target.value)}
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
               aria-label="Language"
-              className="cursor-pointer appearance-none rounded-lg border border-slate-200/80 bg-white/70 py-1.5 pl-3 pr-7 text-[13px] font-medium text-slate-700 transition-colors hover:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-emerald-800/40 dark:bg-[#0e2720] dark:text-slate-200"
+              title="Select Language (22 Indian Languages via Bhashini)"
+              className="cursor-pointer appearance-none rounded-lg border border-slate-200/80 bg-white/70 py-1.5 pl-8 pr-7 text-[12.5px] font-medium text-slate-700 transition-colors hover:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-emerald-800/40 dark:bg-[#0e2720] dark:text-slate-200 max-w-[130px] sm:max-w-[170px]"
             >
               {languages.map((l) => (
                 <option key={l.code} value={l.code} className="bg-white text-slate-800 dark:bg-[#0e2720] dark:text-slate-200">
-                  {l.label}
+                  {l.native} ({l.label})
                 </option>
               ))}
             </select>
