@@ -62,9 +62,12 @@ export const ChatArea = () => {
       desc: t('services.ipr.desc'),
       icon: Shield,
       color: 'purple',
+      // Asked as one broad sweep over four regimes at once, this found no single
+      // provision to cite and was refused. Narrowed to what the statutes we hold
+      // can actually answer.
       action: () =>
         sendMessage(
-          'What are the key IPR protections (patents, trademarks, GI, copyrights) available for Ayurvedic medicines and innovations?'
+          'Which protections can I use for my Ayurvedic product: a patent, a trademark, or a geographical indication?'
         ),
       bgLight: 'bg-[#f7f2fc] border-purple-200/80',
       bgDark: 'dark:bg-[#201633] dark:border-purple-700/30',
@@ -98,10 +101,15 @@ export const ChatArea = () => {
       desc: t('services.intl.desc'),
       icon: Globe,
       color: 'pink',
+      // The regime switch above has not re-rendered yet, so this message has to
+      // carry the new regime itself; without that it was answered from the
+      // Indian corpus. The question is one the international corpus can cite.
       action: () => {
         setInternational();
         sendMessage(
-          'What are the key international regulatory and IP requirements under WIPO, Nagoya Protocol, and TRIPS for Ayurvedic exports?'
+          'Is prior informed consent required to access genetic resources under the Nagoya Protocol?',
+          null,
+          { jurisdiction: 'international', newConversation: true }
         );
       },
       bgLight: 'bg-[#fdf2f5] border-rose-200/80',

@@ -19,9 +19,12 @@ export const RightPanel = () => {
     {
       title: t('rightpanel.ipOverview'),
       icon: ShieldCheck,
+      // Each of these asks what the statutes we hold can answer with a citation.
+      // The sweeping versions ("an overview of IPR", "the most recent
+      // notifications") matched no single provision and came back refused.
       action: () =>
         sendMessage(
-          'Provide an overview of Intellectual Property Rights applicable to Ayurvedic formulations, patentability criteria, and branding protection.'
+          'What does the Patents Act exclude from patentability for traditional knowledge and mixtures of known herbs?'
         ),
     },
     {
@@ -37,7 +40,7 @@ export const RightPanel = () => {
       icon: Clock,
       action: () =>
         sendMessage(
-          'What are the most recent notifications, biological diversity guidelines, and patent rule amendments affecting Ayurvedic innovations?'
+          'What did the Biological Diversity (Amendment) Act, 2023 change about prior intimation and approval?'
         ),
     },
     {
@@ -105,9 +108,7 @@ export const RightPanel = () => {
           </div>
           <button
             onClick={() =>
-              sendMessage(
-                'List all recent legal and statutory updates in Indian patent rules and AYUSH guidelines.'
-              )
+              sendMessage('Which legal documents do you cover, and how up to date are they?')
             }
             className="text-[11.5px] font-semibold text-emerald-700 transition-colors hover:underline dark:text-emerald-400"
           >
@@ -115,10 +116,15 @@ export const RightPanel = () => {
           </button>
         </div>
 
+        {/* A named law with a date on it is a statement of fact, so it names a
+            law we actually hold and carries no date we cannot source. The card
+            used to advertise the Patent Rules, 2024 as "updated on 12 Aug
+            2024": that statute is not in the corpus at all, so tapping it was
+            always refused, and the date came from nowhere. */}
         <button
           onClick={() =>
             sendMessage(
-              'What changes were introduced in the Patent Rules, 2024 and how do they impact traditional knowledge and pharmaceutical patents?'
+              'What do the Biological Diversity Rules, 2024 require for access to biological resources and benefit sharing?'
             )
           }
           className="group flex w-full items-start gap-3 rounded-xl border border-emerald-900/[0.06] bg-slate-50/60 p-3 text-left transition-all hover:border-emerald-500/30 hover:bg-emerald-50/50 dark:border-emerald-700/20 dark:bg-[#102d23]/50 dark:hover:bg-[#102d23]"

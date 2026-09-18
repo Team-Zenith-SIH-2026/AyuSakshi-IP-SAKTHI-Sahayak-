@@ -295,7 +295,8 @@ class RAGOrchestrator:
             abstain_resp["classification"] = classification_result
             abstain_resp["synthesis_path"] = "abstained:no_evidence"
             abstain_resp["evidence_count"] = 0
-            return cls._refusal(abstain_resp, intent_outcome, formulation_state, chat_prefix, offer_situations)
+            return await cls._refusal(abstain_resp, intent_outcome, formulation_state, chat_prefix,
+                                      offer_situations, target_lang=target_lang)
 
         # 9. Grounded Answer Synthesis
         raw_answer, synthesis_path = await cls._synthesize_grounded_answer(
@@ -344,7 +345,8 @@ class RAGOrchestrator:
             abstain_resp["synthesis_path"] = synthesis_path
             abstain_resp["evidence_count"] = len(retrieved_evidence)
             abstain_resp["template_orientation"] = raw_answer
-            return cls._refusal(abstain_resp, intent_outcome, formulation_state, chat_prefix, offer_situations)
+            return await cls._refusal(abstain_resp, intent_outcome, formulation_state, chat_prefix,
+                                      offer_situations, target_lang=target_lang)
 
         # 10. Citation Verification & Confidence Scoring
         #

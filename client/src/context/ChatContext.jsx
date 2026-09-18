@@ -98,11 +98,15 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  const startNewConversation = async (initialTitle = 'New AYUSH IP Inquiry', formulationState = {}) => {
+  const startNewConversation = async (
+    initialTitle = 'New AYUSH IP Inquiry',
+    formulationState = {},
+    conversationJurisdiction = jurisdiction
+  ) => {
     try {
       const res = await chatAPI.createConversation({
         title: initialTitle,
-        jurisdiction,
+        jurisdiction: conversationJurisdiction,
         formulation_state: formulationState,
       });
       const newConv = res.data.conversation;
@@ -120,10 +124,14 @@ export const ChatProvider = ({ children }) => {
   // with options.formulationState, instead of appending to the one on screen.
   // options.situation carries the situation picker's selection with the
   // sentence it composed, so the service does not have to guess from the words.
+  // options.jurisdiction is for a button that switches regime and asks in one
+  // click: the regime state has not re-rendered yet, so without it the question
+  // would still go out under the old regime and be searched in the wrong corpus.
   const sendMessage = async (content, language = null, options = {}) => {
     if (!content.trim()) return;
 
     const targetLang = language || activeLanguage || 'en';
+    const messageJurisdiction = options.jurisdiction || jurisdiction;
 
     // Closes the race that let a double-click or Enter+click send the same
     // question twice: React had not yet re-rendered with isLoading=true while
@@ -135,7 +143,11 @@ export const ChatProvider = ({ children }) => {
 
     let convId = options.newConversation ? null : activeConversationId;
     if (!convId) {
-      const newConv = await startNewConversation(content.slice(0, 40), options.formulationState || {});
+      const newConv = await startNewConversation(
+        content.slice(0, 40),
+        options.formulationState || {},
+        messageJurisdiction
+      );
       if (!newConv) {
         isSendingRef.current = false;
         setIsLoading(false);
@@ -159,7 +171,7 @@ export const ChatProvider = ({ children }) => {
       const res = await chatAPI.sendMessage(convId, {
         content: content.trim(),
         language: targetLang,
-        jurisdiction,
+        jurisdiction: messageJurisdiction,
         ...(options.situation ? { situation: options.situation } : {}),
       });
 
