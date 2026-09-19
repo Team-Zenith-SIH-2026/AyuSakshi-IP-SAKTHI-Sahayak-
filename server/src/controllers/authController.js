@@ -40,12 +40,20 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    const validRole = ['user', 'researcher', 'practitioner', 'msme', 'facilitator'].includes(role) ? role : 'user';
+    // Reject unauthorized attempts to register directly as facilitator or admin
+    if (role === 'facilitator' || role === 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Direct registration as a Facilitator or Administrator is prohibited. Facilitator accounts must be provisioned by an Administrator.',
+      });
+    }
+
+    const validRole = ['user', 'researcher', 'practitioner', 'msme'].includes(role) ? role : 'user';
 
     const insertResult = await query(
-      `INSERT INTO users (name, email, password_hash, role, auth_provider)
-       VALUES ($1, $2, $3, $4, 'local')
-       RETURNING id, name, email, role, auth_provider, avatar_url, created_at`,
+      `INSERT INTO users (name, email, password_hash, role, is_active, must_change_password, auth_provider)
+       VALUES ($1, $2, $3, $4, TRUE, FALSE, 'local')
+       RETURNING id, name, email, role, is_active, must_change_password, auth_provider, avatar_url, created_at`,
       [name.trim(), emailNormalized, passwordHash, validRole]
     );
 
@@ -76,7 +84,7 @@ const login = async (req, res) => {
     const identifier = email.trim();
 
     const result = await query(
-      'SELECT id, name, email, password_hash, role, auth_provider, avatar_url FROM users WHERE LOWER(email) = LOWER($1) OR LOWER(name) = LOWER($1)',
+      'SELECT id, name, email, password_hash, role, is_active, must_change_password, auth_provider, avatar_url FROM users WHERE LOWER(email) = LOWER($1) OR LOWER(name) = LOWER($1)',
       [identifier]
     );
 
@@ -85,6 +93,14 @@ const login = async (req, res) => {
     }
 
     const user = result.rows[0];
+
+    if (user.is_active === false) {
+      return res.status(403).json({
+        success: false,
+        error: 'Account has been deactivated. Please contact an administrator.',
+        deactivated: true,
+      });
+    }
 
     if (!user.password_hash) {
       return res.status(400).json({
@@ -98,6 +114,7 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid email or password.' });
     }
 
+    await query('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
     delete user.password_hash;
     const token = generateToken(user);
 
@@ -173,15 +190,16 @@ const changePassword = async (req, res) => {
   try {
     const userId = req.user?.id;
     const { currentPassword, newPassword, confirmPassword } = req.body;
+    const effectiveConfirm = confirmPassword !== undefined ? confirmPassword : newPassword;
 
-    if (!currentPassword || !newPassword || !confirmPassword) {
+    if (!currentPassword || !newPassword) {
       return res.status(400).json({
         success: false,
-        error: 'Current password, new password, and confirmation are required.',
+        error: 'Current password and new password are required.',
       });
     }
 
-    if (newPassword !== confirmPassword) {
+    if (newPassword !== effectiveConfirm) {
       return res.status(400).json({
         success: false,
         error: 'New password and confirmation do not match.',
@@ -235,7 +253,7 @@ const changePassword = async (req, res) => {
     const newPasswordHash = await bcrypt.hash(newPassword, salt);
 
     await query(
-      'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+      'UPDATE users SET password_hash = $1, must_change_password = FALSE, updated_at = NOW() WHERE id = $2',
       [newPasswordHash, userId]
     );
 

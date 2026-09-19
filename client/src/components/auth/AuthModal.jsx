@@ -22,10 +22,20 @@ export const AuthModal = () => {
 
     if (isRegister) {
       const res = await register(name, email, password, role);
-      if (!res.success) setErrorMsg(res.error);
+      if (!res.success) {
+        setErrorMsg(res.error);
+      } else {
+        if (res.user?.role === 'admin') navigate('/admin');
+        else if (res.user?.role === 'facilitator') navigate('/facilitator');
+      }
     } else {
       const res = await login(email, password);
-      if (!res.success) setErrorMsg(res.error);
+      if (!res.success) {
+        setErrorMsg(res.error);
+      } else {
+        if (res.user?.role === 'admin') navigate('/admin');
+        else if (res.user?.role === 'facilitator') navigate('/facilitator');
+      }
     }
   };
 
@@ -183,7 +193,7 @@ export const AuthModal = () => {
             </div>
           </div>
 
-          {isRegister && (
+          {isRegister ? (
             <div>
               <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">Role / Profile</label>
               <select
@@ -194,8 +204,14 @@ export const AuthModal = () => {
                 <option value="user">Ayurveda Practitioner / Vaidya</option>
                 <option value="researcher">Academic Researcher / Scientist</option>
                 <option value="msme">AYUSH Startup / MSME Manufacturer</option>
-                <option value="facilitator">Accredited IP Facilitator</option>
               </select>
+              <p className="mt-1 text-[10px] text-slate-400">
+                IP Facilitator accounts are issued and managed by system administrators.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-2.5 text-[11px] text-emerald-800 dark:text-emerald-300">
+              <span className="font-semibold">Unified Access:</span> Practitioners, Researchers, Facilitators, and Administrators sign in with their assigned credentials.
             </div>
           )}
 

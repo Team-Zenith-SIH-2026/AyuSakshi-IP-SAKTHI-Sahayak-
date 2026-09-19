@@ -18,7 +18,10 @@ const authenticate = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const userResult = await query('SELECT id, email, name, role, auth_provider, avatar_url FROM users WHERE id = $1', [decoded.id]);
+    const userResult = await query(
+      'SELECT id, email, name, role, auth_provider, avatar_url, is_active, must_change_password FROM users WHERE id = $1',
+      [decoded.id]
+    );
     if (userResult.rows.length === 0) {
       return res.status(401).json({
         success: false,
@@ -26,7 +29,16 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-    req.user = userResult.rows[0];
+    const user = userResult.rows[0];
+    if (user.is_active === false) {
+      return res.status(403).json({
+        success: false,
+        error: 'Account has been deactivated. Please contact the administrator.',
+        deactivated: true,
+      });
+    }
+
+    req.user = user;
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
@@ -43,8 +55,11 @@ const optionalAuth = async (req, res, next) => {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
       const decoded = jwt.verify(token, JWT_SECRET);
-      const userResult = await query('SELECT id, email, name, role, auth_provider, avatar_url FROM users WHERE id = $1', [decoded.id]);
-      if (userResult.rows.length > 0) {
+      const userResult = await query(
+        'SELECT id, email, name, role, auth_provider, avatar_url, is_active, must_change_password FROM users WHERE id = $1',
+        [decoded.id]
+      );
+      if (userResult.rows.length > 0 && userResult.rows[0].is_active !== false) {
         req.user = userResult.rows[0];
       }
     }
@@ -55,16 +70,22 @@ const optionalAuth = async (req, res, next) => {
 };
 
 // RBAC Middleware: restrict to specific roles
-const authorize = (allowedRoles = []) => {
+const authorize = (allowedRoles = [], options = { allowAdmin: false }) => {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ success: false, error: 'Unauthorized. Please login.' });
     }
 
-    if (allowedRoles.length && !allowedRoles.includes(req.user.role) && req.user.role !== 'admin') {
+    if (req.user.is_active === false) {
+      return res.status(403).json({ success: false, error: 'Account is deactivated. Please contact the administrator.' });
+    }
+
+    const isAllowed = allowedRoles.includes(req.user.role) || (options.allowAdmin && req.user.role === 'admin');
+
+    if (allowedRoles.length && !isAllowed) {
       return res.status(403).json({
         success: false,
-        error: `Forbidden. Role '${req.user.role}' lacks required permissions.`,
+        error: `Forbidden. Role '${req.user.role}' lacks required permissions for this resource.`,
       });
     }
 

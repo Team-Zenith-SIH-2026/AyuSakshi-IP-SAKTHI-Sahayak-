@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { JurisdictionProvider } from './context/JurisdictionContext';
 import { ChatProvider } from './context/ChatContext';
 
@@ -15,6 +15,8 @@ import { QuickActionBar } from './components/chat/QuickActionBar';
 import { SourceDrawer } from './components/chat/SourceDrawer';
 
 import { AuthModal } from './components/auth/AuthModal';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { ForcePasswordChangeModal } from './components/auth/ForcePasswordChangeModal';
 import { ClassificationWizard } from './components/classification/ClassificationWizard';
 import { ABSNavigator } from './components/abs/ABSNavigator';
 import { TKDLChecker } from './components/tkdl/TKDLChecker';
@@ -25,12 +27,20 @@ import { KnowledgeBaseManager } from './components/admin/KnowledgeBaseManager';
 import { ProfilePage } from './pages/ProfilePage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { OAuthCallbackPage } from './pages/OAuthCallbackPage';
+import { AdminPortalPage } from './pages/admin/AdminPortalPage';
+import { FacilitatorWorkspacePage } from './pages/facilitator/FacilitatorWorkspacePage';
 
 import { RightPanel } from './components/layout/RightPanel';
 import { useChat } from './context/ChatContext';
 
 function AssistantLayout() {
   const { messages } = useChat();
+  const { user } = useAuth();
+
+  // Facilitators are dedicated to the review workspace; redirect immediately
+  if (user?.role === 'facilitator') {
+    return <Navigate to="/facilitator" replace />;
+  }
 
   return (
     <div className="relative flex h-screen h-[100dvh] w-full max-w-full flex-col overflow-hidden overflow-x-hidden font-sans text-slate-900 transition-colors duration-200 dark:text-slate-100">
@@ -79,11 +89,33 @@ export default function App() {
           <AuthProvider>
             <JurisdictionProvider>
               <ChatProvider>
+                <ForcePasswordChangeModal />
                 <Routes>
                   <Route path="/" element={<AssistantLayout />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                   <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+
+                  {/* Admin Portal (Restricted to role: admin) */}
+                  <Route
+                    path="/admin/*"
+                    element={
+                      <ProtectedRoute allowedRoles={['admin']}>
+                        <AdminPortalPage />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Facilitator Workspace (Restricted to role: facilitator) */}
+                  <Route
+                    path="/facilitator/*"
+                    element={
+                      <ProtectedRoute allowedRoles={['facilitator']}>
+                        <FacilitatorWorkspacePage />
+                      </ProtectedRoute>
+                    }
+                  />
+
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </ChatProvider>

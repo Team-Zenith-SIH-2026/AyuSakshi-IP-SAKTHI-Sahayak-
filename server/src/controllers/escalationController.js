@@ -1,4 +1,5 @@
 const { query } = require('../config/db');
+const { assignNextFacilitator } = require('../services/roundRobinService');
 
 // 1. Submit Human Review / Escalation Request
 const submitEscalation = async (req, res) => {
@@ -11,12 +12,20 @@ const submitEscalation = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Question and reason for escalation are required.' });
     }
 
+    // Atomic round-robin facilitator allocation
+    const assignment = await assignNextFacilitator();
+    const assignedFacilitatorId = assignment.assigned_facilitator_id;
+    const assignmentStatus = assignment.assignment_status; // 'ASSIGNED' or 'PENDING_ASSIGNMENT'
+    const status = assignmentStatus === 'ASSIGNED' ? 'ASSIGNED' : 'PENDING';
+    const assignedAt = assignment.assigned_at;
+
     const result = await query(
       `INSERT INTO human_review_requests (
         conversation_id, user_id, user_email, question, jurisdiction,
-        formulation_summary, retrieved_evidence, system_confidence, reason, status
+        formulation_summary, retrieved_evidence, system_confidence, reason,
+        status, assignment_status, assigned_facilitator_id, facilitator_id, assigned_at
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'PENDING')
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        RETURNING *`,
       [
         conversation_id || null,
@@ -28,13 +37,28 @@ const submitEscalation = async (req, res) => {
         JSON.stringify(retrieved_evidence || []),
         system_confidence || 0.0,
         reason.trim(),
+        status,
+        assignmentStatus,
+        assignedFacilitatorId,
+        assignedFacilitatorId,
+        assignedAt,
       ]
     );
+
+    const ticket = result.rows[0];
 
     return res.status(201).json({
       success: true,
       message: 'Escalation request submitted successfully. An AYUSH IP Facilitator will review this matter.',
-      review_ticket: result.rows[0],
+      review_ticket: {
+        id: ticket.id,
+        conversation_id: ticket.conversation_id,
+        question: ticket.question,
+        jurisdiction: ticket.jurisdiction,
+        status: ticket.status,
+        assignment_status: ticket.assignment_status,
+        created_at: ticket.created_at,
+      },
     });
   } catch (error) {
     console.error('[Submit Escalation Error]', error.message);

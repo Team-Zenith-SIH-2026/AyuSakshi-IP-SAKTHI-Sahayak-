@@ -217,17 +217,31 @@ export const Header = () => {
                     Profile
                   </button>
 
-                  {['facilitator', 'admin'].includes(user?.role) && (
+                  {user?.role === 'admin' && (
                     <button
                       role="menuitem"
                       onClick={() => {
                         setIsUserMenuOpen(false);
-                        setActiveModal('facilitator');
+                        navigate('/admin');
                       }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13px] text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/5"
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13px] text-emerald-700 dark:text-emerald-400 font-medium transition-colors hover:bg-emerald-50 dark:hover:bg-white/5"
                     >
-                      <Scale className="h-4 w-4 text-slate-400" />
-                      Review queue
+                      <Scale className="h-4 w-4" />
+                      Admin Portal
+                    </button>
+                  )}
+
+                  {user?.role === 'facilitator' && (
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        navigate('/facilitator');
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13px] text-teal-700 dark:text-teal-400 font-medium transition-colors hover:bg-teal-50 dark:hover:bg-white/5"
+                    >
+                      <Scale className="h-4 w-4" />
+                      Facilitator Workspace
                     </button>
                   )}
 

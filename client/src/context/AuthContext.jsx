@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('ayusakshi_token', jwtToken);
       localStorage.setItem('ayusakshi_user', JSON.stringify(userData));
       setIsAuthModalOpen(false);
-      return { success: true };
+      return { success: true, user: userData };
     } catch (err) {
       return {
         success: false,
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('ayusakshi_token', jwtToken);
       localStorage.setItem('ayusakshi_user', JSON.stringify(userData));
       setIsAuthModalOpen(false);
-      return { success: true };
+      return { success: true, user: userData };
     } catch (err) {
       return {
         success: false,
@@ -73,6 +73,15 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateUser = (updatedFields) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...updatedFields };
+      localStorage.setItem('ayusakshi_user', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const socialLogin = async (provider, email, name, avatar_url) => {
@@ -85,7 +94,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('ayusakshi_token', jwtToken);
       localStorage.setItem('ayusakshi_user', JSON.stringify(userData));
       setIsAuthModalOpen(false);
-      return { success: true };
+      return { success: true, user: userData };
     } catch (err) {
       return {
         success: false,
@@ -135,6 +144,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthModalOpen,
         login,
         register,
+        updateUser,
         socialLogin,
         completeOAuthLogin,
         logout,

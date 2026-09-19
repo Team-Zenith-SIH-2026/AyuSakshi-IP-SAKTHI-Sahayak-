@@ -76,4 +76,21 @@ export const escalationAPI = {
   updateStatus: (id, data) => api.patch(`/escalations/${id}`, data),
 };
 
+export const adminAPI = {
+  getSummary: () => api.get('/admin/summary'),
+  listFacilitators: () => api.get('/admin/facilitators'),
+  createFacilitator: (data) => api.post('/admin/facilitators', data),
+  toggleFacilitatorStatus: (id, data) => api.patch(`/admin/facilitators/${id}/status`, data),
+  resetFacilitatorPassword: (id, data) => api.post(`/admin/facilitators/${id}/reset-password`, data),
+  listUsers: () => api.get('/admin/users'),
+  toggleUserStatus: (id, data) => api.patch(`/admin/users/${id}/status`, data),
+  listRequests: (params) => api.get('/admin/requests', { params }),
+};
+
+export const facilitatorAPI = {
+  getAssignedRequests: (params) => api.get('/facilitator/requests', { params }),
+  getRequestDetail: (id) => api.get(`/facilitator/requests/${id}`),
+  updateRequestStatus: (id, data) => api.patch(`/facilitator/requests/${id}/status`, data),
+};
+
 export default api;

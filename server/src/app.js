@@ -13,6 +13,8 @@ const documentRoutes = require('./routes/documentRoutes');
 const escalationRoutes = require('./routes/escalationRoutes');
 const classificationRoutes = require('./routes/classificationRoutes');
 const healthRoutes = require('./routes/healthRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const facilitatorRoutes = require('./routes/facilitatorRoutes');
 
 const app = express();
 
@@ -39,6 +41,8 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/escalations', escalationRoutes);
 app.use('/api/formulations', classificationRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/facilitator', facilitatorRoutes);
 app.use('/', healthRoutes);
 
 // Root route
