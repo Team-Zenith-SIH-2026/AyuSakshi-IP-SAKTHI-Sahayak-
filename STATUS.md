@@ -100,6 +100,13 @@ All curated chunks are transcribed directly from official Gazette notifications 
 - **Role-Based Access Control**: Secure JWT issuance and endpoint-level authorization checks.
 - **Regulatory Legal Disclaimer**: Persistent, non-dismissible advisory banner.
 
+### 3.4 Patent-Related Formulation Intelligence & TKDL Reference Lookup
+- **Patent Intent Detection**: Automatically identifies patent/IP queries (using `patent_query: true`, `patent_intent: "patentability"`).
+- **Herb Alias Normalization & Ratio Extraction**: Case-insensitive alias mapping (`ashwaganda` → `ashwagandha`, `haldi` → `turmeric`, etc.) and structured ratio extraction supporting percentage (`10% ashwagandha + 90% turmeric`) and colon ratio (`10:90`) notations.
+- **Ratio Validation**: Validates ratio totals (`ratio_total`, `ratio_valid`), generating explicit warnings when percentages do not total 100% without altering user inputs.
+- **Demo TKDL Reference Lookup**: Reusable lookup service (`TKDLService`) scanning `ai-service/app/data/tkdl_reference.json` for classical references, providing structured match metadata (`tkdl_matches`, `tkdl_status`, `tkdl_disclaimer`).
+- **Source-Grounded Patentability Analysis**: Synthesizes responses addressing Section 3(p) TK exclusions, Section 3(e) mere-admixture rules, non-automatic ratio novelty, and demo data disclaimers.
+
 ---
 
 ## 4. Architectural Hardening & Enhancements

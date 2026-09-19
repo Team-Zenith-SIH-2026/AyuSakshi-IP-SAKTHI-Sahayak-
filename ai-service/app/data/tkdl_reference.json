@@ -1,0 +1,216 @@
+{
+  "version": "demo-1",
+  "notice": "Demo reference data for development and testing only. Not an official TKDL database or legal determination.",
+  "records": [
+    {
+      "id": "demo-ashwagandha-turmeric-10-90",
+      "document_number": "TKDL-AYU-2026-1090",
+      "title": "TKDL Classical Formulation Entry #TKDL-AYU-2026-1090 (10% Ashwagandha + 90% Turmeric)",
+      "is_formulation": true,
+      "ingredients": [
+        {
+          "name": "ashwagandha",
+          "percentage": 10.0
+        },
+        {
+          "name": "turmeric",
+          "percentage": 90.0
+        }
+      ],
+      "traditional_use_keywords": [
+        "rasayana",
+        "vranaropana",
+        "anti-inflammatory",
+        "balya",
+        "synergistic formulation"
+      ],
+      "source_labels": [
+        "TKDL Classical Reference Document #TKDL-AYU-2026-1090"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "exact_formulation_match",
+      "notes": "Exact traditional formulation reference found in TKDL database for 10% Ashwagandha + 90% Turmeric composition. Prior art published in classical text."
+    },
+    {
+      "id": "demo-ashwagandha-001",
+      "canonical_name": "ashwagandha",
+      "aliases": ["ashwaganda", "withania somnifera", "asvagandha"],
+      "traditional_use_keywords": [
+        "rasayana",
+        "strength",
+        "rejuvenation",
+        "balya",
+        "vata disorders"
+      ],
+      "source_labels": [
+        "Demo Ayurveda reference entry"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "potential_match",
+      "notes": "Ashwagandha is associated with documented traditional Ayurvedic uses. Verify against official TKDL and authoritative sources before relying on this record."
+    },
+    {
+      "id": "demo-turmeric-001",
+      "canonical_name": "turmeric",
+      "aliases": ["haldi", "curcuma longa", "haridra"],
+      "traditional_use_keywords": [
+        "traditional use",
+        "wound care",
+        "spice",
+        "anti-inflammatory",
+        "vranaropana",
+        "kushthaghna"
+      ],
+      "source_labels": [
+        "Demo Ayurveda reference entry"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "potential_match",
+      "notes": "Turmeric has extensive documented traditional use. Verify against official TKDL and authoritative sources before relying on this record."
+    },
+    {
+      "id": "demo-curcumin-001",
+      "canonical_name": "curcumin",
+      "aliases": ["curcumin extract"],
+      "traditional_use_keywords": [
+        "active fraction",
+        "turmeric constituent",
+        "anti-inflammatory"
+      ],
+      "source_labels": [
+        "Demo Ayurveda reference entry"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "potential_match",
+      "notes": "Curcumin is the active phytochemical derived from turmeric. Verify against official TKDL and CDSCO phytopharmaceutical guidelines."
+    },
+    {
+      "id": "demo-neem-001",
+      "canonical_name": "neem",
+      "aliases": ["nimba", "azadirachta indica"],
+      "traditional_use_keywords": [
+        "krimighna",
+        "antimicrobial",
+        "skin health"
+      ],
+      "source_labels": [
+        "Demo Ayurveda reference entry"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "potential_match",
+      "notes": "Neem is documented in classical texts for antimicrobial and skin applications."
+    },
+    {
+      "id": "demo-tulsi-001",
+      "canonical_name": "tulsi",
+      "aliases": ["holy basil", "ocimum sanctum", "surasa"],
+      "traditional_use_keywords": [
+        "respiratory health",
+        "kasahara",
+        "adaptogen"
+      ],
+      "source_labels": [
+        "Demo Ayurveda reference entry"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "potential_match",
+      "notes": "Tulsi is widely documented in classical Ayurvedic formulations for respiratory support."
+    },
+    {
+      "id": "demo-triphala-001",
+      "canonical_name": "triphala",
+      "aliases": ["triphala churna"],
+      "traditional_use_keywords": [
+        "rasayana",
+        "digestive",
+        "ophthalmic"
+      ],
+      "source_labels": [
+        "Demo Ayurveda reference entry"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "potential_match",
+      "notes": "Triphala is a classic polyherbal combination documented across major Ayurvedic Samhitas."
+    },
+    {
+      "id": "demo-brahmi-001",
+      "canonical_name": "brahmi",
+      "aliases": ["bacopa monnieri", "medhya"],
+      "traditional_use_keywords": [
+        "medhya",
+        "cognitive booster",
+        "memory enhancement"
+      ],
+      "source_labels": [
+        "Demo Ayurveda reference entry"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "potential_match",
+      "notes": "Brahmi is documented for memory and cognitive enhancement in classical texts."
+    },
+    {
+      "id": "demo-guggulu-001",
+      "canonical_name": "guggulu",
+      "aliases": ["guggul", "commiphora mukul"],
+      "traditional_use_keywords": [
+        "lipid management",
+        "vataghna",
+        "anti-inflammatory"
+      ],
+      "source_labels": [
+        "Demo Ayurveda reference entry"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "potential_match",
+      "notes": "Guggulu is a classic oleo-gum-resin formulation base documented in classical texts."
+    },
+    {
+      "id": "demo-shatavari-001",
+      "canonical_name": "shatavari",
+      "aliases": ["asparagus racemosus"],
+      "traditional_use_keywords": [
+        "rasayana",
+        "balya",
+        "recreative health"
+      ],
+      "source_labels": [
+        "Demo Ayurveda reference entry"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "potential_match",
+      "notes": "Shatavari is documented for rejuvenating and reproductive health in classical texts."
+    },
+    {
+      "id": "demo-amla-001",
+      "canonical_name": "amla",
+      "aliases": ["amalaki", "emblica officinalis"],
+      "traditional_use_keywords": [
+        "rasayana",
+        "vayasthapana",
+        "antioxidant"
+      ],
+      "source_labels": [
+        "Demo Ayurveda reference entry"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "potential_match",
+      "notes": "Amla is a major constituent of classical rasayana preparations."
+    },
+    {
+      "id": "demo-haritaki-001",
+      "canonical_name": "haritaki",
+      "aliases": ["terminalia chebula", "abhaya"],
+      "traditional_use_keywords": [
+        "pathya",
+        "digestive",
+        "anulomana"
+      ],
+      "source_labels": [
+        "Demo Ayurveda reference entry"
+      ],
+      "source_type": "demo",
+      "traditional_knowledge_status": "potential_match",
+      "notes": "Haritaki is documented as one of the primary classical digestive and restorative herbs."
+    }
+  ]
+}

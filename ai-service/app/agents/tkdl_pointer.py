@@ -1,10 +1,12 @@
 import re
 from typing import Dict, Any, List
+from app.services.tkdl_service import TKDLService
 
 class TKDLPointer:
     """
     Traditional Knowledge Digital Library (TKDL) and Prior-Art Pointer.
     Maps ingredients and formulation concepts to classical texts and defensive prior art.
+    Integrates with TKDLService reference database lookup.
     """
     
     CLASSICAL_REFERENCES = {
@@ -45,22 +47,44 @@ class TKDLPointer:
         q = query.lower()
         state = formulation_state or {}
         
+        # 1. Run TKDLService reference lookup for structured formulation / herb matches
+        ingredient_ratios = state.get("ingredient_ratios", [])
+        ingredients = state.get("ingredients", [])
+        
+        lookup_res = TKDLService.lookup_tkdl_matches(ingredient_ratios=ingredient_ratios, ingredients=ingredients)
+
         matched_herbs = []
         for herb_key, details in cls.CLASSICAL_REFERENCES.items():
-            if herb_key in q or any(herb_key in ing.lower() for ing in state.get("ingredients", [])):
+            if herb_key in q or any(herb_key in str(ing).lower() for ing in ingredients):
                 matched_herbs.append({"herb": herb_key, "details": details})
-                
-        if not matched_herbs:
+
+        has_flag = bool(lookup_res.get("tkdl_matches")) or bool(matched_herbs)
+
+        if not has_flag:
             return {
                 "tkdl_checked": True,
                 "has_prior_art_flag": False,
+                "exact_match_found": False,
+                "patentability_status": lookup_res.get("patentability_status", "no_match"),
+                "patent_risk_score": lookup_res.get("patent_risk_score", 0.0),
+                "verdict": lookup_res.get("verdict", ""),
+                "tkdl_matches": lookup_res.get("tkdl_matches", []),
+                "tkdl_status": lookup_res.get("tkdl_status", "no_match"),
+                "tkdl_disclaimer": lookup_res.get("tkdl_disclaimer", ""),
                 "message": "No direct matches found with high-frequency TKDL classical database entries. Formal prior-art search across Indian Patent Office databases and TKDL is advised."
             }
-            
+
         return {
             "tkdl_checked": True,
             "has_prior_art_flag": True,
+            "exact_match_found": lookup_res.get("exact_match_found", False),
+            "patentability_status": lookup_res.get("patentability_status", "potential_matches_found"),
+            "patent_risk_score": lookup_res.get("patent_risk_score", 0.70),
+            "verdict": lookup_res.get("verdict", ""),
             "matched_classical_records": matched_herbs,
+            "tkdl_matches": lookup_res.get("tkdl_matches", []),
+            "tkdl_status": lookup_res.get("tkdl_status", "potential_matches_found"),
+            "tkdl_disclaimer": lookup_res.get("tkdl_disclaimer", ""),
             "statutory_note": (
                 "Under Section 3(p) of the Indian Patents Act 1970, inventions based on traditional knowledge or aggregation of known properties are non-patentable. "
                 "TKDL access agreements exist with EPO, USPTO, JPO, and WIPO allowing international examiners to cite these classical texts as Section 102/103 prior art."

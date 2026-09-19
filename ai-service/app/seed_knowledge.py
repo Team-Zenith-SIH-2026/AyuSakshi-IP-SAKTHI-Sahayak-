@@ -28,8 +28,12 @@ AUTHORITATIVE_CORPUS = []
 
 CORPUS_DIR = os.getenv(
     "CORPUS_DIR",
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "knowledge-base", "corpus"))
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "knowledge-base", "corpus"))
 )
+if not os.path.isdir(CORPUS_DIR):
+    alt_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "knowledge-base", "corpus"))
+    if os.path.isdir(alt_dir):
+        CORPUS_DIR = alt_dir
 
 
 def load_corpus_files():

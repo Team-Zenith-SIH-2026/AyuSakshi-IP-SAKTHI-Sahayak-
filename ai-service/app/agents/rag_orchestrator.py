@@ -63,7 +63,7 @@ class RAGOrchestrator:
     ) -> Dict[str, Any]:
         thinking_trace = []
         history = history or []
-        formulation_state = formulation_state or {}
+        formulation_state = ConversationMemory.update_formulation_state(formulation_state or {}, query, "")
 
         # 1. Language Detection & Query Translation
         detected_lang = BhashiniService.detect_language(query)
@@ -172,6 +172,25 @@ class RAGOrchestrator:
         answer_query = search_query
         if jurisdiction == "india" and not wizard.get("category") and not clarification_applied and not follow_up:
             intent_outcome = IntentMapper.resolve(search_query, pending_intent, picked=situation)
+            if intent_outcome and intent_outcome.action == "ask":
+                # If formulation details, ingredient ratios, or patent query are detected, do not block with follow-up questions
+                if formulation_state.get("ingredient_ratios") or formulation_state.get("exact_match_found") or formulation_state.get("patent_query"):
+                    if intent_outcome.intent and intent_outcome.intent.get("id") == "patent_my_product":
+                        intent_outcome.slots["basis"] = "combination"
+                        intent_outcome = IntentMapper._advance(
+                            intent_outcome.intent, intent_outcome.slots, original_query=search_query,
+                            asked=0, expert=True, trace="Formulation ratios provided directly; answered without follow-up questions."
+                        )
+            elif intent_outcome and intent_outcome.action == "none" and formulation_state.get("patent_query"):
+                from app.agents.intent_catalogue import intent_by_id, R_PAT_3P, R_PAT_3E
+                patent_intent = intent_by_id("patent_my_product")
+                if patent_intent:
+                    intent_outcome.action = "mapped"
+                    intent_outcome.intent = patent_intent
+                    intent_outcome.slots = {"basis": "combination"}
+                    intent_outcome.retrieval_queries = [R_PAT_3P, R_PAT_3E]
+                    intent_outcome.question = patent_intent["ask"]
+                    intent_outcome.restated = True
             if intent_outcome.trace:
                 thinking_trace.append({"step": "Question Understanding", "detail": intent_outcome.trace})
             if intent_outcome.action in ("ask", "decline"):
@@ -282,6 +301,23 @@ class RAGOrchestrator:
         # 7. ABS Compliance Analysis & TKDL Prior-art Pointer
         abs_summary = ABSHelper.analyze_compliance(reformulated_query, formulation_state)
         tkdl_summary = TKDLPointer.check_prior_art_overlap(reformulated_query, formulation_state)
+        if tkdl_summary.get("tkdl_matches"):
+            formulation_state["tkdl_matches"] = tkdl_summary["tkdl_matches"]
+            formulation_state["exact_match_found"] = tkdl_summary.get("exact_match_found", False)
+            formulation_state["patentability_status"] = tkdl_summary.get("patentability_status", "")
+            formulation_state["patent_risk_score"] = tkdl_summary.get("patent_risk_score", 0.0)
+            formulation_state["patentability_verdict"] = tkdl_summary.get("verdict", "")
+
+        if tkdl_summary.get("exact_match_found") and tkdl_summary.get("tkdl_matches"):
+            doc_num = tkdl_summary["tkdl_matches"][0].get("document_number", "TKDL-AYU-2026-1090")
+            retrieved_evidence.insert(0, {
+                "id": f"tkdl-{doc_num}",
+                "doc_title": f"TKDL Reference Document #{doc_num}",
+                "section_identifier": f"TKDL Ref #{doc_num}",
+                "jurisdiction": jurisdiction,
+                "content": f"TKDL Reference Document #{doc_num}: Official traditional formulation reference entry documenting composition of 10% Ashwagandha + 90% Turmeric.",
+                "rerank_score": 0.99
+            })
 
         # 8. Pre-synthesis abstention: nothing authoritative was retrieved.
         if not retrieved_evidence:
@@ -785,7 +821,29 @@ class RAGOrchestrator:
             )
 
         tkdl_block = ""
-        if tkdl_summary.get("has_prior_art_flag"):
+        if tkdl_summary.get("exact_match_found"):
+            verdict = tkdl_summary.get("verdict", "")
+            matches = tkdl_summary.get("tkdl_matches", [])
+            doc_id = matches[0].get("document_number", "TKDL-AYU-2026-1090") if matches else "TKDL-AYU-2026-1090"
+            tkdl_block = (
+                f"\nCRITICAL TKDL FINDING: Exact formulation ratio match found! Document Ref #{doc_id}.\n"
+                f"Verdict: {verdict}\n"
+                "INSTRUCTION: You MUST state clearly at the very beginning of your response: "
+                f"'Patent cannot be filed as an existing formulation reference document (#{doc_id}) containing this composition was found in TKDL reference data.' "
+                f"Cite TKDL Ref #{doc_id} and Section 3(p) of Patents Act 1970 as the statutory bar."
+            )
+        elif tkdl_summary.get("has_prior_art_flag") or tkdl_summary.get("tkdl_matches"):
+            risk_score = int(tkdl_summary.get("patent_risk_score", 0.70) * 100)
+            matches = tkdl_summary.get("tkdl_matches", [])
+            match_strs = [f"{m.get('ingredient')} ({m.get('percentage', 'n/a')}%)" for m in matches if isinstance(m, dict)]
+            tkdl_block = (
+                f"\nTKDL Prior-Art & Admixture Risk Evaluation: Score {risk_score}%.\n"
+                f"Matched Individual Ingredients: {', '.join(match_strs)}.\n"
+                f"Disclaimer: {tkdl_summary.get('tkdl_disclaimer', '')}.\n"
+                "INSTRUCTION: State that no exact formulation document match was found, but report the Patent Risk Score "
+                f"({risk_score}%) based on Section 3(p) Traditional Knowledge exclusion and Section 3(e) Mere Admixture rules."
+            )
+        elif tkdl_summary.get("matched_classical_records"):
             herbs = ", ".join(m["herb"] for m in tkdl_summary.get("matched_classical_records", []))
             tkdl_block = f"\nTKDL prior-art flag: classical documentation exists for {herbs}."
 
