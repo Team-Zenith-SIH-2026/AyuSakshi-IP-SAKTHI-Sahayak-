@@ -175,9 +175,28 @@ def test_no_benchmark_question_is_answered_with_a_follow_up_question():
 
 @needs_model
 def test_a_short_ambiguous_question_asks_which_situation():
-    out = IntentMapper.resolve("plants for selling, permission?")
+    # Both close situations are named ("brand", "selling"), so only the person can say.
+    out = IntentMapper.resolve("herbal brand for selling, rules?")
     assert out.action == "ask" and out.clarification["kind"] == "choose_intent"
-    assert "plants_in_business" in [o["value"] for o in out.clarification["options"]]
+    assert {"plants_in_business", "brand_name"} <= {o["value"] for o in out.clarification["options"]}
+
+
+@needs_model
+@pytest.mark.parametrize("text,expected", [
+    ("Can generic Sanskrit herb names be trademarked?", "brand_name"),
+    ("Can I advertise an Ayurvedic cure for diabetes?", "advertising_claims"),
+    ("plants for selling, permission?", "plants_in_business"),
+])
+def test_a_near_tie_goes_to_the_situation_the_person_named(text, expected):
+    """Similarity alone could not separate these; the one situation whose words were used can."""
+    out = IntentMapper.resolve(text)
+    assert out.intent is not None and out.intent["id"] == expected
+    assert not (out.clarification and out.clarification["kind"] == "choose_intent")
+
+
+def test_an_indian_startup_is_read_as_an_indian_business():
+    plants = intent_by_id("plants_in_business")
+    assert IntentMapper.parse_slots(plants, "Do Indian ASU startups need NBA ABS approval?")["who"] == "indian_business"
 
 
 @needs_model

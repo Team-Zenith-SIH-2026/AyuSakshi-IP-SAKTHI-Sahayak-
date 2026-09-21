@@ -212,6 +212,22 @@ class IntentMapper:
             )
 
         close = [i for i, s in ranked if i != OUT_OF_SCOPE and s >= top - CHOICE_BAND][:3]
+
+        # The words someone uses settle a near-tie that similarity cannot. "Can
+        # generic Sanskrit herb names be trademarked?" sits about as close to
+        # using plants in a business as to protecting a brand name, but only one
+        # of those situations is about a trademark. When exactly one of the close
+        # situations has its cue words in the question, the person has named it.
+        cued = [i for i in close if _any(intent_by_id(i).get("cues", []), text)]
+        if top >= CHOICE_FLOOR and len(close) >= 2 and len(cued) == 1:
+            chosen = cued[0]
+            score = dict(ranked)[chosen]
+            return Recognition(
+                "mapped", [chosen], ranked,
+                f"Recognised '{intent_by_id(chosen)['title']}' from the words used (score {score:.2f}; "
+                f"close alternatives: {summary}).",
+            )
+
         if top >= CHOICE_FLOOR and len(close) >= 2:
             return Recognition("choice", close, ranked, f"Several situations are about equally close ({summary}).")
 

@@ -308,16 +308,12 @@ class RAGOrchestrator:
             formulation_state["patent_risk_score"] = tkdl_summary.get("patent_risk_score", 0.0)
             formulation_state["patentability_verdict"] = tkdl_summary.get("verdict", "")
 
-        if tkdl_summary.get("exact_match_found") and tkdl_summary.get("tkdl_matches"):
-            doc_num = tkdl_summary["tkdl_matches"][0].get("document_number", "TKDL-AYU-2026-1090")
-            retrieved_evidence.insert(0, {
-                "id": f"tkdl-{doc_num}",
-                "doc_title": f"TKDL Reference Document #{doc_num}",
-                "section_identifier": f"TKDL Ref #{doc_num}",
-                "jurisdiction": jurisdiction,
-                "content": f"TKDL Reference Document #{doc_num}: Official traditional formulation reference entry documenting composition of 10% Ashwagandha + 90% Turmeric.",
-                "rerank_score": 0.99
-            })
+        # The prior-art check reads a demo reference file (data/tkdl_reference.json
+        # says so itself), not the official TKDL, which only patent offices can
+        # search. Its findings therefore go to the answer as a lead to mention,
+        # never as evidence. They used to be inserted here as an "official"
+        # retrieved source, which the citation check then accepted, so a demo
+        # record was cited to the user as the reason a patent cannot be filed.
 
         # 8. Pre-synthesis abstention: nothing authoritative was retrieved.
         if not retrieved_evidence:
@@ -820,32 +816,30 @@ class RAGOrchestrator:
                 f"Name a provision for these obligations only if it appears in the evidence below."
             )
 
+        # A prior-art lead, never evidence (see step 7). The patentability point has
+        # to rest on the statute in the evidence; the lead only tells the person
+        # what to check and where. No risk percentage is passed on: it comes from
+        # a fixed heuristic, and a number reads as a finding.
         tkdl_block = ""
+        matches = [m for m in (tkdl_summary.get("tkdl_matches") or []) if isinstance(m, dict)]
+        herbs = {m.get("ingredient") for m in matches if m.get("ingredient")}
+        herbs |= {m["herb"] for m in tkdl_summary.get("matched_classical_records", []) if m.get("herb")}
         if tkdl_summary.get("exact_match_found"):
-            verdict = tkdl_summary.get("verdict", "")
-            matches = tkdl_summary.get("tkdl_matches", [])
-            doc_id = matches[0].get("document_number", "TKDL-AYU-2026-1090") if matches else "TKDL-AYU-2026-1090"
             tkdl_block = (
-                f"\nCRITICAL TKDL FINDING: Exact formulation ratio match found! Document Ref #{doc_id}.\n"
-                f"Verdict: {verdict}\n"
-                "INSTRUCTION: You MUST state clearly at the very beginning of your response: "
-                f"'Patent cannot be filed as an existing formulation reference document (#{doc_id}) containing this composition was found in TKDL reference data.' "
-                f"Cite TKDL Ref #{doc_id} and Section 3(p) of Patents Act 1970 as the statutory bar."
+                "\nPrior-art lead, NOT evidence: the same composition the person described appears in our demo "
+                "reference data. That data is for testing and is not the official Traditional Knowledge Digital "
+                "Library (TKDL), which only patent offices can search.\n"
+                "INSTRUCTION: Say this plainly, and say the composition should be checked against the official TKDL "
+                "and through a proper prior-art search before relying on it. Then explain what the numbered evidence "
+                "says about patenting traditional knowledge or a mixture of known ingredients. Do not cite the demo "
+                "record, give it a document number, or conclude that a patent cannot be filed."
             )
-        elif tkdl_summary.get("has_prior_art_flag") or tkdl_summary.get("tkdl_matches"):
-            risk_score = int(tkdl_summary.get("patent_risk_score", 0.70) * 100)
-            matches = tkdl_summary.get("tkdl_matches", [])
-            match_strs = [f"{m.get('ingredient')} ({m.get('percentage', 'n/a')}%)" for m in matches if isinstance(m, dict)]
+        elif herbs:
             tkdl_block = (
-                f"\nTKDL Prior-Art & Admixture Risk Evaluation: Score {risk_score}%.\n"
-                f"Matched Individual Ingredients: {', '.join(match_strs)}.\n"
-                f"Disclaimer: {tkdl_summary.get('tkdl_disclaimer', '')}.\n"
-                "INSTRUCTION: State that no exact formulation document match was found, but report the Patent Risk Score "
-                f"({risk_score}%) based on Section 3(p) Traditional Knowledge exclusion and Section 3(e) Mere Admixture rules."
+                f"\nPrior-art lead, NOT evidence: traditional uses are recorded for {', '.join(sorted(herbs))}. "
+                "You may say classical documentation exists for these ingredients and suggest a prior-art search. "
+                "Do not give a risk score or percentage, and do not cite this lead as a source."
             )
-        elif tkdl_summary.get("matched_classical_records"):
-            herbs = ", ".join(m["herb"] for m in tkdl_summary.get("matched_classical_records", []))
-            tkdl_block = f"\nTKDL prior-art flag: classical documentation exists for {herbs}."
 
         # A follow-up ("explain that more simply", "are you sure?") needs the
         # answer it follows. It is shown as context only: anything it says must

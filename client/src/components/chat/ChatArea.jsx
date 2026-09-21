@@ -39,10 +39,10 @@ export const ChatArea = () => {
         { label: t('pills.advertisement'), query: t('pills.advertisement') },
       ]
     : [
-        { label: t('pills.intl_pct'), query: t('pills.intl_pct') },
-        { label: t('pills.intl_s39'), query: t('pills.intl_s39') },
+        { label: t('pills.intl_gratk'), query: t('pills.intl_gratk') },
+        { label: t('pills.intl_trips_plants'), query: t('pills.intl_trips_plants') },
         { label: t('pills.intl_nagoya'), query: t('pills.intl_nagoya') },
-        { label: t('pills.intl_uspto_epo'), query: t('pills.intl_uspto_epo') },
+        { label: t('pills.intl_trips_gi'), query: t('pills.intl_trips_gi') },
       ];
 
   const serviceCards = [

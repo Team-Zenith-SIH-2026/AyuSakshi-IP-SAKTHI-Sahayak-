@@ -33,10 +33,13 @@ export const TRANSLATIONS = {
     'pills.abs': 'Do Indian ASU startups need NBA ABS approval?',
     'pills.trademark': 'Can generic Sanskrit herb names be trademarked?',
     'pills.advertisement': 'Can I advertise an Ayurvedic cure for diabetes?',
-    'pills.intl_pct': 'Can Ayurvedic inventions be filed abroad under PCT?',
-    'pills.intl_s39': 'Is Section 39 clearance needed before foreign patent filing?',
-    'pills.intl_nagoya': 'How does Nagoya Protocol govern bio-resource exports?',
-    'pills.intl_uspto_epo': 'Can herbal formulations get US/European patents?',
+    // Each is answered, with citations, from a treaty in the international
+    // corpus. PCT and US or European patent law are not in it yet, and Section 39
+    // is Indian law, so the earlier questions here were all declined.
+    'pills.intl_gratk': 'Must patent applications disclose the source of genetic resources?',
+    'pills.intl_trips_plants': 'Can countries exclude plants from patents under TRIPS?',
+    'pills.intl_nagoya': 'Is prior informed consent needed to use genetic resources under the Nagoya Protocol?',
+    'pills.intl_trips_gi': 'How does TRIPS protect geographical indications for herbal products?',
     'sidebar.home': 'Home',
     'sidebar.askQuestion': 'Ask an IPR Question',
     'sidebar.analyzeProduct': 'Analyze My Product',
