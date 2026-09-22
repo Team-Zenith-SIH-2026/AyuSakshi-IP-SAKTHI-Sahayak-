@@ -101,7 +101,8 @@ INTENTS: List[Dict[str, Any]] = [
         # Words that, when present, point to this situation. They add a small
         # fixed amount to the similarity score (intent_mapper.CUE_BOOST); they
         # never decide a match on their own.
-        "cues": [r"\bbusiness\b", r"\bcompan(y|ies)\b", r"\bfirm\b", r"\bcommerciali[sz]", r"\bcommercial(ly)?\b", r"\bsell(ing)?\b", r"\bbiodiversity\b"],
+        "cues": [r"\bbusiness\b", r"\bcompan(y|ies)\b", r"\bfirm\b", r"\bcommerciali[sz]", r"\bcommercial(ly)?\b", r"\bsell(ing)?\b", r"\bbiodiversity\b",
+                 r"\babs\b", r"\bbenefit[- ]sharing\b", r"\bstart-?ups?\b", r"\bmsmes?\b"],
         "explain": (
             "Plants, herbs and their parts are what the law calls **biological resources**. Using them in a "
             "business can mean informing your State Biodiversity Board in advance (called **prior intimation**) "
@@ -129,7 +130,9 @@ INTENTS: List[Dict[str, Any]] = [
                         "label": "An Indian company, firm or shop",
                         "fact": "I run a business registered in India.",
                         "keywords": [
-                            r"\bindian (company|firm|business|startup|start-up|brand|manufacturer|entrepreneur|citizen|national|shop)\b",
+                            # One word may sit in between: "Indian ASU startups", "Indian herbal company".
+                            r"\bindian (\w+ )?(compan(y|ies)|firms?|business(es)?|start-?ups?|brands?|manufacturers?|"
+                            r"entrepreneurs?|citizens?|nationals?|shops?|msmes?)\b",
                             r"\b(registered|incorporated|based) in india\b", r"\bi am (an )?indian\b",
                             r"\b(pvt|private limited|llp|proprietorship|proprietor|msme)\b", INDIA_BASED,
                         ],
