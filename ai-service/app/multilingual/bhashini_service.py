@@ -224,7 +224,6 @@ class BhashiniService:
             async with httpx.AsyncClient(timeout=12.0) as client:
                 config = await cls._get_pipeline_config(client, source_lang, target_lang)
                 if not config:
-                    # Config couldn't be fetched, use fallback translation
                     fallback_res = await cls._fallback_translate(text, source_lang, target_lang)
                     if fallback_res.get("translated_text"):
                         if len(cls._translation_cache) > 500:
@@ -267,7 +266,6 @@ class BhashiniService:
                         outputs = pipeline_res[0]["output"]
                         if outputs and "target" in outputs[0]:
                             translated = outputs[0]["target"]
-                            # Cache translation in memory (capped at 500 entries)
                             if len(cls._translation_cache) > 500:
                                 cls._translation_cache.clear()
                             cls._translation_cache[cache_key] = translated
