@@ -3,9 +3,15 @@ import re
 import time
 import hashlib
 import httpx
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional, Tuple
 from app.config import settings
 from app.llm.providers import call_llm
+
+# A capitalised word that can be part of a law's name.
+_NAME_WORD = (
+    r"(?!(?:The|A|An|Under|According|As|Per|By|In|If|Yes|No|Both|Also|Only|When|For|From|With|Before|After|See|"
+    r"This|That|These|Those|Your|You|It|Unlike|Like|Since|Because)\b)[A-Z][\w'’-]*"
+)
 
 class BhashiniService:
     """
@@ -13,15 +19,50 @@ class BhashiniService:
     Preserves exact statutory citations (e.g., 'Section 3(p)', 'Rule 157', 'Form A') during translation.
     Features:
       - 2-step ULCA Pipeline Discovery & Inference with auto Pipeline ID (64392f96daac500b55c543cd)
+      - Direct Dhruva inference when the key is an inference key that the ULCA config endpoint does not know
       - In-memory config caching to minimize API calls (at most 1 config call per language pair)
       - Translation response cache to prevent redundant quota usage
       - Circuit breaker / cooldown if quota limit (429/401/403) is encountered, seamlessly falling back to LLM translation
     """
-    
+
     BHASHINI_CONFIG_URL = "https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline"
     BHASHINI_DEFAULT_INFERENCE_URL = "https://dhruva-api.bhashini.gov.in/services/inference/pipeline"
     DEFAULT_PIPELINE_ID = "64392f96daac500b55c543cd"
-    
+    # IndicTrans2 on Dhruva: the model the config endpoint hands out for translation.
+    DEFAULT_SERVICE_ID = "ai4bharat/indictrans-v2-all-gpu--t4"
+
+    # Bhashini's language codes where they differ from ours.
+    BHASHINI_CODES = {"kok": "gom"}
+
+    # Scripts shared by more than one language we offer. The script says
+    # Devanagari; the language the user picked says whether it is Marathi.
+    SCRIPT_FAMILIES = {"hi": {"hi", "mr", "sa", "ne", "mai", "kok"}, "bn": {"bn", "as"}, "ur": {"ur", "sd"}}
+
+    # What must come back from machine translation exactly as it went in.
+    # IndicTrans2 renders "Section 3(p)" as "धारा 3 (पी)", which can no longer
+    # be checked against the Act. These spans are swapped for {0}, {1}, ...
+    # before translation (a marker it was seen to keep intact) and put back
+    # afterwards; if any marker does not come back, the LLM translation, which
+    # is told to keep citations, is used instead.
+    _PROTECTED = re.compile(
+        r"https?://\S+"
+        r"|\b(?:Sections?|Sec\.|Rules?|Articles?|Regulations?|Clauses?|Sub-sections?|Chapters?|Schedules?|Forms?)"
+        r"\s+(?:\d+[A-Z]*|[IVXL]+|[A-Z]{1,2})(?!\w)(?:\s*\([0-9A-Za-z]{1,4}\))*"
+        r"|\b(?:First|Second|Third|Fourth|Fifth|Sixth)\s+Schedule\b"
+        r"|\b\d+[A-Z]*(?:\([0-9A-Za-z]{1,4}\))+"
+        # A law's name, but not the word that introduces it ("Under the ..."),
+        # and not a bare "the Act".
+        rf"|{_NAME_WORD}\s+(?:(?:{_NAME_WORD}|and|of|&|\([A-Z][\w'’-]*|[\w'’-]*\))\s+){{0,7}}"
+        r"(?:Act|Rules|Regulations|Protocol|Treaty|Convention|Agreement)\b(?:,?\s+(?:18|19|20)\d\d)?"
+        r"|\b(?:National Biodiversity Authority|State Biodiversity Boards?|Biodiversity Management Committees?"
+        r"|Controller General of Patents, Designs and Trade Marks|Central Drugs Standard Control Organi[sz]ation"
+        r"|Food Safety and Standards Authority of India|Geographical Indications Registry|Ministry of Ayush)\b"
+        r"|\b(?:NBA|SBB|BMC|CDSCO|FSSAI|AYUSH|TKDL|WIPO|WTO|TRIPS|PCT|GI|IPR|ABS|PIC|MAT|ASU)\b"
+    )
+    _PLACEHOLDER = re.compile(r"\{\s*(\d+)\s*\}")
+    _MD_PREFIX = re.compile(r"^(\s*(?:#{1,6}\s+|[-*•]\s+|\d+[.)]\s+|>\s*)*)(.*)$")
+    _SENTENCE_END = re.compile(r"(?<=[.!?।॥])\s+(?=[A-Z{\"'(\[]|[^\x00-\x7F])")
+
     # Supported Indian Languages (18 verified languages)
     SUPPORTED_LANGUAGES = {
         "en": "English",
@@ -70,15 +111,20 @@ class BhashiniService:
     _pipeline_cache: Dict[str, Dict[str, Any]] = {}
     _translation_cache: Dict[str, str] = {}
     _throttle_until: float = 0.0
-    
-    @staticmethod
-    def detect_language(text: str) -> str:
+    _direct_until: float = 0.0
+
+    @classmethod
+    def detect_language(cls, text: str, preferred: Optional[str] = None) -> str:
         """
         Detects primary script or language of input text.
+
+        Several languages share a script, so the script alone reads Marathi as
+        Hindi. When the language the user picked is written in the detected
+        script, that language is the answer.
         """
         if not text:
             return "en"
-            
+
         # Devanagari script range (Hindi / Sanskrit / Marathi)
         devanagari_count = len(re.findall(r'[\u0900-\u097F]', text))
         tamil_count = len(re.findall(r'[\u0B80-\u0BFF]', text))
@@ -88,7 +134,9 @@ class BhashiniService:
         gujarati_count = len(re.findall(r'[\u0A80-\u0AFF]', text))
         malayalam_count = len(re.findall(r'[\u0D00-\u0D7F]', text))
         punjabi_count = len(re.findall(r'[\u0A00-\u0A7F]', text))
-        
+        odia_count = len(re.findall(r'[\u0B00-\u0B7F]', text))
+        arabic_count = len(re.findall(r'[\u0600-\u06FF]', text))
+
         counts = {
             "hi": devanagari_count,
             "ta": tamil_count,
@@ -98,12 +146,16 @@ class BhashiniService:
             "gu": gujarati_count,
             "ml": malayalam_count,
             "pa": punjabi_count,
+            "or": odia_count,
+            "ur": arabic_count,
         }
-        
+
         max_lang = max(counts, key=counts.get)
         if counts[max_lang] > 3:
+            if preferred in cls.SCRIPT_FAMILIES.get(max_lang, ()):
+                return preferred
             return max_lang
-            
+
         return "en"
 
     @classmethod
@@ -117,6 +169,9 @@ class BhashiniService:
         now = time.time()
         if cached and cached.get("expires_at", 0) > now:
             return cached
+        if now < cls._direct_until:
+            return cls._direct_config(pair_key, now)
+        source_lang, target_lang = cls._code(source_lang), cls._code(target_lang)
 
         pipeline_id = settings.BHASHINI_PIPELINE_ID or cls.DEFAULT_PIPELINE_ID
         if not pipeline_id or pipeline_id == "demo_pipeline_id":
@@ -175,15 +230,35 @@ class BhashiniService:
                 print(f"[Bhashini Service] Pipeline configured for {source_lang}->{target_lang} (serviceId: {service_id})")
                 return config_entry
             elif res.status_code in (400, 401, 403, 429):
-                print(f"[Bhashini Service] Config endpoint returned status {res.status_code}: {res.text[:200]}")
-                cls._throttle_until = now + 300  # Cooldown 5 minutes to avoid burning quota or spamming errors
-                return None
+                # "Error in fetching ulcaApiKey" means the key is an inference
+                # key, which the config endpoint does not know but Dhruva
+                # accepts. Stop asking for a day and call Dhruva directly.
+                print(f"[Bhashini Service] Config endpoint returned status {res.status_code}: {res.text[:200]}. "
+                      "Calling the inference endpoint directly.")
+                cls._direct_until = now + 86400
+                return cls._direct_config(pair_key, now)
             else:
                 print(f"[Bhashini Service] Config endpoint warning ({res.status_code}): {res.text[:200]}")
-                return None
+                return cls._direct_config(pair_key, now)
         except Exception as e:
             print(f"[Bhashini Service] Failed to reach Bhashini config endpoint: {e}")
-            return None
+            return cls._direct_config(pair_key, now)
+
+    @classmethod
+    def _direct_config(cls, pair_key: str, now: float) -> Dict[str, Any]:
+        config_entry = {
+            "callback_url": cls.BHASHINI_DEFAULT_INFERENCE_URL,
+            "auth_header_name": "Authorization",
+            "auth_header_value": settings.BHASHINI_API_KEY,
+            "service_id": cls.DEFAULT_SERVICE_ID,
+            "expires_at": now + 86400,
+        }
+        cls._pipeline_cache[pair_key] = config_entry
+        return config_entry
+
+    @classmethod
+    def _code(cls, lang: str) -> str:
+        return cls.BHASHINI_CODES.get(lang, lang)
 
     @classmethod
     async def translate(cls, text: str, source_lang: str, target_lang: str) -> Dict[str, Any]:
@@ -212,7 +287,7 @@ class BhashiniService:
 
         now = time.time()
         # If Bhashini is not enabled or currently in cooldown due to rate limit/quota, use LLM fallback
-        if not settings.BHASHINI_ENABLED or not settings.BHASHINI_API_KEY or not settings.BHASHINI_USER_ID or now < cls._throttle_until:
+        if not settings.BHASHINI_ENABLED or not settings.BHASHINI_API_KEY or now < cls._throttle_until:
             fallback_res = await cls._fallback_translate(text, source_lang, target_lang)
             if fallback_res.get("translated_text"):
                 if len(cls._translation_cache) > 500:
@@ -239,13 +314,20 @@ class BhashiniService:
 
                 task_config = {
                     "language": {
-                        "sourceLanguage": source_lang,
-                        "targetLanguage": target_lang
+                        "sourceLanguage": cls._code(source_lang),
+                        "targetLanguage": cls._code(target_lang)
                     }
                 }
                 if config.get("service_id"):
                     task_config["serviceId"] = config["service_id"]
 
+                prepared = cls._prepare(text)
+                if prepared is None:
+                    raise ValueError("text already contains {n} markers; cannot protect its citations")
+                lines, sources = prepared
+                if not sources:
+                    return {"translated_text": text, "source_language": source_lang,
+                            "target_language": target_lang, "provider": "passthrough"}
                 payload = {
                     "pipelineTasks": [
                         {
@@ -254,18 +336,18 @@ class BhashiniService:
                         }
                     ],
                     "inputData": {
-                        "input": [{"source": text}]
+                        "input": [{"source": s} for s in sources]
                     }
                 }
 
-                res = await client.post(config["callback_url"], headers=headers, json=payload)
+                res = await client.post(config["callback_url"], headers=headers, json=payload, timeout=30.0)
                 if res.status_code == 200:
                     data = res.json()
                     pipeline_res = data.get("pipelineResponse", [])
                     if pipeline_res and "output" in pipeline_res[0]:
-                        outputs = pipeline_res[0]["output"]
-                        if outputs and "target" in outputs[0]:
-                            translated = outputs[0]["target"]
+                        outputs = [o.get("target") for o in pipeline_res[0]["output"] or []]
+                        translated = cls._reassemble(lines, outputs) if len(outputs) == len(sources) else None
+                        if translated:
                             if len(cls._translation_cache) > 500:
                                 cls._translation_cache.clear()
                             cls._translation_cache[cache_key] = translated
@@ -275,7 +357,8 @@ class BhashiniService:
                                 "target_language": target_lang,
                                 "provider": "bhashini_live"
                             }
-                elif res.status_code in (400, 401, 403, 429):
+                        print("[Bhashini Service] A citation did not survive translation; using the LLM translation.")
+                elif res.status_code in (401, 403, 429):
                     print(f"[Bhashini Service] Inference returned {res.status_code} (Quota or Auth). Cooling down 5m.")
                     cls._throttle_until = now + 300
                 else:
@@ -290,6 +373,65 @@ class BhashiniService:
                 cls._translation_cache.clear()
             cls._translation_cache[cache_key] = fallback_res["translated_text"]
         return fallback_res
+
+    @classmethod
+    def _prepare(cls, text: str) -> Optional[Tuple[List[Dict[str, Any]], List[str]]]:
+        """
+        Split text into the sentences NMT should see, with citations swapped for
+        markers, and note how to put the translation back together.
+
+        Only words go to NMT, so Markdown survives: a line's bullet or number is
+        kept aside, and bold markers, which NMT scatters, are dropped except
+        around a whole line or a whole citation. Returns None when the text
+        already holds something that looks like a marker.
+        """
+        lines: List[Dict[str, Any]] = []
+        sources: List[str] = []
+        for line in text.split("\n"):
+            prefix, body = cls._MD_PREFIX.match(line).groups()
+            if cls._PLACEHOLDER.search(body):
+                return None
+            bold = len(body) > 4 and body.startswith("**") and body.endswith("**") and body.count("**") == 2
+            if bold:
+                body = body[2:-2]
+            saved: List[str] = []
+
+            def keep(m):
+                saved.append(m.group(0))
+                return "{%d}" % (len(saved) - 1)
+
+            def keep_bold(m):
+                i = int(m.group(1))
+                saved[i] = f"**{saved[i]}**"
+                return "{%d}" % i
+
+            masked = cls._PROTECTED.sub(keep, body)
+            masked = re.sub(r"\*\*\s*\{(\d+)\}\s*\*\*", keep_bold, masked).replace("**", "").strip()
+            if not any(ch.isalpha() for ch in cls._PLACEHOLDER.sub("", masked)):
+                lines.append({"original": line, "count": 0})
+                continue
+            parts = [p for p in cls._SENTENCE_END.split(masked) if p.strip()]
+            lines.append({"prefix": prefix, "bold": bold, "saved": saved, "start": len(sources), "count": len(parts)})
+            sources.extend(parts)
+        return lines, sources
+
+    @classmethod
+    def _reassemble(cls, lines: List[Dict[str, Any]], outputs: List[Optional[str]]) -> Optional[str]:
+        """Put the translated sentences back, or None if a citation marker was lost."""
+        out = []
+        for line in lines:
+            if not line["count"]:
+                out.append(line["original"])
+                continue
+            pieces = outputs[line["start"]:line["start"] + line["count"]]
+            if not all(p and p.strip() for p in pieces):
+                return None
+            body = " ".join(p.strip() for p in pieces)
+            if sorted(int(i) for i in cls._PLACEHOLDER.findall(body)) != list(range(len(line["saved"]))):
+                return None
+            body = cls._PLACEHOLDER.sub(lambda m: line["saved"][int(m.group(1))], body)
+            out.append(line["prefix"] + (f"**{body}**" if line["bold"] else body))
+        return "\n".join(out)
 
     @classmethod
     async def _fallback_translate(cls, text: str, source_lang: str, target_lang: str) -> Dict[str, Any]:

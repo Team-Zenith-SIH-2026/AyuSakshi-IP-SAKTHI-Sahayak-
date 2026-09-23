@@ -66,7 +66,7 @@ class RAGOrchestrator:
         formulation_state = ConversationMemory.update_formulation_state(formulation_state or {}, query, "")
 
         # 1. Language Detection & Query Translation
-        detected_lang = BhashiniService.detect_language(query)
+        detected_lang = BhashiniService.detect_language(query, preferred=language)
         target_lang = language if (language and language != "en" and language in BhashiniService.SUPPORTED_LANGUAGES) else (
             detected_lang if detected_lang in BhashiniService.SUPPORTED_LANGUAGES else "en"
         )
