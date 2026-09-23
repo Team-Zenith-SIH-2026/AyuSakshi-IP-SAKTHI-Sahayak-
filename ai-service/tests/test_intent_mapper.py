@@ -11,7 +11,9 @@ import re
 import pytest
 
 from app.agents.intent_catalogue import INTENTS, OUT_OF_SCOPE_EXAMPLES, intent_by_id
-from app.agents.intent_mapper import IntentMapper, NONE_OF_THESE_LABEL, asks_about_law
+from app.agents.intent_mapper import (
+    IntentMapper, NONE_OF_THESE_LABEL, about_unrelated_technology, asks_about_law, is_general_question,
+)
 
 APP = os.path.join(os.path.dirname(__file__), "..", "app")
 KB = os.path.join(os.path.dirname(__file__), "..", "knowledge-base")
@@ -258,6 +260,60 @@ def test_picker_facts_only_fill_questions_the_situation_asks():
 def test_picker_with_an_unknown_goal_falls_back_to_the_words():
     assert IntentMapper._from_picker("anything", {"goal": "nonsense"}) is None
     assert IntentMapper._from_picker("anything", None) is None
+
+
+# --------------------------------------------------------------------------
+# General questions and unrelated inventions
+# --------------------------------------------------------------------------
+
+@pytest.mark.parametrize("text,general", [
+    ("How long does a patent last in India?", True),
+    ("What must be printed on the label of an Ayurvedic medicine?", True),
+    ("Can a US company patent turmeric in India?", True),
+    ("What are the labelling requirements for Ayurvedic medicines?", True),
+    ("Can I patent my Ayurvedic product?", False),
+    ("Our company uses tulsi, do we need approval?", False),
+    ("rules for ayurvedic products?", False),
+    ("What are the rules for Ayurvedic companies?", False),
+    ("any rules for herbal business?", False),
+    ("herbal brand for selling, rules?", False),
+    ("patent rules?", False),
+])
+def test_what_counts_as_a_general_question(text, general):
+    assert is_general_question(text) is general
+
+
+@pytest.mark.parametrize("text,unrelated", [
+    ("I synthesized an artificial quantum semiconductor computer chip in a cleanroom. Can I patent it under AYUSH rules?", True),
+    ("Can I patent my new smartphone battery design?", True),
+    ("Can I patent software that recommends Ayurvedic herbs?", False),
+    ("Can I patent my Ayurvedic formulation?", False),
+])
+def test_an_unrelated_invention_is_recognised(text, unrelated):
+    assert about_unrelated_technology(text) is unrelated
+
+
+@needs_model
+@pytest.mark.parametrize("text", [
+    "How long does a patent last in India?",
+    "On what grounds can a granted patent be revoked in India?",
+    "Can an Ayurveda Aahara product claim to cure a disease?",
+    "What is the penalty for publishing an objectionable advertisement for a drug?",
+])
+def test_a_general_question_is_answered_as_asked(text):
+    """Not interrupted with a question about the asker, and not rewritten as their situation."""
+    out = IntentMapper.resolve(text)
+    assert out.action in ("mapped", "none")
+    if out.action == "mapped":
+        assert out.restated is False
+    else:
+        assert out.query == text
+
+
+@needs_model
+def test_the_same_question_about_ones_own_product_still_asks():
+    out = IntentMapper.resolve("Can I get a patent on my Ayurvedic product?")
+    assert out.action == "ask"
 
 
 def test_never_more_than_the_maximum_follow_ups():

@@ -86,6 +86,8 @@ async def run_benchmark():
 
         citations = response.get("citations", [])
         fabricated = response.get("fabricated_citations") or []
+        # Cited by a first draft, then removed by the rewrite before returning.
+        blocked = response.get("blocked_citations") or []
         level = response.get("confidence_level", "")
         path = response.get("synthesis_path") or "abstained"
         # What the benchmark tests is whether a legal answer was delivered. A
@@ -125,6 +127,7 @@ async def run_benchmark():
             "missing_statutes": missing,
             "citation_ok": cited_ok,
             "fabricated": fabricated,
+            "blocked": blocked,
             "confidence_score": response.get("confidence_score", 0),
             "synthesis_path": path,
             "actual_abstention_reason": actual_reason,
@@ -172,7 +175,7 @@ async def run_benchmark():
     # Detected is not the same as delivered. A fabricated provision caps confidence
     # and trips the abstention gate, so it never reaches the user. The number that
     # matters for the safety claim is how many survived into a returned answer.
-    fabricated_detected = sum(len(r["fabricated"]) for r in results)
+    fabricated_detected = sum(len(r["fabricated"]) + len(r.get("blocked", [])) for r in results)
     fabricated_delivered = sum(len(r["fabricated"]) for r in results if not r["did_abstain"])
 
     corpus_gap_refusals = [

@@ -36,7 +36,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from app.agents.assistant_profile import fact_sheet
-from app.agents.intent_mapper import asks_about_law
+from app.agents.intent_mapper import about_unrelated_technology, asks_about_law
 from app.evaluators.legal_claim_guard import remove_legal_statements, unsupported_numbers
 from app.llm.providers import call_llm
 
@@ -223,6 +223,12 @@ FALLBACK_REPLIES = {
     "mixed": "",
 }
 
+UNRELATED_TECHNOLOGY_REPLY = (
+    "That's outside what I can help with. I answer intellectual property and regulatory questions about "
+    "Ayurvedic and other Ayush products, such as medicines, herbal formulations and Ayurveda foods, not about "
+    "other kinds of technology. A registered patent agent can advise on an invention like this one."
+)
+
 
 class TurnRouter:
 
@@ -232,6 +238,9 @@ class TurnRouter:
         reply = canned_reply(text)
         if reply:
             return TurnPlan(kind="chat", reply=reply, decided_by="rules", detail="Recognised a greeting or thanks.")
+        if about_unrelated_technology(text):
+            return TurnPlan(kind="out_of_scope", reply=UNRELATED_TECHNOLOGY_REPLY, decided_by="rules",
+                            detail="About a kind of invention AyuSakshi does not cover (conversation model not used).")
         return TurnPlan(kind="legal", question=text, decided_by="rules",
                         detail="Treated as a legal question (conversation model not used).")
 
@@ -304,6 +313,13 @@ class TurnRouter:
             kind, question = "legal", question or text
             notes.append("reads as a legal question, so it is searched")
             reply = ""
+
+        # "Can I patent this semiconductor chip under AYUSH rules?" reads as a
+        # legal question to the model, and the full Patents Act can answer it.
+        # It is still not about an Ayush product (benchmark case oos_06).
+        if kind in ("legal", "mixed") and about_unrelated_technology(text):
+            kind, question, reply = "out_of_scope", "", UNRELATED_TECHNOLOGY_REPLY
+            notes.append("about a kind of invention AyuSakshi does not cover, so it is not searched")
 
         if kind == "follow_up" and not has_previous_answer:
             kind = "legal"

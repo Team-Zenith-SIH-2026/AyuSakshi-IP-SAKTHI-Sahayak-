@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-09-21T11:47:51.633144+00:00",
+  "run_at": "2026-09-23T23:32:22.129939+00:00",
   "llm_provider": "groq",
   "llm_model": "openai/gpt-oss-20b",
   "abstain_threshold": 0.5,
@@ -7,8 +7,8 @@
   "metrics": {
     "answer_grounding_pct": 100.0,
     "citation_correctness_pct": 100.0,
-    "abstention_accuracy_pct": 88.0,
-    "false_answers": 1,
+    "abstention_accuracy_pct": 92.0,
+    "false_answers": 0,
     "false_refusals": 2,
     "fabricated_authority_delivered": 0,
     "fabricated_authority_detected_and_blocked": 0,
@@ -39,10 +39,11 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.8838,
+      "blocked": [],
+      "confidence_score": 0.8557,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
-      "evidence_count": 2
+      "evidence_count": 3
     },
     {
       "id": "brief_02",
@@ -63,6 +64,7 @@
       ],
       "citation_ok": false,
       "fabricated": [],
+      "blocked": [],
       "confidence_score": 0.0,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": "low_confidence",
@@ -78,17 +80,18 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 5,
+      "citations_found": 3,
       "expected_statutes": [
         "Biological Diversity Act, 2002 :: Section 6"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.9929,
+      "blocked": [],
+      "confidence_score": 0.9998,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
-      "evidence_count": 6
+      "evidence_count": 4
     },
     {
       "id": "brief_04",
@@ -100,17 +103,18 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 2,
+      "citations_found": 3,
       "expected_statutes": [
         "Biological Diversity :: Section 7"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.929,
+      "blocked": [],
+      "confidence_score": 0.9396,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
-      "evidence_count": 2
+      "evidence_count": 3
     },
     {
       "id": "brief_05",
@@ -129,10 +133,11 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.893,
+      "blocked": [],
+      "confidence_score": 0.9232,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
-      "evidence_count": 3
+      "evidence_count": 5
     },
     {
       "id": "brief_06",
@@ -144,14 +149,15 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 2,
+      "citations_found": 3,
       "expected_statutes": [
         "Magic Remedies :: Section 3"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.8231,
+      "blocked": [],
+      "confidence_score": 0.8859,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
       "evidence_count": 4
@@ -173,6 +179,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
+      "blocked": [],
       "confidence_score": 0.9026,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
@@ -195,7 +202,8 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.8143,
+      "blocked": [],
+      "confidence_score": 0.8647,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
       "evidence_count": 1
@@ -217,10 +225,11 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.7082,
-      "synthesis_path": "llm:ollama:deepseek-nothink:latest",
+      "blocked": [],
+      "confidence_score": 0.791,
+      "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
-      "evidence_count": 2
+      "evidence_count": 3
     },
     {
       "id": "brief_10",
@@ -239,8 +248,9 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.647,
-      "synthesis_path": "llm:ollama:deepseek-nothink:latest",
+      "blocked": [],
+      "confidence_score": 0.7961,
+      "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
       "evidence_count": 5
     },
@@ -261,7 +271,8 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 1.0,
+      "blocked": [],
+      "confidence_score": 0.9668,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
       "evidence_count": 3
@@ -281,6 +292,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
+      "blocked": [],
       "confidence_score": 0.0,
       "synthesis_path": "conversation:out_of_scope:model:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": "conversation",
@@ -305,6 +317,7 @@
       ],
       "citation_ok": false,
       "fabricated": [],
+      "blocked": [],
       "confidence_score": 0.0,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": "no_grounded_citations",
@@ -327,7 +340,8 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.7039,
+      "blocked": [],
+      "confidence_score": 0.7891,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
       "evidence_count": 5
@@ -349,7 +363,8 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.9082,
+      "blocked": [],
+      "confidence_score": 0.9284,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
       "evidence_count": 5
@@ -371,7 +386,8 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.9159,
+      "blocked": [],
+      "confidence_score": 0.9094,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
       "evidence_count": 5
@@ -393,7 +409,8 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.8852,
+      "blocked": [],
+      "confidence_score": 0.9059,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
       "evidence_count": 5
@@ -408,17 +425,18 @@
       "abstention_ok": true,
       "false_refusal": false,
       "false_answer": false,
-      "citations_found": 2,
+      "citations_found": 3,
       "expected_statutes": [
         "Biological Diversity :: Section 7"
       ],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.9299,
+      "blocked": [],
+      "confidence_score": 0.9527,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
-      "evidence_count": 3
+      "evidence_count": 4
     },
     {
       "id": "india_02",
@@ -437,10 +455,11 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.9239,
+      "blocked": [],
+      "confidence_score": 0.9202,
       "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": null,
-      "evidence_count": 6
+      "evidence_count": 5
     },
     {
       "id": "oos_01",
@@ -457,6 +476,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
+      "blocked": [],
       "confidence_score": 0.0,
       "synthesis_path": "conversation:out_of_scope:model:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": "conversation",
@@ -477,6 +497,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
+      "blocked": [],
       "confidence_score": 0.0,
       "synthesis_path": "conversation:out_of_scope:model:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": "conversation",
@@ -497,6 +518,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
+      "blocked": [],
       "confidence_score": 0.0,
       "synthesis_path": "conversation:out_of_scope:model:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": "conversation",
@@ -517,6 +539,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
+      "blocked": [],
       "confidence_score": 0.0,
       "synthesis_path": "conversation:out_of_scope:model:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": "conversation",
@@ -537,6 +560,7 @@
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
+      "blocked": [],
       "confidence_score": 0.0,
       "synthesis_path": "conversation:out_of_scope:model:groq:primary:openai/gpt-oss-20b",
       "actual_abstention_reason": "conversation",
@@ -548,19 +572,20 @@
       "jurisdiction": "india",
       "expected_abstain": true,
       "abstain_reason": "out_of_scope",
-      "did_abstain": false,
-      "abstention_ok": false,
+      "did_abstain": true,
+      "abstention_ok": true,
       "false_refusal": false,
-      "false_answer": true,
-      "citations_found": 5,
+      "false_answer": false,
+      "citations_found": 0,
       "expected_statutes": [],
       "missing_statutes": [],
       "citation_ok": true,
       "fabricated": [],
-      "confidence_score": 0.9374,
-      "synthesis_path": "llm:groq:primary:openai/gpt-oss-20b",
-      "actual_abstention_reason": null,
-      "evidence_count": 5
+      "blocked": [],
+      "confidence_score": 0.0,
+      "synthesis_path": "conversation:out_of_scope:model:groq:primary:openai/gpt-oss-20b",
+      "actual_abstention_reason": "conversation",
+      "evidence_count": 0
     }
   ]
 }

@@ -106,6 +106,22 @@ def test_chat_reply_that_states_law_becomes_a_legal_question():
     assert plan.question == "do I need a licence to sell herbal tea?"
 
 
+CHIP = "I synthesized an artificial quantum semiconductor computer chip in a cleanroom. Can I patent it under AYUSH rules?"
+
+
+def test_a_patent_for_unrelated_technology_is_out_of_scope_whatever_the_model_says():
+    """Benchmark case oos_06: the model called it legal and it was answered from the Patents Act."""
+    plan = _finish(CHIP, {"type": "legal", "reply": "", "question": CHIP})
+    assert plan.kind == "out_of_scope" and plan.question == ""
+    assert "Ayush products" in plan.reply
+    assert not legal_statements(plan.reply)
+
+
+def test_a_patent_for_unrelated_technology_is_out_of_scope_without_the_model():
+    assert TurnRouter.rules(CHIP).kind == "out_of_scope"
+    assert TurnRouter.rules("Can I patent my Ayurvedic formulation?").kind == "legal"
+
+
 def test_a_question_about_the_assistant_stays_chat():
     assert not plainly_legal_question("how reliable are your legal answers?")
     plan = _finish(
@@ -266,6 +282,56 @@ def test_a_refused_follow_up_does_not_offer_unrelated_situations(monkeypatch):
     assert result["answer_kind"] == "refusal"
     assert not result.get("clarification")
     assert "Were you asking" not in result["answer"]
+
+
+LABEL_RULE = {
+    "id": "c1", "doc_title": "The Drugs and Cosmetics Rules, 1945", "section_identifier": "Rule 161(1)",
+    "content": "The label of every container of an Ayurvedic medicine shall display the true list of all ingredients "
+               "with their botanical names, the name of the medicine, the net content and the name and address "
+               "of the manufacturer.",
+    "rerank_score": 6.0, "similarity": 0.8, "jurisdiction": "international", "authority": "CDSCO",
+}
+GROUNDED = ("Under Rule 161(1), the label of every container of an Ayurvedic medicine shall display the true list "
+            "of all ingredients with their botanical names, the name of the medicine, the net content and the "
+            "name and address of the manufacturer. This is regulatory information, not legal advice.")
+
+
+def _drafts(monkeypatch, *drafts):
+    calls = []
+
+    async def fake(cls, **kwargs):
+        calls.append(kwargs.get("rejected"))
+        return drafts[len(calls) - 1], "llm:test"
+    monkeypatch.setattr(RAGOrchestrator, "_synthesize_grounded_answer", classmethod(fake))
+    return calls
+
+
+def test_a_draft_citing_beyond_its_sources_is_rewritten_once(monkeypatch):
+    """Seen live: a Rule 161 answer named Rule 161B(1), which it had not been shown, and was refused whole."""
+    _use_plan(monkeypatch, TurnPlan(kind="legal", question="What must an Ayurvedic label show?", decided_by="model:test"))
+    monkeypatch.setattr(orchestrator_module, "hybrid_retrieve", lambda *a, **k: [dict(LABEL_RULE)])
+    calls = _drafts(monkeypatch, GROUNDED + " The expiry date is required by Rule 161B(1).", GROUNDED)
+
+    result = asyncio.run(RAGOrchestrator.process_query("What must an Ayurvedic label show?", "t",
+                                                       jurisdiction="international"))
+    assert calls == [None, ["Rule 161B(1)"]]
+    assert result["answer_kind"] == "legal"
+    assert "161B" not in result["answer"]
+    assert result["fabricated_citations"] == [] and result["blocked_citations"] == ["Rule 161B(1)"]
+    assert any(s["step"] == "Citation Repair" for s in result["thinking_trace"])
+
+
+def test_a_rewrite_that_still_cites_beyond_its_sources_is_refused(monkeypatch):
+    _use_plan(monkeypatch, TurnPlan(kind="legal", question="What must an Ayurvedic label show?", decided_by="model:test"))
+    monkeypatch.setattr(orchestrator_module, "hybrid_retrieve", lambda *a, **k: [dict(LABEL_RULE)])
+    bad = GROUNDED + " The expiry date is required by Rule 161B(1)."
+    calls = _drafts(monkeypatch, bad, bad)
+
+    result = asyncio.run(RAGOrchestrator.process_query("What must an Ayurvedic label show?", "t",
+                                                       jurisdiction="international"))
+    assert len(calls) == 2
+    assert result["answer_kind"] == "refusal"
+    assert result["abstention_reason"] == "fabricated_citation"
 
 
 def test_a_mixed_message_keeps_its_chat_part_with_the_refusal(monkeypatch):

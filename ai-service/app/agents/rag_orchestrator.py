@@ -10,7 +10,7 @@ from app.agents.ip_router import IPRouter
 from app.agents.abs_helper import ABSHelper
 from app.agents.tkdl_pointer import TKDLPointer
 from app.agents.classification_tree import CATEGORY_PROFILES
-from app.agents.intent_mapper import IntentMapper, IntentOutcome
+from app.agents.intent_mapper import IntentMapper, IntentOutcome, is_general_question
 from app.agents.turn_router import TurnPlan, TurnRouter
 from app.graph.knowledge_graph import KnowledgeGraphEngine
 from app.rag.hybrid_retriever import fetch_chunks_by_ids, hybrid_retrieve
@@ -181,7 +181,13 @@ class RAGOrchestrator:
                             intent_outcome.intent, intent_outcome.slots, original_query=search_query,
                             asked=0, expert=True, trace="Formulation ratios provided directly; answered without follow-up questions."
                         )
-            elif intent_outcome and intent_outcome.action == "none" and formulation_state.get("patent_query"):
+            # Only for a formulation the person described. `patent_query` is set
+            # by the word "patent" anywhere in the conversation, and routing on it
+            # answered "Can I patent this semiconductor chip?" and "On what
+            # grounds can a patent be revoked?" as "Can my product be patented?".
+            elif (intent_outcome and intent_outcome.action == "none"
+                  and (formulation_state.get("ingredient_ratios") or formulation_state.get("exact_match_found"))
+                  and formulation_state.get("patent_query") and not is_general_question(search_query)):
                 from app.agents.intent_catalogue import intent_by_id, R_PAT_3P, R_PAT_3E
                 patent_intent = intent_by_id("patent_my_product")
                 if patent_intent:
@@ -280,7 +286,9 @@ class RAGOrchestrator:
                 f"{len(retrieved_evidence) - reused} found for this question."
             )
         elif topic_queries:
-            retrieved_evidence = cls._routed_evidence(reformulated_query, topic_queries, jurisdiction)
+            own_words = intent_mapped and not intent_outcome.restated
+            retrieved_evidence = cls._routed_evidence(reformulated_query, topic_queries, jurisdiction,
+                                                      question_first=own_words)
             retrieval_detail = (
                 f"Retrieved {len(retrieved_evidence)} authoritative evidence chunks from {jurisdiction} statutory corpus, "
                 f"routed by topic: {len(topic_queries)} topic searches for {routed_by} plus the question itself."
@@ -405,6 +413,59 @@ class RAGOrchestrator:
         if fabricated:
             log.error("[FABRICATED CITATION] rejected %s for query=%r", fabricated, reformulated_query[:80])
 
+        # 10a. One rewrite for a draft that cites what it was not shown.
+        #
+        # Seen live: a labelling answer was grounded in Rule 161 throughout but
+        # named "Rule 161B(1)" for the expiry date, a real rule it had not been
+        # shown. Refusing the whole answer for that one reference left the person
+        # with nothing. The draft is written again, told which reference to leave
+        # out, and the rewrite is verified from scratch. If it still cites beyond
+        # its sources, the answer is refused as before.
+        blocked: List[str] = []
+        if fabricated and synthesis_path.startswith("llm:"):
+            retry, retry_path = await cls._synthesize_grounded_answer(
+                query=answer_query,
+                jurisdiction=jurisdiction,
+                classification=classification_result,
+                ip_domains=ip_domains,
+                evidence=retrieved_evidence,
+                kg_triples=kg_triples,
+                abs_summary=abs_summary,
+                tkdl_summary=tkdl_summary,
+                previous_answer=last_answer.get("answer") if follow_up else None,
+                rejected=fabricated,
+            )
+            if retry_path.startswith("llm:"):
+                retry_evidence = (
+                    retrieved_evidence[:settings.LOCAL_EVIDENCE_TOP_K]
+                    if retry_path.startswith("llm:ollama") else retrieved_evidence
+                )
+                checked = CitationVerifier.verify_and_extract_citations(
+                    generated_text=retry, retrieved_evidence=retry_evidence, jurisdiction=jurisdiction
+                )
+                named = ", ".join(fabricated)
+                one = len(fabricated) == 1
+                if not checked[3]:
+                    thinking_trace.append({
+                        "step": "Citation Repair",
+                        "detail": (
+                            f"The first draft named {named}, which {'is' if one else 'are'} not in the sources it "
+                            f"was shown. It was written again without {'it' if one else 'them'}, and the rewrite "
+                            f"cites only its sources ({len(checked[0])} verified, confidence {checked[1]:.2f})."
+                        )
+                    })
+                    blocked = fabricated
+                    raw_answer, synthesis_path, verify_evidence = retry, retry_path, retry_evidence
+                    citations, conf_score, conf_level, fabricated = checked
+                else:
+                    thinking_trace.append({
+                        "step": "Citation Repair",
+                        "detail": (
+                            f"The first draft named {named}, which {'is' if one else 'are'} not in the sources it "
+                            f"was shown. The rewrite still named {', '.join(checked[3])}, so the answer is withheld."
+                        )
+                    })
+
         # 10b. Confidence-based safe abstention.
         if CitationVerifier.should_abstain(retrieved_evidence, conf_score):
             # Three genuinely different failures used to be reported as one.
@@ -433,6 +494,7 @@ class RAGOrchestrator:
             abstain_resp["thinking_trace"] = thinking_trace
             abstain_resp["classification"] = classification_result
             abstain_resp["fabricated_citations"] = fabricated
+            abstain_resp["blocked_citations"] = blocked
             abstain_resp["synthesis_path"] = synthesis_path
             abstain_resp["evidence_count"] = len(retrieved_evidence)
             return await cls._refusal(abstain_resp, intent_outcome, formulation_state, chat_prefix, offer_situations, target_lang=target_lang)
@@ -514,7 +576,9 @@ class RAGOrchestrator:
             "updated_formulation_state": updated_state,
             "synthesis_path": synthesis_path,
             "evidence_count": len(retrieved_evidence),
-            "fabricated_citations": fabricated
+            "fabricated_citations": fabricated,
+            # Cited by a first draft and removed before the answer was returned.
+            "blocked_citations": blocked,
         }
 
     # ---------------------------------------------------------------------
@@ -687,7 +751,9 @@ class RAGOrchestrator:
     # ---------------------------------------------------------------------
 
     @staticmethod
-    def _routed_evidence(query: str, topic_queries: List[str], jurisdiction: str) -> List[Dict[str, Any]]:
+    def _routed_evidence(
+        query: str, topic_queries: List[str], jurisdiction: str, question_first: bool = False
+    ) -> List[Dict[str, Any]]:
         """
         Evidence for a question whose product category the wizard has settled.
 
@@ -700,6 +766,10 @@ class RAGOrchestrator:
         kept, scored against that topic; the question itself fills the remaining
         places. Chunks below the citation relevance floor are left out rather
         than handed to the model.
+
+        A question answered in its own words ("How long does a patent last?")
+        is searched first instead: the situation's topics only add context, and
+        the passage that answers it must not be the one cut to make room.
         """
         seen, merged = set(), []
 
@@ -716,9 +786,12 @@ class RAGOrchestrator:
                 if taken >= limit:
                     break
 
+        if question_first:
+            take(hybrid_retrieve(query, jurisdiction=jurisdiction, top_k=settings.RERANK_TOP_K), 3)
         for topic in topic_queries:
             take(hybrid_retrieve(topic, jurisdiction=jurisdiction, top_k=2), 1)
-        take(hybrid_retrieve(query, jurisdiction=jurisdiction, top_k=settings.RERANK_TOP_K), 3)
+        if not question_first:
+            take(hybrid_retrieve(query, jurisdiction=jurisdiction, top_k=settings.RERANK_TOP_K), 3)
         return merged[:6]
 
     @staticmethod
@@ -749,6 +822,7 @@ class RAGOrchestrator:
         abs_summary: Dict[str, Any],
         tkdl_summary: Dict[str, Any],
         previous_answer: Optional[str] = None,
+        rejected: Optional[List[str]] = None,
     ) -> Tuple[str, str]:
         """
         Synthesise a source-grounded response.
@@ -756,6 +830,9 @@ class RAGOrchestrator:
         Returns (answer_text, synthesis_path) where synthesis_path names the code
         path that actually produced the text, so nobody has to guess from output
         alone whether a real grounded generation occurred.
+
+        `rejected` names provisions an earlier draft cited without having been
+        shown them; the model is told to write the answer again without them.
         """
         system_prompt = (
             "You are AyuSakshi (IP-SAKTI Sahayak), a regulatory and IP intelligence assistant for Ayurveda.\n"
@@ -858,6 +935,17 @@ class RAGOrchestrator:
                 f"Previous answer:\n{previous_answer}\n\n"
             )
 
+        correction = ""
+        if rejected:
+            names = ", ".join(rejected)
+            one = len(rejected) == 1
+            correction = (
+                f"\n\nCORRECTION: an earlier draft of this answer named {names}, which {'is' if one else 'are'} not "
+                f"in the evidence above, so that draft was rejected. Write the answer again without naming {names} "
+                f"and without relying on anything {'it says' if one else 'they say'}. If a point needs "
+                f"{'it' if one else 'them'}, say that the legal texts I have don't cover that point."
+            )
+
         user_prompt = (
             f"{previous_block}"
             f"User Query: {query}\n\n"
@@ -865,7 +953,7 @@ class RAGOrchestrator:
             f"Identified IP Domains: {', '.join(ip_domains)}"
             f"{abs_block}{tkdl_block}\n\n"
             f"Retrieved Authoritative Statutory Evidence:\n{context_str}\n\n"
-            f"Answer the query using only the evidence above."
+            f"Answer the query using only the evidence above.{correction}"
         )
 
         # The local model reads prompts at about 28 tokens a second on a laptop
@@ -900,7 +988,7 @@ class RAGOrchestrator:
             "'The retrieved sources do not cover this question.'\n"
             "End with: 'This is regulatory information, not legal advice.'"
         )
-        local_user_prompt = f"Question: {query}\n\nEvidence:\n{local_context}"
+        local_user_prompt = f"Question: {query}\n\nEvidence:\n{local_context}{correction}"
 
         text, provider = await call_llm(
             system_prompt, user_prompt,

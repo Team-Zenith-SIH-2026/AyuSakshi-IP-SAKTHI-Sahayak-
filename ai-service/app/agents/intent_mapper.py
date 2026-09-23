@@ -68,11 +68,29 @@ LEGAL_SIGNALS = [
     r"\bcan (i|we) (legally )?(give|send|share|transfer|sell|say|claim|call|label|register|manufacture)\b",
 ]
 
+# Inventions this system does not cover. A patent for one is a legal question,
+# and with the full Patents Act loaded it would even be answered, but AyuSakshi
+# is for Ayush products only.
+UNRELATED_TECHNOLOGY = [
+    r"\bsemiconductor", r"\bcomputer\b", r"\bsoftware\b", r"\bmobile app\b", r"\bdrones?\b", r"\bbatter(y|ies)\b",
+    r"\belectronic", r"\brobot", r"\b(micro|silicon|computer) ?chips?\b", r"\bsmartphones?\b", r"\bquantum\b",
+    r"\bblockchain\b", r"\bcrypto(currenc(y|ies))?\b",
+]
+
+# Words that put a question back in scope whatever else it mentions: "software
+# that recommends Ayurvedic herbs" is left to the conversation model. "Ayush"
+# alone does not count: "can I patent this chip under AYUSH rules?" names the
+# rules, not the product.
+AYUSH_SUBJECT = [
+    r"\bayurved", r"\bsiddha\b", r"\bunani\b", r"\bhomo?eopath", r"\byoga\b", r"\bnaturopath", r"\bherb",
+    r"\bplants?\b", r"\bbotanical", r"\btraditional (knowledge|medicine|formulation)", r"\bformulation",
+    r"\bmedicin", r"\bdrugs?\b", r"\bextracts?\b", r"\bnutraceutical", r"\bsupplements?\b", r"\bfoods?\b",
+    r"\bcosmetic", r"\bchurna", r"\brasayana", r"\bbhasma", r"\bkashaya", r"\barishta", r"\basava",
+]
+
 # Outside what this system covers even when a legal word is present: patenting
 # unrelated technology, writing tasks, and another country's import or export rules.
-OFF_TOPIC = [
-    r"\bsemiconductor", r"\bcomputer\b", r"\bsoftware\b", r"\bmobile app\b", r"\bdrones?\b", r"\bbatter(y|ies)\b",
-    r"\belectronic", r"\brobot",
+OFF_TOPIC = UNRELATED_TECHNOLOGY + [
     r"^\s*(please\s+)?(write|draft|compose|generate|create)\b",
     r"\b(import|export)\w*\b.*\b(japan|usa|us|america|uk|europe|eu|germany|canada|china|australia|uae|dubai|france|singapore)\b",
     r"\b(japan|usa|us|america|uk|europe|eu|germany|canada|china|australia|uae|dubai|france|singapore)\w*\b.*\b(import|export)\w*\b",
@@ -106,6 +124,40 @@ def uses_statutory_terms(text: str) -> bool:
 
 def asks_about_law(text: str) -> bool:
     return (_any(LEGAL_SIGNALS, text) or uses_statutory_terms(text)) and not _any(OFF_TOPIC, text)
+
+
+def about_unrelated_technology(text: str) -> bool:
+    """A question about a kind of invention AyuSakshi does not cover, however legal its wording."""
+    return _any(UNRELATED_TECHNOLOGY, text) and not _any(AYUSH_SUBJECT, text)
+
+
+# The situations are written for a person describing their own case ("I use
+# Indian plants for my company"), and they ask for what that case leaves out. A
+# question about the law in general ("How long does a patent last?", "What must
+# an Ayurvedic label show?") has no such case: interrupting it with "What is your
+# product based on?" or answering it as "Can my product be patented?" answers a
+# question nobody asked. Seen before this was added: the patent term question was
+# asked about the person's product, "grounds for revoking a patent" was met with
+# "which of these do you mean?", and a question about the penalty for an
+# objectionable advertisement was answered as "what can I claim in adverts".
+#
+# "us" counts only in lower case, so a question about a US company is general.
+_FIRST_PERSON = re.compile(r"\b(?i:i|i'm|im|i've|i'd|i'll|me|my|mine|myself|we|we're|we've|our|ours)\b|\bus\b")
+# A request for every rule on a subject ("rules for ayurvedic products?", "any
+# rules for herbal business?") is still narrowed with the situations: it names
+# no single point the law could answer.
+_OVERVIEW = re.compile(
+    r"\b(rules?|laws?|regulations?)\b\s*(for|on|about|regarding|to follow|\?|$)"
+    r"|^\s*(any|what are the|are there( any)?)\s+(rules?|laws?|regulations?)\b",
+    re.IGNORECASE,
+)
+GENERAL_MIN_WORDS = 5
+
+
+def is_general_question(text: str) -> bool:
+    """A specific question about the law itself rather than about the asker's own case."""
+    text = text or ""
+    return len(text.split()) >= GENERAL_MIN_WORDS and not _FIRST_PERSON.search(text) and not _OVERVIEW.search(text)
 
 
 @dataclass
@@ -439,21 +491,26 @@ class IntentMapper:
     @classmethod
     def _fresh(cls, text: str) -> IntentOutcome:
         found = cls.recognise(text)
+        general = is_general_question(text)
 
         if found.decision == "mapped":
             intent = intent_by_id(found.offered[0])
+            # A general question is searched with the situation's topics but
+            # answered in its own words, without questions about the asker.
             return cls._advance(
                 intent, cls.parse_slots(intent, text), original_query=text, asked=0,
-                expert=uses_statutory_terms(text), trace=found.reason,
+                expert=uses_statutory_terms(text) or general,
+                trace=found.reason + (" A general question, so it is answered as asked." if general else ""),
             )
 
         if found.decision == "choice":
-            if len(text.split()) <= CHOICE_MAX_WORDS and not uses_statutory_terms(text):
+            if len(text.split()) <= CHOICE_MAX_WORDS and not uses_statutory_terms(text) and not general:
                 return cls._ask_which(text, found.offered, found.reason)
             scores = dict(found.ranked)
+            why = "A general question" if general else "The question is detailed enough"
             return IntentOutcome(
                 action="none", query=text, suggestions=[(i, scores[i]) for i in found.offered],
-                trace=f"{found.reason} The question is detailed enough to search as written.",
+                trace=f"{found.reason} {why}, so it is searched as written.",
             )
 
         # Kept in reserve: offered only if the ordinary pipeline then refuses.
