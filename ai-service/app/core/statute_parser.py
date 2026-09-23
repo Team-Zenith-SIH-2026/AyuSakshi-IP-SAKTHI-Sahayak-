@@ -36,8 +36,9 @@ except ImportError:  # pragma: no cover
 # The footnote marker before a bracket is optional and only counts when a
 # bracket follows it; otherwise it would eat the first digit of "10.". The
 # number may stand alone on its line ("32." then "Anticipation" below it),
-# which is how justified PDF text often comes out.
-_HEADING = re.compile(r"(?m)^[ 	]*(?:\d{1,2}(?=\[))?\[?(\d{1,3})((?:-?[A-Z]){0,3})(?:\.\s*|[ 	]+(?=\(1\)))(?=[\[(\"'A-Z‘“])")
+# which is how justified PDF text often comes out. A rule with no title may go
+# straight into its first numbered paragraph: "2[161B.  1. The date of expiry".
+_HEADING = re.compile(r"(?m)^[ 	]*(?:\d{1,2}(?=\[))?\[?(\d{1,3})((?:-?[A-Z]){0,3})(?:\.\s*|[ 	]+(?=\(1\)))(?=[\[(\"'A-Z‘“]|1\.\s)")
 
 _CHAPTER_LINE = re.compile(r"^\s*CHAPTER\s+[IVXLC0-9]+[A-Z]?\s*$")
 _PAGE_NUMBER = re.compile(r"^\s*[-–]?\s*\d{1,3}\s*[-–]?\s*$")

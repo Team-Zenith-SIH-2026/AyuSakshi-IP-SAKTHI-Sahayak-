@@ -22,7 +22,7 @@ from app.core.statute_parser import extract_passage, parse_statute
 
 # Raising this re-parses every file on the next start: bump it whenever the
 # parser changes what it produces.
-PARSER_VERSION = "2026-09-21.1"
+PARSER_VERSION = "2026-09-24.1"
 
 KB_DIR = os.getenv(
     "KNOWLEDGE_BASE_DIR",

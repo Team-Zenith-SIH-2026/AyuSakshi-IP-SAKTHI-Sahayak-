@@ -56,6 +56,8 @@ def numbers(title):
     ("The Drugs and Cosmetics Act, 1940", "Section 33E", "misbranded"),
     ("The Drugs and Cosmetics Act, 1940", "First Schedule", "charaka"),
     ("The Drugs and Cosmetics Rules, 1945", "Rule 161", "label"),
+    # No title: "2[161B.  1. The date of expiry". Once filed under Rule 161A.
+    ("The Drugs and Cosmetics Rules, 1945", "Rule 161B", "date of expiry"),
     ("Food Safety and Standards (Ayurveda Aahara) Regulations, 2022", "Regulation 8", "claim"),
     ("Food Safety and Standards (Ayurveda Aahara) Regulations, 2022", "Schedule A", "charak samhita"),
 ])
@@ -87,6 +89,7 @@ def test_the_ayurveda_chapter_set_in_smaller_type_is_kept():
 @have_sources
 def test_schedules_do_not_leak_into_the_last_section():
     assert "pharmacopoeia" not in text_of("The Drugs and Cosmetics Act, 1940", "Section 38")
+    assert "shelf life" not in text_of("The Drugs and Cosmetics Rules, 1945", "Rule 161A")
     dmr = set(numbers("The Drugs and Magic Remedies (Objectionable Advertisements) Act, 1954"))
     assert dmr == set(range(1, 17))
 
