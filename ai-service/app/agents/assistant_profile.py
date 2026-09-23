@@ -49,7 +49,7 @@ def _documents() -> Optional[Dict[str, List[str]]]:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT d.jurisdiction, d.title
+                SELECT DISTINCT d.jurisdiction, d.title
                 FROM documents d
                 JOIN document_versions v ON v.document_id = d.id AND v.is_current = TRUE
                 WHERE d.status = 'active'

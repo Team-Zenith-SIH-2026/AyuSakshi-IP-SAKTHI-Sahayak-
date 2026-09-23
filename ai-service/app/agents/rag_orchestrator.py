@@ -795,8 +795,14 @@ class RAGOrchestrator:
             "6. Close by stating this is regulatory information, not legal advice."
         )
 
+        # A passage from a law's full text carries its edition ("as amended to 31
+        # Dec 2016"), so the answer can say when later amendments may be missing.
+        def edition(e):
+            tag = str(e.get("version_tag") or "")
+            return f" ({tag})" if tag.startswith("full text") else ""
+
         context_str = "\n\n".join([
-            f"[E{i + 1}] Source: {e.get('doc_title', 'Statute')} | Provision: {e.get('section_identifier', 'General')} "
+            f"[E{i + 1}] Source: {e.get('doc_title', 'Statute')}{edition(e)} | Provision: {e.get('section_identifier', 'General')} "
             f"| Jurisdiction: {e.get('jurisdiction', jurisdiction)}\n{e.get('content', '')}"
             for i, e in enumerate(evidence)
         ])

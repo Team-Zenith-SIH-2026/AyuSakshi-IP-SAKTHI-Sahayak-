@@ -280,6 +280,9 @@ def seed_database():
                 print(f"[Seed DB Error on doc {doc['title']}]: {e}")
                 conn.rollback()
 
+    if cur:
+        seed_full_texts(cur, conn, corpus)
+
     if conn and cur:
         conn.commit()
         cur.close()
@@ -292,6 +295,100 @@ def seed_database():
         )
     else:
         print(f"[Seed Knowledge] Registered {total_chunks} authoritative chunks in IN-MEMORY store only (no PostgreSQL).")
+
+def _full_text_id(doc) -> str:
+    """A document of its own, beside the hand-checked extract of the same law."""
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"ayusakshi:{doc['jurisdiction']}:{doc['title']}:full-text"))
+
+
+def seed_full_texts(cur, conn, corpus):
+    """
+    Seed the full text of each law in knowledge-base/fulltext.json.
+
+    Each is a separate document, current together with the hand-checked
+    extract, so retrieval reads both: the extract keeps its verified labels and
+    search aids, and everything it does not cover can still be found and cited.
+    Database only: the in-memory store is a fallback for running without
+    PostgreSQL, and embedding a thousand extra passages there on every start
+    would slow every restart for nothing.
+
+    A file is parsed only when its fingerprint (PDF bytes, manifest entry,
+    parser version) has no version yet, so an ordinary restart does no work.
+    """
+    from app.core.fulltext import build_passages, fingerprint, manifest_entries
+
+    curated = {(d["title"], d["jurisdiction"]): d for d in corpus}
+    added = kept = 0
+    for entry in manifest_entries():
+        jurisdiction = entry.get("jurisdiction", "india")
+        base = curated.get((entry["title"], jurisdiction), {})
+        doc = {
+            "title": entry["title"],
+            "jurisdiction": jurisdiction,
+            "authority": entry.get("authority") or base.get("authority") or "Government of India",
+            "document_type": entry.get("document_type") or base.get("document_type") or "statute",
+            "category": entry.get("category") or base.get("category") or "ip",
+            "source_url": entry.get("source_url") or base.get("source_url") or "",
+        }
+        doc_id = _full_text_id(doc)
+        try:
+            print_ = fingerprint(entry)
+        except FileNotFoundError:
+            print(f"[Seed Knowledge] *** Full text source missing for '{entry['title']}': {entry['file']}")
+            continue
+        version_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"{doc_id}:{print_}"))
+        try:
+            cur.execute(
+                """
+                INSERT INTO documents (id, title, authority, document_type, jurisdiction, category, source_url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (id) DO UPDATE SET authority = EXCLUDED.authority, source_url = EXCLUDED.source_url,
+                    updated_at = CURRENT_TIMESTAMP;
+                """,
+                (doc_id, doc["title"], doc["authority"], doc["document_type"], doc["jurisdiction"],
+                 doc["category"], doc["source_url"]),
+            )
+            cur.execute("SELECT is_current FROM document_versions WHERE id = %s;", (version_id,))
+            row = cur.fetchone()
+            if row:
+                if not row[0]:
+                    cur.execute("UPDATE document_versions SET is_current = FALSE WHERE document_id = %s;", (doc_id,))
+                    cur.execute("UPDATE document_versions SET is_current = TRUE WHERE id = %s;", (version_id,))
+                kept += 1
+                continue
+
+            passages = build_passages(entry)
+            if not passages:
+                print(f"[Seed Knowledge] *** No passages parsed from {entry['file']}; left as it was.")
+                continue
+            cur.execute("UPDATE document_versions SET is_current = FALSE WHERE document_id = %s;", (doc_id,))
+            cur.execute(
+                """
+                INSERT INTO document_versions (id, document_id, version_tag, content_hash, is_current, chunk_count, file_path)
+                VALUES (%s, %s, %s, %s, TRUE, %s, %s);
+                """,
+                (version_id, doc_id, entry["edition"], print_, len(passages), f"knowledge-base/source/{entry['file']}"),
+            )
+            for idx, p in enumerate(passages):
+                title = " ".join(filter(None, [p["section_identifier"], p.get("title", ""), doc["title"]]))[:500]
+                emb = generate_embedding(" ".join(filter(None, [title, p["content"]])))
+                meta = {"page": p.get("page_number"), "edition": entry["edition"],
+                        "edition_note": entry.get("edition_note", ""), "text_provenance": "parsed_from_official_pdf"}
+                cur.execute(
+                    """
+                    INSERT INTO document_chunks (document_version_id, chunk_index, section_identifier, title, content, metadata, embedding)
+                    VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s::vector);
+                    """,
+                    (version_id, idx, p["section_identifier"][:255], title, p["content"], json.dumps(meta), str(emb)),
+                )
+            conn.commit()
+            added += 1
+            print(f"[Seed Knowledge] Full text of '{doc['title']}' ingested: {len(passages)} passages ({entry['edition']}).")
+        except Exception as e:
+            print(f"[Seed DB Error on full text {entry['title']}]: {e}")
+            conn.rollback()
+    print(f"[Seed Knowledge] Full texts: {added} newly ingested, {kept} already current.")
+
 
 if __name__ == "__main__":
     seed_database()

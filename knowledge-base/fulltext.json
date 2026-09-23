@@ -1,0 +1,95 @@
+{
+  "about": "Full text of the core laws, parsed from the official PDFs in knowledge-base/source at seed time by ai-service/app/core/statute_parser.py. Each becomes a document of its own, current alongside the hand-checked extract of the same law in india.json, which keeps its own labels, source links and search aids. Edition notes say how current each file is; they are shown in the version tag.",
+  "documents": [
+    {
+      "file": "Patents Act, 1970.pdf",
+      "title": "The Patents Act, 1970",
+      "unit": "Section",
+      "start": "1\\.\\s*Short title, extent and commencement\\.?\\s*[\\u2014\\u2013\\u23af]",
+      "edition": "full text, IP India consolidated e-version"
+    },
+    {
+      "file": "Trade Marks Act, 1999.pdf",
+      "title": "The Trade Marks Act, 1999",
+      "unit": "Section",
+      "start": "1\\.\\s*Short title, extent and commencement\\.?\\s*[\\u2014\\u2013\\u23af]",
+      "edition": "full text as on 1 June 2026"
+    },
+    {
+      "file": "Geographical Indications of Goods Act, 1999.pdf",
+      "title": "The Geographical Indications of Goods (Registration and Protection) Act, 1999",
+      "unit": "Section",
+      "start": "(?i)BE it enacted",
+      "edition": "full text as enacted, Gazette of 30 Dec 1999",
+      "edition_note": "Later amendments are not included."
+    },
+    {
+      "file": "Drugs and Magic Remedies (Objectionable Advertisements) Act, 1954.pdf",
+      "title": "The Drugs and Magic Remedies (Objectionable Advertisements) Act, 1954",
+      "unit": "Section",
+      "start": "1\\.\\s*Short",
+      "end": "(?m)^\\s*1\\.\\s*\\n?\\s*Appendicitis",
+      "last_number": 16,
+      "edition": "full text with the Schedule of diseases",
+      "passages": [
+        {
+          "label": "Schedule",
+          "title": "Diseases and ailments which a drug may not purport to prevent or cure",
+          "start": "(?m)^\\s*1\\.\\s*\\n?\\s*Appendicitis",
+          "end": "(?m)^\\s*SCHEDULE\\s*\\n\\s*In exercise"
+        }
+      ]
+    },
+    {
+      "file": "Drugs and Cosmetics Act, 1940.pdf",
+      "title": "The Drugs and Cosmetics Act, 1940",
+      "unit": "Section",
+      "start": "1\\.\\s*Short title, extent and commencement\\.?\\s*[\\u2014\\u2013\\u23af]\\s*\\(1\\)\\s*This Act",
+      "end": "\\[?THE FIRST SCHEDULE\\s*\n\\s*\\[See section 3\\(a\\)\\]",
+      "last_number": 38,
+      "edition": "full text as amended to 31 Dec 2016",
+      "passages": [
+        {
+          "label": "First Schedule",
+          "title": "Authoritative books of Ayurveda, Siddha and Unani (see section 3(a))",
+          "start": "\\[?THE FIRST SCHEDULE\\s*\n\\s*\\[See section 3\\(a\\)\\]",
+          "end": "(?i)\\[?THE\\s+SECOND\\s+SCHEDULE\\s*\n"
+        }
+      ],
+      "edition_note": "CDSCO compilation. Amendments after 31 December 2016 are not included."
+    },
+    {
+      "file": "Drugs and Cosmetics Act, 1940.pdf",
+      "title": "The Drugs and Cosmetics Rules, 1945",
+      "authority": "Ministry of Health and Family Welfare / CDSCO",
+      "document_type": "rule",
+      "category": "ayush",
+      "source_url": "https://cdsco.gov.in/opencms/opencms/en/Acts-and-rules/",
+      "unit": "Rule",
+      "start": "151\\.\\s*Manufacture on more than one set of premises",
+      "end": "(?m)^\\s*SCHEDULE\\s+A\\b",
+      "first_number": 151,
+      "last_number": 169,
+      "edition": "full text of rules 151-169 (ASU) as amended to 31 Dec 2016",
+      "edition_note": "Only the Ayurvedic, Siddha and Unani rules, from the CDSCO compilation. Amendments after 31 December 2016, including rules added since, are not included."
+    },
+    {
+      "file": "FSSAI (Ayurveda Aahara) Regulations, 2022.pdf",
+      "title": "Food Safety and Standards (Ayurveda Aahara) Regulations, 2022",
+      "unit": "Regulation",
+      "start": "1\\.\\s+\\(1\\)\\s*These regulations may be called",
+      "edition": "full text as notified on 5 May 2022",
+      "end": "(?m)^\\s*Schedule A\\s*$",
+      "last_number": 14,
+      "passages": [
+        {
+          "label": "Schedule A",
+          "title": "List of authoritative books for Ayurveda Aahara",
+          "start": "(?m)^\\s*Schedule A\\s*\n\\s*\\[See regulation 2\\(b\\)\\]",
+          "end": "(?m)^\\s*Schedule\\s*B\b"
+        }
+      ],
+      "keep_small_text": true
+    }
+  ]
+}
